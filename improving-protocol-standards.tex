@@ -1,0 +1,213 @@
+\documentclass[10pt]{article}
+\usepackage[a4paper, total={6.5in, 11in}, includefoot, heightrounded]{geometry}
+
+\title{Literature Survey: Improving Protocol Standards for a more Trustworthy Internet}
+\date{\today}
+
+\newcommand{\paper}[3]{\textbf{Paper:} ``\textit{#1}'' -- #2 \cite{#3}\vspace{3mm}}
+
+\begin{document}
+\maketitle
+
+This document contains notes on the papers read as part of a literature survey for the
+``\textit{Improving Protocol Standards for a more Trustworthy Internet}'' project.
+
+\section{Packet format definition languages}
+
+One of the objectives of the project is to introduce (relatively simple) formalisms into
+standards documents, such that tooling can be used to improve the quality of these
+documents. One area where documents vary in quality, and that could easily be
+improved by our proposed approach, is in the description of packet header formats. The
+format used to describe these in standards documents varies, albeit slightly, complicating
+their extraction and use by automated tools. Further, given that they are a common feature
+in standards documents, any approach that allows for their specification to be simplified
+(from the view of the author) is likely to be welcomed.
+
+One approach to improving packet header definitions is through the use of a
+domain-specific language (DSL). Such a DSL needs to allow the author to specify not only
+the width and type of each field in the packet header, but also the relationships between
+them, and any constraints that apply. The language must be accessible: it should reduce
+the burden on the author, rather than adding additional complexity to the standards 
+process.
+
+The literature survey will cover not only languages specifically designed for packet
+header definitions, but data format specification languages more generally.
+
+\subsection*{Packet Types}
+
+\paper{Packet Types: Abstract Specification of Network Protocol Messages}{McCann \& Chandra}{mccann2000packet}
+
+McCann and Chandra propose PacketTypes, a packet specification language. Their motivation
+is largely focussed on improving the efficiency with which packets can be parsed in
+systems applications, though they note that the formal specification of packet formats is
+likely to benefit standards specifications. They note that packet formats are fixed by
+standards documents, and that implementing parsers is often complicated by the interaction
+between different fields, and across the different layers. They use the IP header as an
+example: the payload format is constrained by its own packet format, but this is
+determined by the protocol field in the IP header. Further, the IP header contains a
+variable-length options field; the length of this field is determined by the header length
+field. More generally, they show that packet headers encapsulate sufficient complexity
+that C's type system is insufficient. As a result, they develop PacketTypes: a
+specification language for defining packet formats. They provide an implementation for
+their language, and demonstrate its use by implementing a parser for Q.931 messages. 
+
+PacketTypes has one primitive type, a \texttt{bit}. New types can be constructed using the
+syntax \texttt{name := type}; for example, \texttt{byte := bit[8]} and
+\texttt{bytestring := byte[]}. The square bracket operator (\texttt{[]}) is the same as
+the Kleene star: here, a \texttt{bytestring} is comprised of zero or more bytes. Using
+an integer inside the square brackets restricts the number of repetitions of the type to
+be exactly that number -- so a \texttt{byte} is comprised of exactly 8 \texttt{bit}s.
+
+Structures (e.g., packet headers) can be formed by grouping type definitions together.
+From the paper, the IP packet can be defined as:
+\begin{verbatim}
+nybble := bit[4];
+short := bit[16];
+long := bit[32];
+ipaddress := byte[4];
+ipoptions := bytestring;
+
+IP_PDU := {
+  nybble       version;
+  nybble       ihl;
+  byte         tos;
+  short        totallength;
+  short        identification;
+  bit          morefrags;
+  bit          dontfrag;
+  bit          unused;
+  bit          frag_off[13];
+  byte         ttl;
+  byte         protocol;
+  short        cksum;
+  ipaddress    src;
+  ipaddress    dest;
+  ipoptions    options;
+  bytestring   payload;
+}
+\end{verbatim}
+
+While \texttt{IP\_PDU} defines the layout of an IP packet, without any constraints on the
+values that each field can contain, by this definition alone, an invalid IP packet could
+be constructed. PacketTypes allows a \texttt{where} clause to follow a type definition.
+For example:
+
+\begin{verbatim}
+IP_PDU := {
+  ...
+} where {
+  version#value = 0x04;
+  options#numbytes = ihl#value * 4 - 20;
+  payload#numbytes = totallength#value - ihl#value * 4;
+}
+\end{verbatim}
+
+In this example, the \texttt{where} clause specifies that the IP version is 4, and defines
+the size of the \texttt{options} and \texttt{payload} fields based on the \texttt{ihl}
+and \texttt{totallength} fields. Note the introduction of new syntax here:
+\texttt{field\#attribute} is used to refer to a particular attribute of a field. A number
+of attributes are defined, including \texttt{value} (network-order concatenation of all
+bits in the field), \texttt{numbits} (count of the number of bits in the field),
+\texttt{numbytes} (count of the number of bytes in the field), \texttt{numelems} (count
+of the number of elements in an array field), and \texttt{alt} (booleans indicating the
+alternative chosen). In the absence of a constraints, the \texttt{[]} operator is greedy;
+it is assumed that any data that could belong to that field does. It might be constrained
+explicitly by the \texttt{where} clause, or implicitly, based on the length of the
+structure that holds it.
+
+A refinement operator, \texttt{:>} is defined. This is used to further constrain a type
+that has already been specified. From the paper, an Ethernet frame could be specified as:
+
+\begin{verbatim}
+macaddr := bit[48];
+
+Ethernet_PDU := {
+  macaddr      dest;
+  macaddr      src;
+  short        type;
+  bytestring   payload;
+}
+\end{verbatim}
+
+Using a refinement, an IP packet within an Ethernet frame could be defined as:
+
+\begin{verbatim}
+IPinEthernet :> Ethernet_PDU where {
+  type#value = 0x800;
+  overlay payload with IP_PDU;
+}
+\end{verbatim}
+
+This specifies the type as \texttt{0x800}, and overlays the \texttt{IP\_PDU} definition
+above on top of the Ethernet payload. The \texttt{overlay .. with} syntax embeds one type
+within the other, reflecting protocol encapsulation. Here, the constraints of the
+\texttt{IP\_PDU} definition are applied to the \texttt{payload} field of \texttt{Ethernet\_PDU};
+for a packet to be a valid \texttt{IPinEthernet} packet, its Ethernet header must have 
+\texttt{type} equal to \texttt{0x800}, and a payload that is a valid \texttt{IP\_PDU}
+packet.
+
+PacketTypes includes dot notation syntax to allow the fields in the overlaid structure to
+be accessed:
+
+\begin{verbatim}
+My_IPinEthernet :> IPinEthernet where {
+  payload.srcaddr#value = 192.168.0.1;
+}
+\end{verbatim}
+
+In this example, the \texttt{payload} is the \texttt{Ethernet\_PDU} payload; the dot
+notation allows for the \texttt{srcaddr} of the overlaid \texttt{IP\_PDU} definition to be
+accessed, and here, have its value specified.
+
+Alternative types can be specified using the alternation operator, \texttt{|=}. This
+combines types disjunctively -- a bitstring matches the defined type if it matches one of
+the alternatives. As an example, the paper gives a more precision definition of the
+\texttt{ipoptions} type:
+
+\begin{verbatim}
+ipoptions := {
+  NonEndOption     neo[];
+  EndOption        eo;
+  bytestring       padding;
+} where {
+  eo#numelems <= 1;
+}
+\end{verbatim}
+
+By this definition, IP options are comprised of a zero or more \texttt{NonEndOption}s,
+followed by an optional (zero or one) \texttt{EndOption}, and padding. \texttt{NonEndOption}s
+make use of the alternation operator:
+
+\begin{verbatim}
+NonEndOption |= {
+  NoOperation     nop;
+  Security        sec;
+  LSRR            lsrr;
+  SSRR            ssrr;
+  RR              rr;
+  StreamID        sid;
+  Timestamp       tstamp;
+}
+\end{verbatim}
+
+The \texttt{|=} means that a bitstring is a \texttt{NonEndOption} if and only if it is one
+of the alternative types given. The \texttt{\#alt} attribute can be used in the
+\texttt{where} clause to determine which alternative was matched. Boolean expressions can
+be constructed; for example \texttt{neo[0]\#alt @ nop} is true if the first \texttt{NonEndOption}
+in the IP options field is a \texttt{NoOperation}. Note the use of the \texttt{@} operator
+here.
+
+Constraints in the \texttt{where} clause can be expressed using relational operators
+and boolean combinators:
+\begin{verbatim}
+          = > < >= <= != || && + * / -
+\end{verbatim}
+
+PacketTypes limits, for computability, the possible set of constraints. Constraints that specify 
+the size of variable-sized fields must only reference attributes that have already been
+specified. The author's allow particular implementations to further limit constraints.
+
+\bibliographystyle{abbrv}
+\bibliography{improving-protocol-standards}
+
+\end{document}

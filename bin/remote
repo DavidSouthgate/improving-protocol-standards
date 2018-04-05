@@ -1,0 +1,304 @@
+#! /bin/sh
+# =============================================================================
+# Trivial remote execution framework
+#
+# Colin Perkins (http://csperkins.org/)
+#
+# Copyright (C) 2017 University of Glasgow
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions 
+# are met:
+# 
+# 1. Redistributions of source code must retain the above copyright notice, 
+#    this list of conditions and the following disclaimer.
+# 
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+# =============================================================================
+
+REMOTE_HOST=""
+REMOTE_DIR=.remote
+
+# The $HOME/.remoterc file must exist. It is sourced by this script, and 
+# should override the definitions of the above variables, as appropriate
+# for your environment. In this typical case, it will contain only a line
+# like:
+#
+#     REMOTE_HOST=server.example.com
+# 
+# where server.example.com is replaced by the name of your remote execution
+# server. This needs to be a host you can ssh to, with an ssh agent set-up
+# so this doesn't require you to enter a password each time. 
+#
+# The $HOME/.remoterc file is sourced by the shell, so can be a script. It
+# can sometimes be useful to use something like:
+#
+#     c=`ifconfig en0 | grep -c "inet 192.168.0.71"`
+#     if [ $c -eq 1 ]; then
+#       REMOTE_HOST=server.example.com
+#     else
+#       REMOTE_HOST=""
+#     fi
+#
+# I use something like this to offload computations to a high-performance
+# server when I'm in the office (as determined by my laptop having a known
+# static IP address), with then running on the laptop otherwise.
+#
+# If REMOTE_HOST="" then "remote get" and "remote put" will do nothing, "remote
+# ls", "remote mkdir", "remote rmdir", and "remote rm" act as "ls", "mkdir",
+# "rmdir", and "rm", "remote run" runs the command locally, and "remote ncpu"
+# returns the number of local CPUs.
+
+if [ ! -f $HOME/.remoterc ]; then
+  echo "error: $HOME/.remoterc is missing"
+  exit 1
+fi
+
+source $HOME/.remoterc
+
+# =============================================================================
+# Define support functions:
+
+usage () {
+  echo "remote -- trivial remote execution framework"
+  echo ""
+  echo "Usage: "
+  echo "  remote ncpu                       -- print number of CPUs on remote"
+  echo "  remote put <project> <file> ...   -- upload files to remote project"
+  echo "  remote get <project> <file>       -- get file from remote project"
+  echo "  remote run <project> <cmd> <args> -- run command in remote project"
+  echo "  remote rm  <project> <file> ...   -- remove files from remote project"
+  echo "  remote mkdir  <project> <dir> ... -- create directories in remote"
+  echo "  remote rmdir  <project> <dir> ... -- remove directories in remote"
+  echo "  remote ls  <project> <subdir>     -- list files in remote project"
+  echo ""
+  echo "The intent is that a Makefile fragment like:"
+  echo ""
+  echo "  results/run-%-proc.dat: data/run-%.dat scripts/proc.sh"
+  echo "    scripts/proc.sh $< -o $@"
+  echo ""
+  echo "can be replaced by one like:"
+  echo ""
+  echo "  results/run-%-proc.dat: data/run-%.dat scripts/proc.sh"
+  echo "    remote put \${project} $^"
+  echo "    remote run \${project} scripts/proc.sh $< -o $@"
+  echo "    remote get \${project} $@"
+  echo ""
+  echo "to push the dependencies to the remote, run the command, and fetch the"
+  echo "results. The \${project} is a unique name for this particular project,"
+  echo "to allow multiple projects to be run in parallel."
+}
+
+error () {
+  echo "[remote] error: \"$*\""
+  exit 1
+}
+
+# =============================================================================
+# Define command functions:
+
+cmd_ncpu () {
+  if [ -z $REMOTE_HOST ]; then
+    case `uname -s` in 
+      Darwin  )
+        echo `sysctl -n hw.ncpu`
+        ;;
+      FreeBSD )
+        echo `sysctl -n hw.ncpu`
+        ;;
+      Linux )
+        echo `nproc`
+        ;;
+      * )
+        error "unknown system type"
+        exit 1
+        ;;
+    esac
+  else 
+    case `ssh $REMOTE_HOST uname -s` in
+      Darwin  )
+        echo `ssh $REMOTE_HOST sysctl -n hw.ncpu`
+        ;;
+      FreeBSD )
+        echo `ssh $REMOTE_HOST sysctl -n hw.ncpu`
+        ;;
+      Linux )
+        echo `ssh $REMOTE_HOST nproc`
+        ;;
+      * )
+        error "unknown system type"
+        exit 1
+        ;;
+    esac
+  fi
+}
+
+cmd_put () {
+  if [ $# -lt 2 ]; then
+    echo "insufficient arguments"
+    exit 1
+  fi
+
+  if [ -z $REMOTE_HOST ]; then
+    # Operating on local files, so nothing to put
+    true
+  else 
+    project=$1
+    ssh $REMOTE_HOST "mkdir -p $REMOTE_DIR/$project"
+
+    shift
+    rsync -aR $* $REMOTE_HOST:$REMOTE_DIR/$project/
+  fi
+}
+
+cmd_get () {
+  if [ $# -lt 2 ]; then
+    echo "insufficient arguments"
+    exit 1
+  fi
+
+  if [ -z $REMOTE_HOST ]; then
+    # Operating on local files, so nothing to get
+    true
+  else 
+    project=$1
+    filename=$2
+    rsync -a $REMOTE_HOST:$REMOTE_DIR/$project/$filename $filename
+  fi
+}
+
+cmd_mkdir () {
+  if [ $# -lt 2 ]; then
+    echo "insufficient arguments"
+    exit 1
+  fi
+
+  project=$1
+  shift
+
+  if [ -z $REMOTE_HOST ]; then
+    mkdir $*
+  else 
+    for i in $*
+    do
+      ssh $REMOTE_HOST "mkdir -p $REMOTE_DIR/$project/$i"
+    done
+  fi
+}
+
+cmd_rmdir () {
+  if [ $# -lt 2 ]; then
+    echo "insufficient arguments"
+    exit 1
+  fi
+
+  project=$1
+  shift
+
+  if [ -z $REMOTE_HOST ]; then
+    rmdir $*
+  else 
+    echo $* | ssh $REMOTE_HOST "(cd $REMOTE_DIR/$project && xargs rmdir)"
+  fi
+}
+
+cmd_rm () {
+  if [ $# -lt 2 ]; then
+    echo "insufficient arguments"
+    exit 1
+  fi
+
+  project=$1
+  shift
+
+  if [ -z $REMOTE_HOST ]; then
+    rm $*
+  else 
+    echo $* | ssh $REMOTE_HOST "(cd $REMOTE_DIR/$project && xargs rm -f )"
+  fi
+}
+
+cmd_ls () {
+  if [ $# -lt 1 ]; then
+    echo "insufficient arguments"
+    exit 1
+  fi
+
+  project=$1
+  shift
+
+  if [ -z $REMOTE_HOST ]; then
+    ls $*
+  else 
+    ssh $REMOTE_HOST "mkdir -p $REMOTE_DIR/$project && (cd $REMOTE_DIR/$project && ls $*)"
+  fi
+}
+
+cmd_run () {
+  if [ $# -lt 2 ]; then
+    error "insufficient arguments"
+  fi
+
+  project=$1
+  shift
+
+  if [ -z $REMOTE_HOST ]; then
+    exec $*
+  else 
+    ssh $REMOTE_HOST "mkdir -p $REMOTE_DIR/$project && (cd $REMOTE_DIR/$project && exec $* )"
+  fi
+}
+
+# =============================================================================
+# Main script:
+
+cmd=$1
+shift
+
+case $cmd in
+  ncpu )
+    cmd_ncpu
+    ;;
+  put )
+    cmd_put $*
+    ;;
+  get )
+    cmd_get $*
+    ;;
+  mkdir )
+    cmd_mkdir $*
+    ;;
+  rmdir )
+    cmd_rmdir $*
+    ;;
+  rm )
+    cmd_rm $*
+    ;;
+  ls )
+    cmd_ls $*
+    ;;
+  run )
+    cmd_run $*
+    ;;
+  * )
+    usage
+    exit 1
+    ;;
+esac 
+
+# =============================================================================
+# vim: set ts=2 tw=0 ai et:
