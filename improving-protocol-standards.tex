@@ -175,8 +175,8 @@ ipoptions := {
 \end{verbatim}
 
 By this definition, IP options are comprised of a zero or more \texttt{NonEndOption}s,
-followed by an optional (zero or one) \texttt{EndOption}, and padding. \texttt{NonEndOption}s
-make use of the alternation operator:
+followed by an optional (zero or one) \texttt{EndOption}, and padding.
+\texttt{NonEndOption}s make use of the alternation operator:
 
 \begin{verbatim}
 NonEndOption |= {
@@ -193,19 +193,20 @@ NonEndOption |= {
 The \texttt{|=} means that a bitstring is a \texttt{NonEndOption} if and only if it is one
 of the alternative types given. The \texttt{\#alt} attribute can be used in the
 \texttt{where} clause to determine which alternative was matched. Boolean expressions can
-be constructed; for example \texttt{neo[0]\#alt @ nop} is true if the first \texttt{NonEndOption}
-in the IP options field is a \texttt{NoOperation}. Note the use of the \texttt{@} operator
-here.
+be constructed; for example \texttt{neo[0]\#alt @ nop} is true if the first
+\texttt{NonEndOption} in the IP options field is a \texttt{NoOperation}. Note the use of
+the \texttt{@} operator here.
 
-Constraints in the \texttt{where} clause can be expressed using relational operators
-and boolean combinators:
+Constraints in the \texttt{where} clause can be expressed using relational operators and
+boolean combinators:
 \begin{verbatim}
           = > < >= <= != || && + * / -
 \end{verbatim}
 
-PacketTypes limits, for computability, the possible set of constraints. Constraints that specify 
-the size of variable-sized fields must only reference attributes that have already been
-specified. The author's allow particular implementations to further limit constraints.
+PacketTypes limits, for computability, the possible set of constraints. Constraints that
+specify the size of variable-sized fields must only reference attributes that have already
+been specified. The author's allow particular implementations to further limit
+constraints.
 
 \bibliographystyle{abbrv}
 \bibliography{improving-protocol-standards}
