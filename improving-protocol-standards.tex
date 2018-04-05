@@ -141,10 +141,10 @@ IPinEthernet :> Ethernet_PDU where {
 This specifies the type as \texttt{0x800}, and overlays the \texttt{IP\_PDU} definition
 above on top of the Ethernet payload. The \texttt{overlay .. with} syntax embeds one type
 within the other, reflecting protocol encapsulation. Here, the constraints of the
-\texttt{IP\_PDU} definition are applied to the \texttt{payload} field of \texttt{Ethernet\_PDU};
-for a packet to be a valid \texttt{IPinEthernet} packet, its Ethernet header must have 
-\texttt{type} equal to \texttt{0x800}, and a payload that is a valid \texttt{IP\_PDU}
-packet.
+\texttt{IP\_PDU} definition are applied to the \texttt{payload} field of
+\texttt{Ethernet\_PDU}; for a packet to be a valid \texttt{IPinEthernet} packet, its
+Ethernet header must have \texttt{type} equal to \texttt{0x800}, and a payload that is a
+valid \texttt{IP\_PDU} packet.
 
 PacketTypes includes dot notation syntax to allow the fields in the overlaid structure to
 be accessed:
