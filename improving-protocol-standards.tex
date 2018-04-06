@@ -33,7 +33,7 @@ process.
 The literature survey will cover not only languages specifically designed for packet
 header definitions, but data format specification languages more generally.
 
-\subsection*{Packet Types}
+\subsection{Packet Types}
 
 \paper{Packet Types: Abstract Specification of Network Protocol Messages}{McCann \& Chandra}{mccann2000packet}
 
@@ -205,8 +205,147 @@ boolean combinators:
 
 PacketTypes limits, for computability, the possible set of constraints. Constraints that
 specify the size of variable-sized fields must only reference attributes that have already
-been specified. The author's allow particular implementations to further limit
+been specified. The authors allow particular implementations to further limit
 constraints.
+
+\subsection{Meta Packet Language}
+\paper{Melange: Creating a ``Functional'' Internet}{Madhavapeddy et al.}{madhavapeddy2007melange}
+
+The motivation for Melange is centres on the widespread use of type-unsafe languages (like
+C and C++) in network system implementations, exposing such systems to security and
+reliability issues. Melange combines two techniques to eliminate the perceived performance
+impact of type-safe languages, allowing for their use in implementing Internet protocols:
+a strong, static type system, and generative meta-programming. Of interest here is their
+domain-specific language, Meta Packet Language (MPL).
+
+The authors provide the Extended BNF grammar for MPL:
+
+\begin{verbatim}
+main -> (packet-decl)+ EOF
+packet-decl -> packet identifier[(packet-args)] packet-body
+packet-args -> {int | bool} identifier [, packet-args]
+packet-body -> {(statement)+}
+statement -> identifier : identifier [var-size] (var-attr)*;
+           | classify (identifier) {(classify-match)+};
+           | identifier : array(expr) {(statement)+};
+           | ();
+classify-match -> '|' expr : expr[when (expr)] -> (statement)+
+var-attr -> variant {('|' expr {->|=>} cap-identifier)+}
+          | {min|max|align|value|const|default} (expr)
+var-size -> [expr]
+expr -> integer | string | identifier | (expr)
+      | expr {+|-|*|/|and|or} expr
+      | {-|+|not} expr
+      | true | false
+      | expr {>|>=|<|<=|=|..} expr
+      | {sizeof|array_length|offset} (expr-arg)
+      | remaining()
+\end{verbatim}
+
+A simple specification in MPL consists of an ordered list of named \emph{typed} fields.
+Types can be: (i) wire types (network representation of the field); (ii) MPL types (used
+within the specification -- strings in the grammar above); or (iii) language types (used
+in target language -- i.e., the language that the MPL is compiled to). Wire types are
+mapped to MPL types, allowing these types to be used as part of the specification.
+Additionally, every wire type has a corresponding language type. 
+
+The grammar includes the \texttt{classify} keyword, to allow for parsing decisions to
+depend on the contents of another field (so long as that field has already been defined).
+Fields have attributes; these can be constraints that define the maximum or minimum value,
+a default value, or a constant value, among others. 
+
+As an example, the authors provide an MPL specification of IPv4:
+
+\begin{verbatim}
+packet ipv4 {
+  version: bit[4] const(4);
+  ihl: bit[4] min(5) value(offset(options) / 4);
+  tos_precedence: bit[3] variant {
+    |0 => Routine
+    |1 -> Priority
+    |2 -> Immediate
+    |3 -> Flash
+    |4 -> Flash_override
+    |5 -> ECP
+    |6 -> Inet_control
+    |7 -> Net.control
+  };
+  delay: bit[1] default(false);
+  throughput: bit[1] default(false);
+  reliability: bit[1] default(false);
+  reserved: bit[2] const(0);
+  length: uint16 value(offset(data));
+  id: uint16;
+  reserved: bit[1] const(0);
+  dont_fragment: bit[1] default(0);
+  can_fragment: bit[1] default(0);
+  frag_off: bit[13] default(0);
+  ttl: byte;
+  protocol: byte variant {
+   |1 -> ICMP
+   |2 -> IGMP
+   |6 -> TCP
+   |17 -> UDP
+  };
+  checksum: uint16 default(0);
+  src: uint32;
+  dest: uint32;
+  options: byte[(ihl * 4) - offset(dest)] align(32);
+  header_end: label;
+  data: byte[length-(ihl*4)];
+}
+\end{verbatim}
+
+\subsection{PADS}
+\paper{PADS: A Domain-Specific Language for Processing Ad Hoc Data}{Fisher and Gruber}{fisher2005pads}
+
+\subsection{DataScript}
+\paper{DataScript: A Specification and Scripting Language for Binary Data}{Back}{back2002datascript}
+
+Back describes DataScript, a language for the specification and manipulation of binary
+data formats, using types. It consists of two components: a constraint-based specification
+language (that uses DataScript types), and a language binding that provides a simple
+scripting interface. The motivation for DataScript is that natural language prose is not
+well suited to describing the design of binary data formats: not only is it inefficient,
+but it can introduce ambiguities that translate into bugs in implementations. 
+
+A DataScript type can be either: (i) a primitive type; (ii) a set type (an enumerated
+or bitmask type); (iii) a linear array (of another type); or (iv) a composite (record or
+variant-record) type.
+
+Primitive types form the basis for more complicated types. These types include bit fields,
+bytes, and variable length integers. Primitive types are interpreted as signed or unsigned
+integers, with the size and signedness specified in the keyword (e.g., uint32, int16). For 
+multi-byte integers, endianness is specified using an optional attribute prefix:
+\texttt{little} or \texttt{big}. Where this isn't specified, the default is big endian 
+(i.e., network byte order).
+
+Two set types are supported: enumerated types (\texttt{enum}) and bitmask types
+(\texttt{bitmask}). A set type constrains an underlying primitive type, specifying the
+signedness and endianness, used to store and interpret its values. For example, it can be
+used to specify the valid values of a bitfield.
+
+Composite types are specified using a C-like language, and this follows from the
+interpretation of these types: they are similar to C structs and unions. Unions in
+DataScript are discriminated/tagged, taking the first matching constraint in the union --
+the order in the specification is important. The constraints don't need to be disjoint,
+allowing for default choices. Composite types can be nested, with scoping rules that
+provide a namespace for each type.
+
+DataScript arrays are linear, with integer indices, and specified lower and upper
+bounds (\texttt{[lower.. upper]}; lower is a valid indice, upper is not); lower, if
+omitted defaults to 0. Expressions specifying bounds must be able to be evaluated at the
+time that the array is read (i.e., be based on a previously defined field). 
+
+Fields can have constraints, specified as a boolean predicate. Constraints are used in
+three ways: (i) to discriminate union types; (ii) express consistency requirements in
+record types; and (ii) limit the length of array types, where the length is not known;
+arrays can grow until their constraints are violated. Predicates are boolean expressions,
+with DataScript adopting the operators, associativity, and precedence rules from Java and
+C. 
+
+\subsection{P4}
+\paper{P4: Programming protocol-independent packet processors}{Bosshart et al.}{bosshart2014p4}
 
 \bibliographystyle{abbrv}
 \bibliography{improving-protocol-standards}
