@@ -4,7 +4,7 @@
 \title{Literature Survey: Improving Protocol Standards for a more Trustworthy Internet}
 \date{\today}
 
-\newcommand{\paper}[3]{\textbf{Paper:} ``\textit{#1}'' -- #2 \cite{#3}\vspace{3mm}}
+\newcommand{\paper}[3]{\vspace{4mm}\noindent\textbf{Paper:} ``\textit{#1}'' -- #2 \cite{#3}\vspace{3mm}}
 
 \begin{document}
 \maketitle
@@ -31,7 +31,9 @@ the burden on the author, rather than adding additional complexity to the standa
 process.
 
 The literature survey will cover not only languages specifically designed for packet
-header definitions, but data format specification languages more generally.
+header definitions, but data format specification languages more generally. In addition,
+architectural papers (i.e., those that don't define a language, but provide guidance) are
+also in scope.
 
 \subsection{Packet Types}
 
@@ -299,6 +301,35 @@ packet ipv4 {
 \subsection{PADS}
 \paper{PADS: A Domain-Specific Language for Processing Ad Hoc Data}{Fisher and Gruber}{fisher2005pads}
 
+Processing Ad hoc Data Sources (PADS) is a declarative data description language for
+describing the layout and semantic properties of \emph{ad hoc} data. Ad hoc, in this
+context, refers to data formats that are stored in (previously) ill-defined, non-standard
+formats. This in contrast to data stored in database systems, or described using a
+structured language (e.g., XML). The authors cite examples of such data: call logs, web
+server access logs, etc. While much of the motivation for PADS does not apply here (i.e.,
+we are not describing ad hoc data), of interest is the motivation that runs through most
+of the papers in this document: parsers are tedious to write, and the process is
+error-prone. A formal or structured description of the data is desirable to improve this
+situation.
+
+The PADS description language is typed-based, with atomic base types for 32-bit integers
+(\texttt{Pint32}), strings (\texttt{Pstring}), and IP address (\texttt{Pip}), among
+others. These types are augmented with information about how the data is coded (e.g., in
+ASCII or binary). PADS interprets the types as ASCII by default, but this can be specified
+by using the appropriate base type: for example, \texttt{Pa\_int32} is an \emph{ASCII}
+32-bit integer, \texttt{Pb\_int32} is a \emph{binary} 32-bit integer. Users can specify
+their own base types.
+
+PADS includes structured types, akin to C's types: \texttt{Pstruct} (structures),
+\texttt{Punion} (alternatives), and \texttt{Parray} (sequences), \texttt{Penum} (fixed set
+of literals), \texttt{Popts} (optional data). Each of these can have a predicate
+associated with it, to indicate whether a parsed value is a legal value for the type. For
+example, a predicate might specify that two fields of a \texttt{Pstruct} are related, or
+that a sequence is in increasing order. These predicates are specified using C-like
+syntax. Further constraints can be added to existing types using \texttt{Ptypedef}. PADS
+types may be parameterised by values. For example, \texttt{Pstring(:' ':)} defines a
+string terminated by a space. 
+
 \subsection{DataScript}
 \paper{DataScript: A Specification and Scripting Language for Binary Data}{Back}{back2002datascript}
 
@@ -346,6 +377,91 @@ C.
 
 \subsection{P4}
 \paper{P4: Programming protocol-independent packet processors}{Bosshart et al.}{bosshart2014p4}
+
+P4 is a high-level language, designed for programming packet processors (e.g., switches).
+The goals of P4 are to allow for easy reconfigurability of switches once deployed,
+the development of an abstraction to allow switches to be protocol agnostic, and a further
+abstraction to allow the programming of switches to be independent of the underlying
+hardware. While this goals are very different to those of this project, they lead to the
+development of a programming language that has many desirable features.
+
+A P4 program is comprised of five components:
+\begin{itemize}
+\item \textbf{Headers} The sequence and structure of packets
+\item \textbf{Parsers} Definition of how headers should be identified and validated
+\item \textbf{Tables} Packet matching tables for packet processing
+\item \textbf{Actions} Triggered by matching a table entry
+\item \textbf{Control Programs} Defines ordering and flow between matching (and action) entries
+\end{itemize}
+
+Of these, header definitions are of interest. These are specified by declaring an ordered
+list of field names, together with their bit widths. For example, the Ethernet header is
+specified as:
+
+\begin{verbatim}
+  header ethernet {
+    fields {
+      dst_addr : 48; // width in bits
+      src_addr : 48;
+      ethertype : 16;
+    }
+  }
+\end{verbatim}
+
+[Note: the P4 paper doesn't focus on the header specification language; the P4 manual is
+a better resource. The language has also changed considerably since this paper]
+
+\subsection{Packet parser design principles}
+\paper{Design principles for packet parsers}{Gibb et al.}{gibb2013design}
+
+In this paper, the authors discuss the design tradeoffs present in packet parsers, and
+identify the design principles that exist. Additionally, they describe a parser generator.
+As part of this parser generator, a language to describe packet formats is defined.
+As an example, the IPv4 header is described as:
+
+\begin{verbatim}
+  ipv4 {
+    fields {
+      version        :  4,
+      ihl            :  4,
+      diffserv       :  8 : extract,
+      totalLen       : 16,
+      identification : 16,
+      flags          :  3 : extract,
+      fragOffset     : 13,
+      ttl            :  8 : extract,
+      protocol       :  8 : extract,
+      hdrChecksum    : 16,
+      srcAddr        : 32 : extract,
+      dstAddr        : 32 : extract,
+      options        : *,
+    }
+    next_header = map(fragOffset, protocol) {
+       1 : icmp,
+       6 : tcp,
+      17 : udp,
+    }
+    length = ihl * 4 * 8
+    max_length = 256
+  }
+\end{verbatim}
+
+This description includes the name and size of each field, a label for fields that should
+be extracted, a mapping between field values, and for variable-length headers, a
+definition of length derived from field values.
+
+\paper{Writing parsers like it is 2017}{Chifflier and Couprie}{chifflier2017writing}
+
+In this paper, the authors present a Rust-based combinator approach to parser design. This
+is motivated by the prevalence of memory corruption bugs in parsers implemented in
+low-level languages. Many of the issues raised by the authors result from the use of
+unsafe languages, such as C, for parser implementation, and they recommend changing to a 
+safe language, such as Rust, to solve many of these.
+
+\subsection{Network protocol DSLs \& motivation}
+\paper{Domain specific languages (DSLs) for network protocols}{Bhatti et al.}{bhatti2009domain}
+
+\paper{The Bugs We Have to Kill}{Bratus et al.}{bratus2015bugs}
 
 \bibliographystyle{abbrv}
 \bibliography{improving-protocol-standards}
