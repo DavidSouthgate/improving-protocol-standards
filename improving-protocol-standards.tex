@@ -1,10 +1,18 @@
 \documentclass[10pt]{article}
 \usepackage[a4paper, total={6.5in, 11in}, includefoot, heightrounded]{geometry}
-
+\usepackage{adjustbox}
+\usepackage{array}
 \title{Literature Survey: Improving Protocol Standards for a more Trustworthy Internet}
 \date{\today}
 
 \newcommand{\paper}[3]{\vspace{4mm}\noindent\textbf{Paper:} ``\textit{#1}'' -- #2 \cite{#3}\vspace{3mm}}
+
+\newcolumntype{R}[2]{%
+    >{\adjustbox{angle=#1,lap=\width-(#2)}\bgroup}%
+    l%
+    <{\egroup}%
+}
+\newcommand*\rot{\multicolumn{1}{R{45}{1em}}}
 
 \begin{document}
 \maketitle
@@ -459,9 +467,19 @@ unsafe languages, such as C, for parser implementation, and they recommend chang
 safe language, such as Rust, to solve many of these.
 
 \subsection{Network protocol DSLs \& motivation}
+
 \paper{Domain specific languages (DSLs) for network protocols}{Bhatti et al.}{bhatti2009domain}
 
 \paper{The Bugs We Have to Kill}{Bratus et al.}{bratus2015bugs}
+
+\subsection{Summary}
+
+\begin{tabular}{ l | c | r }
+  Language/Feature & \rot{Field types} & \rot{Field relationships} \\   \hline			
+  PacketTypes      & $\bullet$     & $\bullet$  \\
+  DataScript       & $\bullet$     & $\bullet$  \\
+  \hline  
+\end{tabular}
 
 \bibliographystyle{abbrv}
 \bibliography{improving-protocol-standards}
