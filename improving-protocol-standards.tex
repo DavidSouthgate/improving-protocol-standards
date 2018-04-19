@@ -479,12 +479,36 @@ Additionally, definitions can be reused and extended:
   END
 \end{verbatim}
 
-The `...` is part of the language: it says that the TypeIdentifierExtension specification
+The ``..'' is part of the language: it says that the TypeIdentifierExtension specification
 might contain additional fields in later versions.
 
 \paper{A language-based approach to protocol construction}{Basu et al.}{basu1997language}
 
-\todo{Read and write up}
+Basu et al. describe Promela++, an extension to the Promela protocol validation language.
+Promela++ adds constructs for specifying layered protocols and for composing these
+protocols into a stack. In addition, it provides support for the encapsulation of
+protocol state, and message headers. Again, the focus here is on the language itself, and
+the semantics it supports, rather than on the tooling that is described alongside it.
+
+Promela++ is syntactically similar to C, but with a number of modifications and
+constraints. Importantly, Promela++ separates the lower-level network access and data
+handling components from the protocol-layer control structures. This has a number of
+advantages, allowing the low-level components to be hidden from the protocol-level
+validator.
+
+In Promela++, a protocol layer is comprised of user-defined types that encapsulate the
+state of the protocol layer, and the message header used by the protocol layer. These
+are flagged using the \texttt{state} and \texttt{message} keywords respectively. Of 
+interest here is the message header defintion language.
+
+Message headers are expressed as:
+
+\begin{verbatim}
+  message UAM_msg {
+    UAM_short        am,
+    ...
+  };
+\end{verbatim}
 
 \paper{CSN. 1 Specification, Version 2.0}{Mouly}{mouly1998csn}
 
