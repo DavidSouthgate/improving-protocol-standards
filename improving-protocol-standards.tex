@@ -420,7 +420,67 @@ a better resource. The language has also changed considerably since this paper]
 
 \paper{Abstract Syntax Notation One (ASN.1): Specification of basic notation}{ITU-T (Information technology)}{x680}
 
-\todo{Read and write up}
+ASN.1 is a language for defining the structure of data. It includes a number of simple
+data types, and notation for referencing and specifying values for these. Importantly,
+this notation does not constrain the encoding format for the data being specified. This
+is handled by supplementary encoding rules: the ``transfer syntax'' -- e.g., Basic
+Encoding Rules (BER), or Packed Encoding Rules (PER). The focus here is on the abstract
+notation, and the semantics it supports.
+
+ASN.1 supports the general technique of defining a small core of simple types, and
+allowing these to be combined in various ways to define new types. These new types can
+be defined, for example, by composing an ordered sequence of the existing types, or using
+other structures or relationships. To allow for the unambiguous encoding of these types,
+they are assigned a tag: these are helpers for parsers of the language, rather than for
+human readers.
+
+An instance of the ASN.1 notation (defining types, values, sets, etc) is a
+module. Modules definitions being with this syntax:
+
+\begin{verbatim}
+  ModuleIdentifier DEFINITIONS ::= BEGIN
+\end{verbatim}
+
+Modules contain type definitions:
+
+\begin{verbatim}
+  ModuleIdentifier DEFINITIONS ::= BEGIN
+      TypeIdentifier ::= SEQUENCE {
+          label     INTEGER,
+          label2    BOOLEAN
+      }
+  END
+\end{verbatim}
+
+ASN.1 allows for values to be constrained:
+
+\begin{verbatim}
+  ModuleIdentifier DEFINITIONS ::= BEGIN
+      TypeIdentifier ::= SEQUENCE {
+          label     INTEGER(0..15),
+          label2    BOOLEAN
+      }
+  END  
+\end{verbatim}
+
+Additionally, definitions can be reused and extended:
+
+\begin{verbatim}
+  ModuleIdentifier DEFINITIONS ::= BEGIN
+      TypeIdentifier ::= SEQUENCE {
+          label     INTEGER,
+          label2    BOOLEAN
+      }
+    
+      TypeIdentiferExtension ::= SEQUENCE {
+          label3    SEQUENCE OF TypeIdentifier,
+          ...
+      }
+  END
+\end{verbatim}
+
+The `...` is part of the language: it says that the TypeIdentifierExtension specification
+might contain additional fields in later versions.
 
 \paper{A language-based approach to protocol construction}{Basu et al.}{basu1997language}
 
