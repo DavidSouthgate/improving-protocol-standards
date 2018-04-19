@@ -2,9 +2,12 @@
 \usepackage[a4paper, total={6.5in, 11in}, includefoot, heightrounded]{geometry}
 \usepackage{adjustbox}
 \usepackage{array}
+\usepackage{color}
+
 \title{Literature Survey: Improving Protocol Standards for a more Trustworthy Internet}
 \date{\today}
 
+\newcommand{\todo}[1]{\textbf{\textcolor{red}{To do -- #1}}}
 \newcommand{\paper}[3]{\vspace{4mm}\noindent\textbf{Paper:} ``\textit{#1}'' -- #2 \cite{#3}\vspace{3mm}}
 
 \newcolumntype{R}[2]{%
@@ -43,7 +46,7 @@ header definitions, but data format specification languages more generally. In a
 architectural papers (i.e., those that don't define a language, but provide guidance) are
 also in scope.
 
-\subsection{Packet Types}
+\subsection{Languages}
 
 \paper{Packet Types: Abstract Specification of Network Protocol Messages}{McCann \& Chandra}{mccann2000packet}
 
@@ -218,7 +221,6 @@ specify the size of variable-sized fields must only reference attributes that ha
 been specified. The authors allow particular implementations to further limit
 constraints.
 
-\subsection{Meta Packet Language}
 \paper{Melange: Creating a ``Functional'' Internet}{Madhavapeddy et al.}{madhavapeddy2007melange}
 
 The motivation for Melange is centres on the widespread use of type-unsafe languages (like
@@ -306,7 +308,6 @@ packet ipv4 {
 }
 \end{verbatim}
 
-\subsection{PADS}
 \paper{PADS: A Domain-Specific Language for Processing Ad Hoc Data}{Fisher and Gruber}{fisher2005pads}
 
 Processing Ad hoc Data Sources (PADS) is a declarative data description language for
@@ -338,7 +339,6 @@ syntax. Further constraints can be added to existing types using \texttt{Ptypede
 types may be parameterised by values. For example, \texttt{Pstring(:' ':)} defines a
 string terminated by a space. 
 
-\subsection{DataScript}
 \paper{DataScript: A Specification and Scripting Language for Binary Data}{Back}{back2002datascript}
 
 Back describes DataScript, a language for the specification and manipulation of binary
@@ -383,7 +383,6 @@ arrays can grow until their constraints are violated. Predicates are boolean exp
 with DataScript adopting the operators, associativity, and precedence rules from Java and
 C. 
 
-\subsection{P4}
 \paper{P4: Programming protocol-independent packet processors}{Bosshart et al.}{bosshart2014p4}
 
 P4 is a high-level language, designed for programming packet processors (e.g., switches).
@@ -418,6 +417,18 @@ specified as:
 
 [Note: the P4 paper doesn't focus on the header specification language; the P4 manual is
 a better resource. The language has also changed considerably since this paper]
+
+\paper{Abstract Syntax Notation One (ASN.1): Specification of basic notation}{ITU-T (Information technology)}{x680}
+
+\todo{Read and write up}
+
+\paper{A language-based approach to protocol construction}{Basu et al.}{basu1997language}
+
+\todo{Read and write up}
+
+\paper{CSN. 1 Specification, Version 2.0}{Mouly}{mouly1998csn}
+
+\todo{Read and write up}
 
 \subsection{Packet parser design principles}
 \paper{Design principles for packet parsers}{Gibb et al.}{gibb2013design}
@@ -458,6 +469,8 @@ This description includes the name and size of each field, a label for fields th
 be extracted, a mapping between field values, and for variable-length headers, a
 definition of length derived from field values.
 
+\todo{Expand}
+
 \paper{Writing parsers like it is 2017}{Chifflier and Couprie}{chifflier2017writing}
 
 In this paper, the authors present a Rust-based combinator approach to parser design. This
@@ -466,11 +479,17 @@ low-level languages. Many of the issues raised by the authors result from the us
 unsafe languages, such as C, for parser implementation, and they recommend changing to a 
 safe language, such as Rust, to solve many of these.
 
+\todo{Expand}
+
 \subsection{Network protocol DSLs \& motivation}
 
 \paper{Domain specific languages (DSLs) for network protocols}{Bhatti et al.}{bhatti2009domain}
 
+\todo{Write up notes}
+
 \paper{The Bugs We Have to Kill}{Bratus et al.}{bratus2015bugs}
+
+\todo{Read and write up}
 
 \subsection{Summary}
 
@@ -480,6 +499,9 @@ safe language, such as Rust, to solve many of these.
   DataScript       & $\bullet$     & $\bullet$  \\
   \hline  
 \end{tabular}
+
+\todo{Add all languages}
+\todo{Add list of features}
 
 \bibliographystyle{abbrv}
 \bibliography{improving-protocol-standards}
