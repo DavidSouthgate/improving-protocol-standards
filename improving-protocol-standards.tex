@@ -512,7 +512,31 @@ Message headers are expressed as:
 
 \paper{CSN. 1 Specification, Version 2.0}{Mouly}{mouly1998csn}
 
-\todo{Read and write up}
+The Concrete Syntax Notation, CSN.1, is a language that was introduced by 3GPP, to aid in
+the description of the \emph{encoded} format of layer 3 GSM messages. Previously, these
+messages were described with various ad hoc methods, including textual descriptions of the
+meaning of each bit. The goals of CSN.1, then, are to unify the way in which these
+messages are described, using a formal language, and in so doing, encourage the
+development of tooling that could generate encoding/decoding programs.
+
+CSN.1 operates over a logical bit stream, of arbitrary length. A CSN.1 definition
+describes the transmission syntax, defining which sequences of bits are valid. In
+addition, components of the bit stream are labelled. However, CSN.1 does not allow for any
+relationships between these different components to be modelled. The meaning of each value
+is not defined; no attempt is made to constrain a given message to carry a set of values
+that all make sense together.
+
+As an example:
+
+\begin{verbatim} < TEST > ::= 00001111; \end{verbatim}
+
+Here, \texttt{TEST} has a fixed value (15).
+
+\begin{verbatim} < TEST_OR > ::= 0000 {1111 | 0000}; \end{verbatim}
+
+In this example, \texttt{TEST\_OR} can take on two possible (8-bit) values: 0 or 15.
+However, there is no notation to define when \texttt{TEST\_OR} should take on either of
+those values: that is entirely application dependent, and cannot be modelled here.
 
 \subsection{Packet parser design principles}
 \paper{Design principles for packet parsers}{Gibb et al.}{gibb2013design}
