@@ -614,6 +614,32 @@ safe language, such as Rust, to solve many of these.
   \hline  
 \end{tabular}
 
+\section{Parsing IETF protocols}
+
+In this section, we look at the features required of a packet format definition language,
+when describing the syntax of various IETF protocols. Such a language must allow for a
+parser to be generated based upon the definition: enough information should be available
+to validate the syntax of a given packet, against the definition. To do this, we use the
+concept of \emph{contexts}. The parsing process makes use of two contexts: a per-packet
+context, and a per-flow context. Contexts contain information from other, earlier fields
+(in the case of the per-packet context) or from other, earlier packets (in the case of the
+per-flow context) \emph{that is necessary to parse other fields}. The per-packet context
+contains the values of earlier fields, and these can be used to constrain the value or
+properties of later fields. For example, an IP header has a \texttt{version} field; the
+value of this field determines the layout of the packet. The per-flow context can be
+added to by the parser, acting on earlier packets, or by an out-of-band process. These
+values can be used to constrain the value or properties of fields in later packets. The
+per-flow context is particularly useful for cryptographic protocols, where a key is
+provided as part of a message exchange earlier in the flow (or out-of-band).
+
+It is important to note here that it is easy to see that these contexts could be used to
+enforce semantic properties of packets, rather than the syntactic validation that parsing
+requires. For example, the per-flow context might be used to determine that packets
+out-of-sequence are invalid. However, this is out-of-scope: constraints on packet values,
+based on data from contexts, should only be used for parsing -- that is, to determine if
+a packet's format is valid, rather than determining if the contexts of each field are
+valid.
+
 \bibliographystyle{abbrv}
 \bibliography{improving-protocol-standards}
 
