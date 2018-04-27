@@ -640,6 +640,196 @@ based on data from contexts, should only be used for parsing -- that is, to dete
 a packet's format is valid, rather than determining if the contexts of each field are
 valid.
 
+\subsection{IP}
+
+The IP header is comprised of a 4 bit \texttt{version} field. The rest of the header's
+format is determined by the value of this field.
+
+\subsubsection*{IPv4}
+
+An IPv4 header has the following fields:
+\begin{itemize}
+\item \texttt{IHL}: 4 bits
+\item \texttt{DiffServ}: 6 bits
+\item \texttt{ECN}: 2 bits
+\item \texttt{Total Length}: 16 bits
+\item \texttt{Identification}: 16 bits
+\item \texttt{Flags}: 3 bits
+\item \texttt{Offset}: 13 bits
+\item \texttt{TTL}: 8 bits
+\item \texttt{Protocol}: 8 bits
+\item \texttt{Checksum}: 16 bits
+\item \texttt{Source Addr}: 32 bits
+\item \texttt{Dest Addr}: 32 bits
+\item \texttt{Options}: variable length (incorporates padding to 32 bit boundary)
+\item \texttt{Payload}: variable length
+\end{itemize}
+
+Constraints:
+\begin{itemize}
+\item The length of the Options field depends on the IHL field:
+\texttt{len(Options) = IHL*4 - 20} (where the length is in bytes).
+\item The Options field contains zero or more variable length Options, with their own
+sub-format:
+\begin{itemize}
+\item \texttt{Copy} 1 bit
+\item \texttt{Class} 2 bits
+\item \texttt{Number} 5 bits
+\item \texttt{Length} 8 bits
+\item \texttt{Data} variable length
+\end{itemize}
+The number of Options is constrained both by the length of the field, and by the length
+of each Option. The Options field needs to pad to a 32 bit boundary. Further, the
+header can be at most 60 bytes long, leaving a maximum of 40 bytes for the Options field.
+\item The value of the Protocol field determines how the Payload field should be parsed.
+\end{itemize}
+
+Notes:
+\begin{itemize}
+\item The DiffServ and ECN fields were originally specified as a single 8 bit 
+Type of Service (ToS) field. How should a definition language support changes in
+specification, where those changes happen between different documents?
+\item Parsing the Options field is interesting: it contains a zero or more variable
+length Options. The definition language should support sequences of this type, where the
+length of the sequence can only be determined by parsing each element in turn.
+\end{itemize}
+
+\subsubsection{IPv6}
+
+An IPv6 header has the following fields:
+\begin{itemize}
+\item \texttt{Traffic Class}: 8 bits
+\item \texttt{Flow Label}: 20 bits
+\item \texttt{Payload Length}: 16 bits
+\item \texttt{Next Header}: 8 bits
+\item \texttt{Hop Limit}: 8 bits
+\item \texttt{Source Addr}: 128 bits
+\item \texttt{Dest Addr}: 128 bits
+\item \texttt{Payload}: variable length
+\end{itemize}
+
+Constraints:
+\begin{itemize}
+\item The value of the Next Header field determines how the Payload field should be parsed.
+\end{itemize}
+
+Notes:
+\begin{itemize}
+\item IPv6 headers don't have an Options field. Extension headers play much the same role,
+but these are handled in a much cleaner way: they are chained onto the IPv6 header using
+the Next Header field (with the chain ending with a upper-layer protocol, or a No Next
+Header value). While extensions to the IPv6 protocol, for parsing, it makes sense to treat
+them as a separate upper-layer protocol.
+\end{itemize}
+
+\subsection{UDP}
+
+A UDP header has the following fields:
+\begin{itemize}
+\item \texttt{Source Port}: 16 bits
+\item \texttt{Dest Port}: 16 bits
+\item \texttt{Length}: 16 bits
+\item \texttt{Checksum}: 16 bits
+\item \texttt{Payload}: variable length
+\end{itemize}
+
+Notes:
+\begin{itemize}
+\item The UDP header is straightforward; no constraints based on other fields or earlier packets.
+\end{itemize}
+
+\subsection{TCP}
+
+A TCP header has the following fields:
+\begin{itemize}
+\item \texttt{Source Port}: 16 bits
+\item \texttt{Dest Port}: 16 bits
+\item \texttt{Sequence Number}: 32 bits
+\item \texttt{ACK Number}: 32 bits
+\item \texttt{Data Offset}: 4 bits
+\item \texttt{Reserved}: 3 bits
+\item \texttt{Flags}: 9 bits
+\item \texttt{Window Size}: 16 bits
+\item \texttt{Checksum}: 16 bits
+\item \texttt{URG Pointer}: 16 bits
+\item \texttt{Options}: variable length (incorporates padding to 32 bit boundary)
+\item \texttt{Payload}: variable length
+\end{itemize}
+
+Constraints:
+\begin{itemize}
+\item The length of the Options field depends on the Data Offset field:
+\texttt{len(Options) = Data Offset - 5} (where the length is in 32-bit words).
+\item The Options field contains zero or more variable length Options, with their own
+sub-format:
+\begin{itemize}
+\item \texttt{Option-Kind} 8 bits
+\item \texttt{Option-Length} 8 bits
+\item \texttt{Option-Data} variable length
+\end{itemize}
+The number of Options is constrained both by the length of the field, and by the length
+of each Option. The Options field needs to pad to a 32 bit boundary. Further, the header
+can be at most 60 bytes; leaving a maximum of 40 bytes for the Options field.
+\end{itemize}
+
+\subsection{DCCP}
+
+A DCCP header has the following fields:
+\begin{itemize}
+\item \texttt{Source Port}: 16 bits
+\item \texttt{Dest Port}: 16 bits
+\item \texttt{Data Offset}: 8 bits
+\item \texttt{CCVal}: 4 bits
+\item \texttt{CsCov}: 4 bits
+\item \texttt{Checksum}: 16 bits
+\item \texttt{Res}: 3 bits
+\item \texttt{Type}: 4 bits
+\item \texttt{eXtended Sequence Number Flag}: 1 bit
+\item \texttt{Reserved}: 0 (X=1) or 8 (X=0) bits
+\item \texttt{Sequence Number}: 48 (X=1) or 24 (X=0) bits
+\item \texttt{Payload}: variable length
+\end{itemize}
+
+Constraints:
+\begin{itemize}
+\item The layout of the packet after the X field depends on its value; if X=1, then there
+is an 8 bit Reserved field, followed by an extended, 48 bit, sequence number. If X=0, then
+there is no Reserved field, and the sequence number is 24 bits.
+\end{itemize}
+
+\subsection{SCTP}
+
+An SCTP header has the following fields:
+\begin{itemize}
+\item \texttt{Source Port}: 16 bits
+\item \texttt{Dest Port}: 16 bits
+\item \texttt{Verification Tag}: 32 bits
+\item \texttt{Checksum}: 32 bits
+\item \texttt{Payload}: variable number of variable-length chunks
+\end{itemize}
+
+Notes:
+\begin{itemize}
+\item The payload is in the form of chunks, which have the following format:
+\begin{itemize}
+\item \texttt{Chunk Type}: 8 bits
+\item \texttt{Chunk Flags}: 8 bits
+\item \texttt{Chunk Length}: 16 bits
+\item \texttt{Chunk Data}: variable length (padded to 32 bit boundary)
+\end{itemize}
+\item Chunk formats are standardised; again, any definition language used would need to
+support this type of extensibility. 
+\item There are a variable number of chunks, of variable length, so the number of chunks
+is not known before they are parsed.
+\end{itemize}
+
+\subsection{QUIC}
+\subsection{RTP}
+\subsection{RTCP}
+\subsection{RTSP}
+\subsection{NFS}
+\subsection{HTTP/2}
+
 \bibliographystyle{abbrv}
 \bibliography{improving-protocol-standards}
 
