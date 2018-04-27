@@ -825,6 +825,94 @@ is not known before they are parsed.
 
 \subsection{QUIC}
 \subsection{RTP}
+
+\footnotesize
+\begin{verbatim}
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |V=2|P|X|  CC   |M|     PT      |       sequence number         |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                           timestamp                           |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |           synchronization source (SSRC) identifier            |
+   +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+   |                     [CSRC identifier list]                    |
+   |                        (4 * CC octets)                        |
+   |                         CC may be zero                        |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ -+
+   |     defined by signalling     |    header extension length    |  |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+  |
+   |                       header extension                        |  | OPTIONAL
+   |                 format defined by signalling                  |  | (if X=1)
+   |                                                               |  |
+   |                                                               |  |
+   |                                                               |  |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ -+
+   |                           Payload                             |
+   |           (variable format and length, depends on PT)         |
+   |                                                               |
+   |                                                               |
+   |                                                               |
+   |               +-------.........---------------+---------------+
+   |               |Padding (PadCnt octets, if P=1)|PadCnt (if P=1)|
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{verbatim}
+\normalsize
+
+\begin{itemize}
+  \item Some fields are optional, and signalled by the value of earlier 
+        header fields
+  \item Format of some fields depends on the value of earlier header fields,
+        with the meaning of those earlier fields being signalled out-of-band
+  \item Presence and length of some fields depends on later fields
+\end{itemize}
+
+Format of the header extension needs to be signalled in SDP. The only
+standard format is RFC5285:
+
+\footnotesize
+\begin{verbatim}
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |            0xBEDE             |    header extension length    |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  ID   | L=0   |     data      |  ID   |  L=1  |   data...
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+         ...data   |    0 (pad)    |    0 (pad)    |  ID   | L=3   |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                          data                                 |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{verbatim}
+\normalsize
+
+\begin{itemize}
+  \item 0xBEDE (``the first version of this specification was written on
+    the feast day of the Venerable Bede'').
+  \item ID values define the type of extension, meaning signalled out of 
+    band
+  \item L is length of following data
+  \item L+1 data bytes follow
+  \item ID=0, L=0 is a single byte of padding and is ignored
+  \item MUST pad to a 32 bit boundary
+\end{itemize}
+
+There's also a variant where ID and L are one octet each, and the first 16
+bits of the header are:
+\footnotesize
+\begin{verbatim}
+    0                   1
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |         0x100         |appbits|
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{verbatim}
+\normalsize
+where \verb|appbits| are 4 bits that ``are application dependent and MAY be
+defined to be any value or meaning; this topic is outside the scope of this
+specification''.
+
 \subsection{RTCP}
 \subsection{RTSP}
 \subsection{NFS}
