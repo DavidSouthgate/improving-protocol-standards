@@ -23,6 +23,8 @@
 This document contains notes on the papers read as part of a literature survey for the
 ``\textit{Improving Protocol Standards for a more Trustworthy Internet}'' project.
 
+%==============================================================================================
+
 \section{Packet format definition languages}
 
 One of the objectives of the project is to introduce (relatively simple) formalisms into
@@ -614,6 +616,8 @@ safe language, such as Rust, to solve many of these.
   \hline  
 \end{tabular}
 
+%==============================================================================================
+
 \section{Parsing IETF protocols}
 
 In this section, we look at the features required of a packet format definition language,
@@ -1128,6 +1132,26 @@ HTTP/2 uses frames, with the following format:
 \item \texttt{Stream Identifier}: 31 bits
 \item \texttt{Payload}: variable length
 \end{itemize}
+
+%==============================================================================================
+
+\section{Proposed packet format description language}
+
+\subsection{What can't be described using existing languages?}
+
+What is there in the protocols that we've listed that can't be described using the
+languages we've described?
+
+\subsection{What concepts do we need to introduce?}
+
+.. from that, what are the concepts that we need to introduce?
+
+Contexts, interfaces (in the Java sense: state and function signatures, but not definitions)
+
+\subsection{Describing QUIC}
+
+More concretely: what would a description of QUIC look like with a syntax that has the
+concepts we've described?
 
 \bibliographystyle{abbrv}
 \bibliography{improving-protocol-standards}
