@@ -824,6 +824,90 @@ is not known before they are parsed.
 \end{itemize}
 
 \subsection{QUIC}
+
+QUIC has two header types: long (for packets sent before version negotiation) and short
+(after version negotiation). The most significant bit in the first octet determines
+whether the header is long (=1) or short (=0).
+
+The long header has the following format:
+\begin{itemize}
+\item \texttt{Header Form}: 1 bit (set to 0)
+\item \texttt{Long Packet Type}: 7 bits
+\item \texttt{Version}: 32 bits
+\item \texttt{Destination Connection ID Length}: 4 bits
+\item \texttt{Source Connection ID Length}: 4 bits
+\item \texttt{Destination Connection ID}: 0 or 32 to 144 bits
+\item \texttt{Source Connection ID}: 0 or 32 to 144 bits
+\item \texttt{Payload Length}: variable length integer
+\item \texttt{Packet Number}: 32 bits
+\item \texttt{Payload}: variable length
+\end{itemize}
+
+Constraints:
+\begin{itemize}
+\item The Destination and Source Connection ID fields have their length defined by the
+Destination and Connection ID Length fields. The length fields are encoded as 4-bit
+unsigned integers; if they are zero, then the connection ID fields are zero. However, if
+they are non-zero, then the related connection ID field this value plus 3. As a result,
+the length is either 0, or between 32 to 144 bits. The packet header specification
+language needs to be able to express this logic.
+\item The payload length field is a variable length integer. This field is either 1, 2,
+4, or 8 octets long, depending on the value of the two most significant bits of the first
+octet (they encode the base 2 logarithm of the length of the field). The remaining bits
+are used to encode the value.
+\end{itemize}
+
+The short header has the following format:
+\begin{itemize}
+\item \texttt{Header Form}: 1 bit (set to 0)
+\item \texttt{Key Phase Bit}: 1 bit
+\item \texttt{Third Bit}: 1 bit (set to 1)
+\item \texttt{Fourth Bit}: 1 bit (set to 1)
+\item \texttt{Google QUIC Demultiplexing Bit}: 1 bit (set to 0)
+\item \texttt{Reserved}: 1 bit
+\item \texttt{Short Packet Type}: 2 bits
+\item \texttt{Destination Connection ID}: 0 to 144 bits
+\item \texttt{Packet Number}: 8, 16, or 32 bits
+\item \texttt{Protected Payload}: variable length
+\end{itemize}
+
+Constraints:
+\begin{itemize}
+\item The Destination Connection ID is the Source Connection ID received by the endpoint.
+Given that this is a variable length field, it can only be parsed if we have the 
+Source Connection ID Length field received earlier in the flow (as part of the long
+header). 
+\item The Packet Number field is either 8, 16, or 32 bits, depending on the value of the
+short packet type field.
+\item The Protected Payload field is protected using authenticated encryption. The key is
+derived from the TLS handshake. The nonce, however, is formed from the packet protection
+invariant, and the packet number. The packet number carried in the packet, though, carries
+only the least significant bits of the full packet number needed for determining the
+cryptographic nonce. Therefore, the parser must keep track of the highest sequence
+number successfully authenticated.
+\end{itemize}
+
+\subsubsection*{Version Negotiation packet}
+
+The version negotiation packet format is:
+\begin{itemize}
+\item \texttt{Header Form}: 1 bit (set to 1)
+\item \texttt{Unused}: 7 bits
+\item \texttt{Version}: 32 bits
+\item \texttt{Destination Connection ID Length}: 4 bits
+\item \texttt{Source Connection ID Length}: 4 bits
+\item \texttt{Destination Connection ID}: 0 or 32 to 144 bits
+\item \texttt{Source Connection ID}: 0 or 32 to 144 bits
+\item \texttt{Supported Versions}: 1 or more 32 bit fields
+\end{itemize}
+
+Notes:
+\begin{itemize}
+\item This is not the long header format, but it does have the same value for the first
+bit. Therefore, this bit alone is not sufficient to determine how the packet should be
+parsed: the Version field must be set to 0.
+\end{itemize}
+
 \subsection{RTP}
 
 \footnotesize
@@ -915,8 +999,52 @@ specification''.
 
 \subsection{RTCP}
 \subsection{RTSP}
-\subsection{NFS}
+
+\subsection{NTP}
+
+The NTP (v4) packet format is:
+\begin{itemize}
+\item \texttt{Leap Indicator}: 2 bits
+\item \texttt{Mode}: 3 bits
+\item \texttt{Stratum}: 8 bits
+\item \texttt{Poll}: 8 bits
+\item \texttt{Precision}: 8 bits
+\item \texttt{Root Delay}: 32 bits (NTP short format)
+\item \texttt{Root Dispersion}: 32 bits (NTP short format)
+\item \texttt{Reference Timestamp}: 64 bits (NTP timestamp format)
+\item \texttt{Origin Timestamp}: 64 bits (NTP timestamp format)
+\item \texttt{Receive Timestamp}: 64 bits (NTP timestamp format)
+\item \texttt{Transmit Timestamp}: 64 bits (NTP timestamp format)
+\item \texttt{Extension Fields}: variable length; format below
+\item \texttt{Key Identifier}: 32 bits
+\item \texttt{Message Digest}: 128 bits
+\end{itemize}
+
+Notes:
+\begin{itemize}
+\item The packet may contain one or more extension fields, with the following format:
+\begin{itemize}
+\item \texttt{Field Type}: 16 bits
+\item \texttt{Length}: 16 bits (length of entire extension field in octets)
+\item \texttt{Value}: variable length
+\item \texttt{Padding}: variable length as required to pad to 32 bit word
+\end{itemize}
+\item An interesting component here is the variable number of variable length extension
+fields. More specifically, the padding field is included in the length -- this makes
+parsing more challenging.
+\end{itemize}
+
 \subsection{HTTP/2}
+
+HTTP/2 uses frames, with the following format:
+\begin{itemize}
+\item \texttt{Length}: 24 bits
+\item \texttt{Type}: 8 bits
+\item \texttt{Flags}: 8 bits
+\item \texttt{Reserved}: 1 bit
+\item \texttt{Stream Identifier}: 31 bits
+\item \texttt{Payload}: variable length
+\end{itemize}
 
 \bibliographystyle{abbrv}
 \bibliography{improving-protocol-standards}
