@@ -998,6 +998,89 @@ defined to be any value or meaning; this topic is outside the scope of this
 specification''.
 
 \subsection{RTCP}
+
+\footnotesize
+\begin{verbatim}
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |V=2|P|   XXX   |       PT      |             length            |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                              YYY                              |
+   |                       (length * 4 octets)                     |
+   |                                                               |
+   |                                                               |
+   |                                                               |
+   |                                                               |
+   |               +-------.........---------------+---------------+
+   |               |Padding (PadCnt octets, if P=1)|PadCnt (if P=1)|
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{verbatim}
+\normalsize
+
+\begin{itemize}
+  \item  Meaning of XXX and YYY depends on PT. This implies that the
+    meaning of a field depends on the value of a later field
+  \item RTCP packets are often sent as a \emph{compound packet} where
+    multiple RTCP packets are stacked into a single UDP packet. There
+    are several rules about how this is done:
+    \begin{itemize}
+      \item The first packet in the compound packet MUST be an SR or RR.
+        If there are additional RR packets, they SHOULD follow the initial
+        SR/RR packet.
+      \item The compound packet MUST include an SDES packet, and that SDES 
+        packet MUST include a CNAME item.
+      \item If padding is added, it MUST only be added to the last RTCP
+        packet in the compound packet. That is, P=0 on all but the last
+        packet. 
+    \end{itemize}
+\end{itemize}
+
+Of the packet types defined in RFC 3550, only the SDES is complex:
+
+\footnotesize
+\begin{verbatim}
+        0                   1                   2                   3
+        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+header |V=2|P|    SC   |  PT=SDES=202  |             length            |
+       +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+chunk  |                          SSRC/CSRC_1                          |
+  1    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                           SDES items                          |
+       |                              ...                              |
+       +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+chunk  |                          SSRC/CSRC_2                          |
+  2    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                           SDES items                          |
+       |                              ...                              |
+       +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+\end{verbatim}
+\normalsize
+
+where \verb|SC| is the count of the number of chunks. Each chunk comprises
+a list of items, where the format of an item is:
+\footnotesize
+\begin{verbatim}
+        0                   1                   2                   3
+        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |      type     |     length    |           value...            :
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{verbatim}
+\normalsize
+where \verb|length| is the length of the \verb|value| in octets (may be
+zero).  The list of items in each chunk MUST be terminated by one or more
+null octets, the first of which is interpreted as an item type of zero to
+denote the end of the list.  No length octet follows the null item type
+octet, but additional null octets MUST be included if needed to pad until
+the next 32-bit boundary.  Note that this padding is separate from that
+indicated by the P bit in the RTCP header.  A chunk with zero items (four
+null octets) is valid but useless.
+
+RTCP XR has many sub-packet formats. There doesn't look to be anything
+unusual in the formatting beyond standard RTCP packets, however.
+
 \subsection{RTSP}
 
 \subsection{NTP}
