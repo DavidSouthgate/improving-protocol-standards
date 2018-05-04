@@ -948,6 +948,16 @@ parsing more challenging.
 
 \subsection{HTTP/2}
 
+HTTP/2 uses frames, with the following format:
+\begin{itemize}
+\item \texttt{Length}: 24 bits
+\item \texttt{Type}: 8 bits
+\item \texttt{Flags}: 8 bits
+\item \texttt{Reserved}: 1 bit
+\item \texttt{Stream Identifier}: 31 bits
+\item \texttt{Payload}: variable length
+\end{itemize}
+
 \bibliographystyle{abbrv}
 \bibliography{improving-protocol-standards}
 
