@@ -1204,27 +1204,38 @@ HTTP/2 uses frames, with the following format:
 \subsection{Describing QUIC}
 
 \begin{verbatim}
-QUIC_PDU := {
-  bit     header_type;
-  bit[]   header;
+
+packet_type := bit[7];
+version := bit[32];
+cid_len := bit[4];
+var_enc := {
+  bit[2]  length;
+  bit[]   value;
+} where {
+  value#width = (2^length#value * 8) - 2;
 }
 
-QUIC_LONG_HDR := {
-  bit[7]  packet_type;
-  bit[32] version;
-  bit[4]  dcid_len;
-  bit[4]  scid_len;
-  bit[]   dcid;
-  bit[]   scid;
-  bit[2]  payload_length_2bit;
-  bit[]   payload_length;
+QUIC_PDU :=
+    LONG_HDR
+  | SHORT_HDR
+  | VERSION_NEGOTIATION;
+
+
+LONG_HDR := {
+  packet_type  type;
+  version      ver;
+  cid_len      dcid_len;
+  cid_len      scid_len;
+  bit[]        dcid;
+  bit[]        scid;
+  var_enc      payload_length;
+  packet_num   packet_number;
   bit[]   packet_number_2bit;
   bit[]   packet_number;
   bit[]   payload;
 } where {
   dcid#width = dcid_len#value == 0 ? 0 : dcid_len#value * 8;
   scid#width = scid_len#value == 0 ? 0 : scid_len#value * 8;
-  payload_length#width = (2^payload_length_2bit * 8) - 2;
   packet_number_2bit#width = packet_number_2bit#value[0] == 0 ? 1 : 2;
   packet_number#width = packet_number_2bit#value[0] == 0 ? 7 : 
   											  (packet_number_2bit#value[1] == 0 ? 14 : 30);
