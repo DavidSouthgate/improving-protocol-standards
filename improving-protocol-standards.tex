@@ -1233,6 +1233,11 @@ QUIC_LONG_HDR := {
   context.scid_len = scid_len;
 }
 
+QUIC_LONG_PDU :> QUIC_PDU where {
+  header_type#value = 1;
+  overlay header with QUIC_LONG_HDR;
+}
+
 QUIC_SHORT_HDR := {
   bit         key_phase;
   bit         third_bit;
@@ -1249,6 +1254,30 @@ QUIC_SHORT_HDR := {
   packet_number#width = packet_number_2bit#value[0] == 0 ? 7 : 
   											  (packet_number_2bit#value[1] == 0 ? 14 : 30);
 }
+
+QUIC_SHORT_PDU :> QUIC_PDU where {
+  header_type#value = 0;
+  overlay header with QUIC_SHORT_HDR;
+}
+
+QUIC_FRAME := {
+  bit[8]  type;
+  bit[]   fields;
+}
+
+QUIC_NEW_CONNECTION_ID_FRAME := {
+  bit[2]   sequence_2bit;
+  bit[]    sequence;
+  bit[8]   length;
+  bit[]    connection_id;
+  bit[128] reset_token;
+} where {
+  sequence#width = (2^sequence_2bit * 8) - 2;
+  connection_id#width = length#value * 8;
+} onparse {
+  context.scid_len = length;
+}
+
 \end{verbatim}
 
 \bibliographystyle{abbrv}
