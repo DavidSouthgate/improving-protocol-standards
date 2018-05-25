@@ -1146,7 +1146,7 @@ HTTP/2 uses frames, with the following format:
 	information about the length of the packet, or from other fields. For example, in the
 	IP header, the length of the Options field is determined by the value of the IHL
 	field. Any description language needs to allow for the width of fields to be determined
-	by other fields.
+  by other fields (including, possibly, later fields in the packet).
 	
 	Additionally, QUIC packets carry connection IDs. These are variable length fields, but
 	their length is not necessarily in the same packet (i.e., it is in the long packet
