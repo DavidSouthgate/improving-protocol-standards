@@ -1137,21 +1137,119 @@ HTTP/2 uses frames, with the following format:
 
 \section{Proposed packet format description language}
 
-\subsection{What can't be described using existing languages?}
+\subsection{What constraints need to be modelled carefully?}
 
-What is there in the protocols that we've listed that can't be described using the
-languages we've described?
+\begin{description}
+	\item[Variable length fields] \hfill \\
+	Variable length fields at the end of packets are trivial: parsing continues until no
+	data remains. However, variable length fields anywhere else in the packet require
+	information about the length of the packet, or from other fields. For example, in the
+	IP header, the length of the Options field is determined by the value of the IHL
+	field. Any description language needs to allow for the width of fields to be determined
+	by other fields.
+	
+	Additionally, QUIC packets carry connection IDs. These are variable length fields, but
+	their length is not necessarily in the same packet (i.e., it is in the long packet
+	format, but not in the short packet format).  
+	\item[Conditional structuring] \hfill \\
+	A number of the protocols have version fields (e.g., IP) or header format bits (e.g.,
+	QUIC) that define the structure of the packet after that bit.
+	\item[Encrypted fields] \hfill \\
+	In QUIC, the frames contained within each packet cannot be parsed without first being
+	decrypted. This represents a shift from how protocols have typically used cryptography,
+	where application data was encrypted, and therefore could be passed to the application
+	as a ``blob``, without further decryption: HTTPS works in this way -- headers are sent
+	in the clear, while the body is encrypted. The encryption of other header fields means
+	that parsers are incomplete if they do not support cryptography primitives.
+	\item[Out-of-band data] \hfill \\
+	Some fields cannot be parsed without data that has been exchange out-of-band (i.e.,
+	not within the flow that the parser's scope). For example, RTP packets contain
+	optional header extension fields, but the format of these is signalled by SDP, not
+	RTP: we require the out-of-band data from the SDP exchange to fully parse the RTP
+	packet.
+	\item[Computed fields] \hfill \\
+	QUIC includes a Packet Number field, which is required to decrypt the contents of the
+	Protected Payload field. However, this field only contains the least significant bits
+	of the packet number; as a result, more information is required to compute the actual
+	packet number, for decrypting the payload field.
+\end{description}
 
 \subsection{What concepts do we need to introduce?}
 
-.. from that, what are the concepts that we need to introduce?
-
-Contexts, interfaces (in the Java sense: state and function signatures, but not definitions)
+\begin{description}
+	\item[Contexts] \hfill \\
+	From the above, it is clear that it is common for the parser to values from fields that
+	have been parsed earlier in a flow (e.g., from a handshake packet as part of the same
+	connection), or from out-of-band exchanges, as is the case for header extensions in
+	RTP. A solution to this would be \emph{contexts}: essentially, a key-value store that
+	the description language can model additions to and retrievals from.
+	
+	\todo{How should out-of-band additions be described?}
+	\todo{How should failed retrievals be handled?}
+	
+	\item[Interfaces] \hfill \\
+	In QUIC, there are two fields that require some computation in order to fully parse
+	each packet: packet numbers and protected payloads. It is beyond the scope of a
+	format description language to model these computations, but we need some way of
+	indicating that a computation needs to have been performed before parsing can proceed.
+	
+	A solution to this would be for a set of function signatures to be provided as part
+	of the definition.
+	
+	\todo{How should failed computations be handled?}
+	\todo{Is there value in constraining the set of functions that can be defined? e.g.,
+	      decrypt() -- packet numbers suggests something more general is needed}
+\end{description}
 
 \subsection{Describing QUIC}
 
-More concretely: what would a description of QUIC look like with a syntax that has the
-concepts we've described?
+\begin{verbatim}
+QUIC_PDU := {
+  bit     header_type;
+  bit[]   header;
+}
+
+QUIC_LONG_HDR := {
+  bit[7]  packet_type;
+  bit[32] version;
+  bit[4]  dcid_len;
+  bit[4]  scid_len;
+  bit[]   dcid;
+  bit[]   scid;
+  bit[2]  payload_length_2bit;
+  bit[]   payload_length;
+  bit[]   packet_number_2bit;
+  bit[]   packet_number;
+  bit[]   payload;
+} where {
+  dcid#width = dcid_len#value == 0 ? 0 : dcid_len#value * 8;
+  scid#width = scid_len#value == 0 ? 0 : scid_len#value * 8;
+  payload_length#width = (2^payload_length_2bit * 8) - 2;
+  packet_number_2bit#width = packet_number_2bit#value[0] == 0 ? 1 : 2;
+  packet_number#width = packet_number_2bit#value[0] == 0 ? 7 : 
+  											  (packet_number_2bit#value[1] == 0 ? 14 : 30);
+  payload#width = 2^payload_length#value;
+} onparse {
+  context.scid_len = scid_len;
+}
+
+QUIC_SHORT_HDR := {
+  bit         key_phase;
+  bit         third_bit;
+  bit         forth_bit;
+  bit         google_demux;
+  bit[3]      reserved;
+  bit[]       dcid;
+  bit[]       packet_number_2bit;
+  bit[]       packet_number;
+  cryptobit[] protected_payload;
+} where {
+  dcid#length = context.scid_len#value == 0 ? 0 : context.scid_len#value * 8;
+  packet_number_2bit#width = packet_number_2bit#value[0] == 0 ? 1 : 2;
+  packet_number#width = packet_number_2bit#value[0] == 0 ? 7 : 
+  											  (packet_number_2bit#value[1] == 0 ? 14 : 30);
+}
+\end{verbatim}
 
 \bibliographystyle{abbrv}
 \bibliography{improving-protocol-standards}
