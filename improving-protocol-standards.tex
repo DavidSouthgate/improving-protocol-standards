@@ -1215,13 +1215,18 @@ var_enc := {
   value#width = (2^length#value * 8) - 2;
 }
 
+packet_num :=
+    '0'  followed by bit[7]  packet_number
+  | '00' followed by bit[14] packet_number
+  | '01' followed by bit[30] packet_number;
+
 QUIC_PDU :=
     LONG_HDR
   | SHORT_HDR
   | VERSION_NEGOTIATION;
 
-
 LONG_HDR := {
+  bit          header_type;
   packet_type  type;
   version      ver;
   cid_len      dcid_len;
@@ -1230,65 +1235,49 @@ LONG_HDR := {
   bit[]        scid;
   var_enc      payload_length;
   packet_num   packet_number;
-  bit[]   packet_number_2bit;
-  bit[]   packet_number;
-  bit[]   payload;
+  bit[]        payload;
 } where {
-  dcid#width = dcid_len#value == 0 ? 0 : dcid_len#value * 8;
-  scid#width = scid_len#value == 0 ? 0 : scid_len#value * 8;
-  packet_number_2bit#width = packet_number_2bit#value[0] == 0 ? 1 : 2;
-  packet_number#width = packet_number_2bit#value[0] == 0 ? 7 : 
-  											  (packet_number_2bit#value[1] == 0 ? 14 : 30);
+  header_type#value = 1;
+  dcid#width = dcid_len#value == 0 ? 0 : (dcid_len#value+3) * 8;
+  scid#width = scid_len#value == 0 ? 0 : (scid_len#value+3) * 8;
   payload#width = 2^payload_length#value;
 } onparse {
   context.scid_len = scid_len;
 }
 
-QUIC_LONG_PDU :> QUIC_PDU where {
-  header_type#value = 1;
-  overlay header with QUIC_LONG_HDR;
-}
-
-QUIC_SHORT_HDR := {
+SHORT_HDR := {
+  bit         header_type;
   bit         key_phase;
   bit         third_bit;
   bit         forth_bit;
   bit         google_demux;
   bit[3]      reserved;
   bit[]       dcid;
-  bit[]       packet_number_2bit;
-  bit[]       packet_number;
+  packet_num  packet_number;
   cryptobit[] protected_payload;
 } where {
-  dcid#length = context.scid_len#value == 0 ? 0 : context.scid_len#value * 8;
-  packet_number_2bit#width = packet_number_2bit#value[0] == 0 ? 1 : 2;
-  packet_number#width = packet_number_2bit#value[0] == 0 ? 7 : 
-  											  (packet_number_2bit#value[1] == 0 ? 14 : 30);
-}
-
-QUIC_SHORT_PDU :> QUIC_PDU where {
   header_type#value = 0;
-  overlay header with QUIC_SHORT_HDR;
+  third_bit#value = 1;
+  forth_bit#value = 1;
+  google_demux#value = 0;
+  dcid#length = context.scid_len#value == 0 ? 0 : (context.scid_len#value+3) * 8;
 }
 
-QUIC_FRAME := {
-  bit[8]  type;
-  bit[]   fields;
-}
-
-QUIC_NEW_CONNECTION_ID_FRAME := {
-  bit[2]   sequence_2bit;
-  bit[]    sequence;
-  bit[8]   length;
-  bit[]    connection_id;
-  bit[128] reset_token;
+VERSION_NEGOTIATION := {
+  bit          header_type;
+  bit[7]       unused;
+  version      ver;
+  cid_len      dcid_len;
+  cid_len      scid_len;
+  bit[]        dcid;
+  bit[]        scid;
+  version[]    supported_versions;
 } where {
-  sequence#width = (2^sequence_2bit * 8) - 2;
-  connection_id#width = length#value * 8;
-} onparse {
-  context.scid_len = length;
+  header_type#value = 1;
+  ver#value = 0;
+  dcid#width = dcid_len#value == 0 ? 0 : (dcid_len#value+3) * 8;
+  scid#width = scid_len#value == 0 ? 0 : (scid_len#value+3) * 8;
 }
-
 \end{verbatim}
 
 \bibliographystyle{abbrv}
