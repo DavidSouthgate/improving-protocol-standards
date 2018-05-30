@@ -1215,10 +1215,15 @@ var_enc := {
   value#width = (2^length#value * 8) - 2;
 }
 
+full_packet_num := bit[62]
 packet_num :=
     '0'  followed by bit[7]  packet_number
   | '00' followed by bit[14] packet_number
   | '01' followed by bit[30] packet_number;
+
+decrypt :: (cryptobits[] enc_payload, full_packet_num pn) -> FRAME[] 
+
+frame_type := bit[8];
 
 QUIC_PDU :=
     LONG_HDR
@@ -1254,13 +1259,14 @@ SHORT_HDR := {
   bit[3]      reserved;
   bit[]       dcid;
   packet_num  packet_number;
-  cryptobit[] protected_payload;
+  cryptobit[] protected_payload; -> frame[] payload;
 } where {
   header_type#value = 0;
   third_bit#value = 1;
   forth_bit#value = 1;
   google_demux#value = 0;
   dcid#length = context.scid_len#value == 0 ? 0 : (context.scid_len#value+3) * 8;
+  payload = decrypt(protected_payload, packet_number);
 }
 
 VERSION_NEGOTIATION := {
@@ -1278,7 +1284,38 @@ VERSION_NEGOTIATION := {
   dcid#width = dcid_len#value == 0 ? 0 : (dcid_len#value+3) * 8;
   scid#width = scid_len#value == 0 ? 0 : (scid_len#value+3) * 8;
 }
+
+FRAME := {
+    PADDING_FRAME
+  | RST_STREAM_FRAME
+  | CONNECTION_CLOSE_FRAME
+  | ..};
+  
+PADDING_FRAME := {
+  frame_type type;
+} where {
+  type#value = 0;
+}
 \end{verbatim}
+
+\subsubsection*{Notes}
+\begin{itemize}
+	\item This doesn't capture all (or even most) of QUIC's encryption/authentication
+		  behaviour, but contains enough to show most of the syntax and semantics of a
+          description language.
+	\item A basic principle is that types ultimately resolve to \texttt{bit}s, either
+	      through type definitions, or method signatures.
+	\item Type definitions are either: (i) variants (enums), e.g., \texttt{QUIC\_PDU},
+	      (ii) composite data types (structs), e.g., \texttt{LONG\_HDR}; or (iii) simple
+	      data types (typedefs), e.g., \texttt{version}.
+	\item For (ii), they aren't just composite data types; they are dependent types
+	      -- the ``where'' block encodes values. This is inevitable, if variants are to be
+	      supported as shown: variants are disambiguated on the value of one or more of
+	      the fields.
+	\item Simple data types are essentially typedefs at the moment, but it is easy to see
+	      how they could develop into something more like a Java class, where the set of
+	      operations that can be performed on a type are well defined.
+\end{itemize}
 
 \bibliographystyle{abbrv}
 \bibliography{improving-protocol-standards}
