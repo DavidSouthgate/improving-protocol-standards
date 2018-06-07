@@ -45,7 +45,7 @@ MAKEFLAGS += --warn-undefined-variables
 # =================================================================================================
 
 # The PDF files to build, each should have a corresponding .tex file:
-PDF_FILES = improving-protocol-standards.pdf
+PDF_FILES = improving-protocol-standards.pdf quic-example.pdf
 
 # Tools to build before the PDF files. This is a list of executable files in
 # the bin/ directory:
