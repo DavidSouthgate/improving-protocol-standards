@@ -52,7 +52,10 @@
 		\end{verbatim}
 		& 
 		\begin{verbatim}
-			todo
+			struct var_enc {
+			    bit    length[2];
+			    bit    value[]
+			};
 		\end{verbatim}
 		 &
 		\begin{verbatim}
@@ -67,7 +70,9 @@
 		\end{verbatim}
 		& 
 		\begin{verbatim}
-			todo
+			enum packet_num {bit[7],
+			                 bit[14], 
+			                 bit[30]};
 		\end{verbatim}
 		 &
 		\begin{verbatim}
@@ -94,7 +99,9 @@
 		\end{verbatim}
 		& 
 		\begin{verbatim}
-			todo
+			enum quic_pdu {long_hdr,
+			               short_hdr, 
+			               version_negotiation};
 		\end{verbatim}
 		 &
 		\begin{verbatim}
@@ -124,7 +131,18 @@
 		\end{verbatim}
 		& 
 		\begin{verbatim}
-			todo
+			struct long_hdr {
+			    bit         header_type;
+			    packet_type type;
+			    version     ver;
+			    cid_len     dcid_len;
+			    cid_len     scid_len;
+			    bit         dcid[];
+			    bit         scid[];
+			    var_enc     payload_length;
+			    packet_num  packet_number;
+			    bit         payload[];
+			};
 		\end{verbatim}
 		 &
 		\begin{verbatim}
@@ -154,7 +172,17 @@
 		\end{verbatim}
 		& 
 		\begin{verbatim}
-			todo
+			struct short_hdr {
+			    bit        header_type;
+			    bit        key_phase;
+			    bit        third_bit;
+			    bit        forth_bit;
+			    bit        google_demux;
+			    bit        reserved[3];
+			    bit        dcid[];
+			    packet_num packet_number;
+			    cryptobit  protected_payload[];
+			};
 		\end{verbatim}
 		 &
 		\begin{verbatim}
@@ -182,7 +210,16 @@
 		\end{verbatim}
 		& 
 		\begin{verbatim}
-			todo
+			struct version_negotiation {
+			    bit      header_type;
+			    bit      unused[7];
+			    version  ver;
+			    cid_len  dcid_len;
+			    cid_len  scid_len;
+			    bit      dcid[];
+			    bit      scid[];
+			    version  supported_versions[];
+			};
 		\end{verbatim}
 		 &
 		\begin{verbatim}
@@ -198,7 +235,10 @@
 		\end{verbatim}
 		& 
 		\begin{verbatim}
-			todo
+			enum frame {padding_frame, 
+			            rst_stream_frame, 
+			            connection_close_frame,
+			            ..};
 		\end{verbatim}
 		 &
 		\begin{verbatim}
@@ -214,7 +254,9 @@
 		\end{verbatim}
 		& 
 		\begin{verbatim}
-			todo
+			struct padding_frame {
+			    frame_type type;
+			};
 		\end{verbatim}
 		 &
 		\begin{verbatim}
