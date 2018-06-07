@@ -1,11 +1,12 @@
 \documentclass[10pt,a4paper,landscape]{article}
-\usepackage[margin=0.3in]{geometry}
+\usepackage[margin=0.2in]{geometry}
 \usepackage{adjustbox}
 \usepackage{array}
 \usepackage{color}
 \usepackage{tabularx}
 \usepackage{booktabs}
 \usepackage{longtable}
+\usepackage{fancyvrb}
 
 \title{Packet Header Description Example: QUIC}
 \date{}
@@ -18,250 +19,387 @@
 
 \begin{document}
 \maketitle
-	\begin{longtable}{V{370pt}|V{200pt}|V{200pt}}
+	\begin{longtable}{V{280pt}|V{180pt}|V{280pt}}
 	\toprule
 	Packet Header Description Language & Type Definitions & Parsing Code \\
 	\hline
-		\begin{verbatim}
-			packet_type := bit[7];
-			version := bit[32];
-			cid_len := bit[4];
-			full_packet_num := bit[62];
-			frame_type := bit[8];
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+packet_type := bit[7];
+version := bit[32];
+cid_len := bit[4];
+full_packet_num := bit[62];
+frame_type := bit[8];
+		\end{Verbatim}
 		& 
-		\begin{verbatim}
-			typedef bit[7] packet_type;
-			typedef bit[32] version;
-			typedef bit[4] cid_len;
-			typedef bit[62] full_packet_num;
-			typedef bit[8] frame_type;
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+typedef bit[7] packet_type;
+typedef bit[32] version;
+typedef bit[4] cid_len;
+typedef bit[62] full_packet_num;
+typedef bit[8] frame_type;
+typedef bit[] cryptobits;
+		\end{Verbatim}
 		 &
-		\begin{verbatim}
-			todo
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+parsePacketType :: (bits : bit[]) -> packet_type {
+    return bits.parseBits(7);
+}
+
+parseVersion :: (bits : bit[]) -> packet_type {
+    return bits.parseBits(32);
+} 
+
+parseCidLen :: (bits : bit[]) -> packet_type {
+    return bits.parseBits(4);
+} 
+
+parseFullPacketNum :: (bits : bit[]) -> packet_type {
+    return bits.parseBits(62);
+} 
+
+parseFrameType :: (bits : bit[]) -> packet_type {
+    return bits.parseBits(8);
+}
+
+parseCryptobits :: (bits : bit[]) -> cryptobits {
+    return bits.parseBits(len(bits));
+}
+		\end{Verbatim}
 	\\ \hline
-		\begin{verbatim}
-			var_enc := {
-			    bit[2]  length;
-			    bit[]   value;
-			} where {
-			    value#width = (2^length#value * 8) - 2;
-			}
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+var_enc := {
+    length : bit[2];
+    value  : bit[];
+} where {
+    value.width = (2^length * 8) - 2;
+}
+		\end{Verbatim}
 		& 
-		\begin{verbatim}
-			struct var_enc {
-			    bit    length[2];
-			    bit    value[]
-			};
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+typedef struct var_enc {
+    bit    length[2];
+    bit    value[]
+} var_enc;
+		\end{Verbatim}
 		 &
-		\begin{verbatim}
-			todo
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+parseVarEnc :: (bits : bit[]) -> var_enc {
+    ve : packet_num;
+    ve.length = bits.parseBits(2);
+    ve.value = bits.parseBits(len(bits)-2); 
+    return ve;
+}
+		\end{Verbatim}
 	\\ \hline
-		\begin{verbatim}
-			packet_num :=
-			    '0'  followed by bit[7]  packet_number
-			  | '00' followed by bit[14] packet_number
-			  | '01' followed by bit[30] packet_number;
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+packet_num :=
+    '0'  followed by packet_number : bit[7]
+  | '10' followed by packet_number : bit[14]
+  | '11' followed by packet_number : bit[30];
+		\end{Verbatim}
 		& 
-		\begin{verbatim}
-			enum packet_num {bit[7],
-			                 bit[14], 
-			                 bit[30]};
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+typedef enum packet_num {bit[7],
+                        bit[14], 
+                        bit[30]}
+                        packet_num;
+		\end{Verbatim}
 		 &
-		\begin{verbatim}
-			todo
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+parsePacketNum :: (bits : bit[]) -> packet_num {
+    first_bit : bit;
+    first_bit = bits.parseBits(1);
+    if (first_bit == `0`) {
+        return bits.parseBits(7);
+    } else if (first_bit == `1`) {
+        second_bit : bit;
+        second_bit = bits.parseBits(1);
+        if (second_bit == `0`) {
+            return bits.parseBits(14);
+        } else {
+            return bits.parseBits(30);
+        }
+    }
+}
+		\end{Verbatim}
 	\\ \hline
-		\begin{verbatim}
-			decrypt :: (cryptobits[] enc_payload, full_packet_num pn) -> FRAME[]
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+decrypt :: (enc_payload : cryptobits[],
+            pn : full_packet_num) 
+        -> bit[];
+		\end{Verbatim}
 		& 
-		\begin{verbatim}
-			todo
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+
+		\end{Verbatim}
 		 &
-		\begin{verbatim}
-			todo
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+decrypt :: (enc_payload : cryptobits[],
+            pn : full_packet_num) 
+        -> bit[];
+		\end{Verbatim}
 	\\ \hline
-		\begin{verbatim}
-			QUIC_PDU :=
-			    LONG_HDR
-			  | SHORT_HDR
-			  | VERSION_NEGOTIATION;
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+long_hdr := {
+    header         : bit;
+    type           : packet_type;
+    ver            : version;
+    dcid_len       : cid_len;
+    scid_len       : cid_len;
+    dcid           : bit[];
+    scid           : bit[];
+    payload_length : var_enc;
+    packet_number  : packet_num;
+    payload        : bit[];
+} where {
+    header_type = 1;
+    dcid.width = (dcid_len == 0) ? 0 : (dcid_len+3) * 8;
+    scid.width = (scid_len == 0) ? 0 : (scid_len+3) * 8;
+    payload.width = 2^payload_length;
+} onparse {
+    context.scid_len = scid_len;
+}
+		\end{Verbatim}
 		& 
-		\begin{verbatim}
-			enum quic_pdu {long_hdr,
-			               short_hdr, 
-			               version_negotiation};
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+typedef struct long_hdr {
+    bit         header_type;
+    packet_type type;
+    version     ver;
+    cid_len     dcid_len;
+    cid_len     scid_len;
+    bit         dcid[];
+    bit         scid[];
+    var_enc     payload_length;
+    packet_num  packet_number;
+    bit         payload[];
+} long_hdr;
+		\end{Verbatim}
 		 &
-		\begin{verbatim}
-			todo
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+parseLongHdr :: (bits : bit[]) -> long_hdr {
+    lh : long_hdr;
+    lh.header_type = bits.parseBits(1);
+    if (lh.header_type != `1`) {
+        raise ParserException;
+    }
+    lh.type = parsePacketType(bits);
+    lh.ver = parseVersion(bits);
+    lh.dcid_len = parseCidLen(bits);
+    lh.scid_len = parseCidLen(bits);
+    lh.dcid = bits.parseBits(lh.dcid_len == `0` : 0 ?
+                                    (lh.dcid_len+3)*8);
+    lh.scid = bits.parseBits(lh.scid_len == `0` : 0 ?
+                                    (lh.scid_len+3)*8);
+    lh.payload_length = parseVarEnc(bits);
+    lh.packet_number = parsePacketNum(bits);
+    lh.payload = bits.parseBits(2^lh.payload_length);
+    context.scid_len = scid_len;
+    return lh;
+}
+		\end{Verbatim}
 	\\ \hline
-		\begin{verbatim}
-			LONG_HDR := {
-			    bit          header_type;
-			    packet_type  type;
-			    version      ver;
-			    cid_len      dcid_len;
-			    cid_len      scid_len;
-			    bit[]        dcid;
-			    bit[]        scid;
-			    var_enc      payload_length;
-			    packet_num   packet_number;
-			    bit[]        payload;
-			} where {
-			    header_type#value = 1;
-			    dcid#width = dcid_len#value == 0 ? 0 : (dcid_len#value+3) * 8;
-			    scid#width = scid_len#value == 0 ? 0 : (scid_len#value+3) * 8;
-			    payload#width = 2^payload_length#value;
-			} onparse {
-			    context.scid_len = scid_len;
-			}
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+short_hdr := {
+    header_type       : bit;
+    key_phase         : bit;
+    third_bit         : bit;
+    forth_bit         : bit;
+    google_demux      : bit;
+    reserved          : bit[3];
+    dcid              : bit[];
+    packet_number     : packet_num;
+    protected_payload : cryptobit[] -> (payload : frame[]);
+} where {
+    header_type = 0;
+    third_bit = 1;
+    forth_bit = 1;
+    google_demux = 0;
+    dcid.width = (context.scid_len == 0) ? 0 : 
+                         (context.scid_len+3) * 8;
+} onparse {
+    payload = decrypt(protected_payload, packet_number);
+}
+		\end{Verbatim}
 		& 
-		\begin{verbatim}
-			struct long_hdr {
-			    bit         header_type;
-			    packet_type type;
-			    version     ver;
-			    cid_len     dcid_len;
-			    cid_len     scid_len;
-			    bit         dcid[];
-			    bit         scid[];
-			    var_enc     payload_length;
-			    packet_num  packet_number;
-			    bit         payload[];
-			};
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+typedef struct short_hdr {
+    bit        header_type;
+    bit        key_phase;
+    bit        third_bit;
+    bit        forth_bit;
+    bit        google_demux;
+    bit        reserved[3];
+    bit        dcid[];
+    packet_num packet_number;
+    cryptobit  protected_payload[];
+    frame      payload[];
+} short_hdr;
+		\end{Verbatim}
 		 &
-		\begin{verbatim}
-			todo
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+parseShortHdr :: (bits : bit[]) -> short_hdr {
+    sh : short_hdr;
+    sh.header_type = bits.parseBits(1);
+    if (sh.header_type != `0`) {
+        raise ParserException;
+    }
+    sh.key_phase = bits.parseBits(1);
+    sh.third_bit = bits.parseBits(1);
+    if (sh.third_bit != `1`) {
+        raise ParserException;
+    }
+    sh.forth_bit = bits.parseBits(1);
+    if (sh.forth_bit != `1`) {
+        raise ParserException;
+    }
+    sh.google_demux = bits.parseBits(1);
+    if (sh.google_demux != `0`) {
+        raise ParserException;
+    }
+    sh.reserved = bits.parseBits(3);
+    sh.dcid = bits.parseBits(context.scid_len == `0` : 0 ?
+                            (context.scid_len+3)*8);
+    sh.packet_number = parsePacketNum(bits);
+    sh.protected_payload = parseCryptobits(bits);
+    unprotected_payload : bit[];
+    while (len(unprotected_payload) > 0) {
+        sh.payload += parseFrame(unprotected_payload);
+    }
+    return sh;
+}
+		\end{Verbatim}
 	\\ \hline
-		\begin{verbatim}
-			SHORT_HDR := {
-			    bit         header_type;
-			    bit         key_phase;
-			    bit         third_bit;
-			    bit         forth_bit;
-			    bit         google_demux;
-			    bit[3]      reserved;
-			    bit[]       dcid;
-			    packet_num  packet_number;
-			    cryptobit[] protected_payload; -> frame[] payload;
-			} where {
-			    header_type#value = 0;
-			    third_bit#value = 1;
-			    forth_bit#value = 1;
-			    google_demux#value = 0;
-			    dcid#length = context.scid_len#value == 0 ? 0 : 
-			                            (context.scid_len#value+3) * 8;
-			    payload = decrypt(protected_payload, packet_number);
-			}
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+version_negotiation := {
+    header_type        : bit;
+    unused             : bit[7];
+    ver                : version;
+    dcid_len           : cid_len;
+    scid_len           : cid_len;
+    dcid               : bit[];
+    scid               : bit[];
+    supported_versions : version[];
+} where {
+    header_type = 1;
+    ver = 0;
+    dcid.width = dcid_len == 0 ? 0 : (dcid_len+3) * 8;
+    scid.width = scid_len == 0 ? 0 : (scid_len+3) * 8;
+}
+		\end{Verbatim}
 		& 
-		\begin{verbatim}
-			struct short_hdr {
-			    bit        header_type;
-			    bit        key_phase;
-			    bit        third_bit;
-			    bit        forth_bit;
-			    bit        google_demux;
-			    bit        reserved[3];
-			    bit        dcid[];
-			    packet_num packet_number;
-			    cryptobit  protected_payload[];
-			};
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+typedef struct version_negotiation {
+    bit      header_type;
+    bit      unused[7];
+    version  ver;
+    cid_len  dcid_len;
+    cid_len  scid_len;
+    bit      dcid[];
+    bit      scid[];
+    version  supported_versions[];
+} version_negotiation;
+		\end{Verbatim}
 		 &
-		\begin{verbatim}
-			todo
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+parseVersionNegotiation :: (bits : bit[]) -> version_negotiation {
+    vn : version_negotiation;
+    vn.header_type = bits.parseBits(1);
+    vn.unused = bits.parseBits(7);
+    vn.version = parseVersion(bits);
+    if (vn.header_type != `1` and vn.version != `0`) {
+        raise ParserException;
+    }
+    vn.dcid_len = parseCidLen(bits);
+    vn.scid_len = parseCidLen(bits);
+    vn.dcid = bits.parseBits(vn.dcid_len == `0` : 0 ?
+                                    (vn.dcid_len+3)*8);
+    vn.scid = bits.parseBits(vn.scid_len == `0` : 0 ?
+                                    (vn.scid_len+3)*8);
+    return vn;
+}
+		\end{Verbatim}
 	\\ \hline
-		\begin{verbatim}
-			VERSION_NEGOTIATION := {
-			    bit          header_type;
-			    bit[7]       unused;
-			    version      ver;
-			    cid_len      dcid_len;
-			    cid_len      scid_len;
-			    bit[]        dcid;
-			    bit[]        scid;
-			    version[]    supported_versions;
-			} where {
-			    header_type#value = 1;
-			    ver#value = 0;
-			    dcid#width = dcid_len#value == 0 ? 0 : 
-			                        (dcid_len#value+3) * 8;
-			    scid#width = scid_len#value == 0 ? 0 : 
-			                        (scid_len#value+3) * 8;
-			}
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+quic_pdu :=
+    long_hdr
+  | short_hdr
+  | version_negotiation;
+		\end{Verbatim}
 		& 
-		\begin{verbatim}
-			struct version_negotiation {
-			    bit      header_type;
-			    bit      unused[7];
-			    version  ver;
-			    cid_len  dcid_len;
-			    cid_len  scid_len;
-			    bit      dcid[];
-			    bit      scid[];
-			    version  supported_versions[];
-			};
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+typedef enum quic_pdu {long_hdr,
+               short_hdr, 
+               version_negotiation}
+               quic_pdu;
+		\end{Verbatim}
 		 &
-		\begin{verbatim}
-			todo
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+parseQUICPDU :: (bit[] : bits) -> quic_pdu {
+    try:
+        return parseLongHdr(bits);
+    except ParserException:
+        continue;
+    try:
+        return parseShortHdr(bits);
+    except ParserException:
+        continue;
+    return parseVersionNegotiation(bits);
+}
+		\end{Verbatim}
 	\\ \hline
-		\begin{verbatim}
-			FRAME := {
-			    PADDING_FRAME
-			  | RST_STREAM_FRAME
-			  | CONNECTION_CLOSE_FRAME
-			  | ..};
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+padding_frame := {
+    type : frame_type;
+} where {
+    type = 0;
+};
+		\end{Verbatim}
 		& 
-		\begin{verbatim}
-			enum frame {padding_frame, 
-			            rst_stream_frame, 
-			            connection_close_frame,
-			            ..};
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+struct padding_frame {
+    frame_type type;
+};
+		\end{Verbatim}
 		 &
-		\begin{verbatim}
-			todo
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+parsePaddingFrame :: (bits : bit[]) -> padding_frame {
+    pf : padding_frame;
+    pf.type = parseFrameType(bits);
+    if (pf.type != `0`) {
+        raise ParserException;
+    }
+}
+		\end{Verbatim}
 	\\ \hline
-		\begin{verbatim}
-			PADDING_FRAME := {
-			    frame_type type;
-			} where {
-			    type#value = 0;
-			}
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+frame := {
+    padding_frame
+  | rst_stream_frame
+  | connection_close_frame
+  | ..};
+		\end{Verbatim}
 		& 
-		\begin{verbatim}
-			struct padding_frame {
-			    frame_type type;
-			};
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+typedef enum frame {padding_frame, 
+            rst_stream_frame, 
+            connection_close_frame,
+            ..} enum_frame;
+		\end{Verbatim}
 		 &
-		\begin{verbatim}
-			todo
-		\end{verbatim}
+		\begin{Verbatim}[fontsize=\small]
+parseFrame :: (bits : bit[]) -> frame {
+    try:
+        return parsePaddingFrame(bits);
+    except ParserException:
+        continue;
+    try:
+        return parseRstStreamFrame(bits);
+    except ParserException:
+        continue;
+    return ConnectionCloseFrame(bits);
+}
+		\end{Verbatim}
 	\\
 	\bottomrule
 	\end{longtable}
