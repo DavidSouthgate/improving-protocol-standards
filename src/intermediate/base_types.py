@@ -6,18 +6,28 @@ class Typedef:
 	def __init__(self, name, type_val):
 		self.name = name
 		self.type_val = type_val
+		self.width = type_val.width
 
+class Field:
+	def __init__(self, name, type):
+		self.name = name
+		self.type = type
+		
+	def add_constraint(self, op, value):
+		if op == "=":
+			self.value = value
+	
 class Choice:
 	"""
 	A class for modelling C-style enums
 	"""
 	
 	def __init__(self):
-		self.alternates = []
+		self.alternative = []
 		
-	def add_alternate(self, alternate):
-		if alternate not in self.alternates:
-			self.alternates.append(alternate)
+	def add_alternative(self, alternative):
+		if alternative not in self.alternative:
+			self.alternative.append(alternative)
 			
 class Array:
 	"""
@@ -33,6 +43,9 @@ class Bit:
 	A class for modelling an array of bits (potentially of length 1)
 	"""
 	
+	def __init__(self):
+		self.width = 1
+
 class Protocol:
 	"""
 	A class for modelling a protocol's header description
@@ -41,14 +54,14 @@ class Protocol:
 	def __init__(self):
 		self.context = {}
 		self.typedefs = {}
-		self.structs = {}
+		self.structs = []
 		self.choices = {}
 	
 	def add_typedef(self, name, type_val):
 		self.typedefs[name] = type_val
 		
 	def add_struct(self, name, struct):
-		self.structs[name] = struct
+		self.structs.append(struct)
 		
 	def add_choice(self, name, choice):
 		self.choices[name] = choice
@@ -60,7 +73,14 @@ class Structure:
 	"""
 	
 	def __init__(self):
-		self.elements = {}
+		self.fields = []
+		self.width = 0
 		
-	def add_element(self, elem_name, elem_type):
-		self.elements[elem_name] = elem_type
+	def add_field(self, field):
+		self.fields.append(field)
+		if (field.type.width != "undefined"):
+			if (field.type.width == "undefined"):
+				self.width = "undefined"
+			else:
+				self.width += field.type.width
+			
