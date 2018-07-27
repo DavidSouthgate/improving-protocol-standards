@@ -45,7 +45,10 @@ MAKEFLAGS += --warn-undefined-variables --no-builtin-rules --no-builtin-variable
 # =================================================================================================
 
 # The PDF files to build, each should have a corresponding .tex file:
-PDF_FILES = notes/improving-protocol-standards.pdf notes/quic-example.pdf papers/improving-quic-docs.pdf
+PDF_FILES = notes/improving-protocol-standards.pdf \
+            notes/quic-example.pdf \
+            notes/ir.pdf \
+            papers/improving-quic-docs.pdf
 
 # Tools to build before the PDF files. This is a list of executable files in
 # the bin/ directory:

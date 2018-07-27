@@ -1,0 +1,272 @@
+\documentclass[twocolumn,a4paper]{article}
+\usepackage[l2tabu,orthodox]{nag}
+\usepackage[utf8x]{inputenc}
+\usepackage[british]{babel}
+\usepackage[babel=true]{microtype}
+\usepackage{amsmath}
+\usepackage[all]{onlyamsmath}
+\usepackage{newtxtext} 
+\usepackage{newtxmath} 
+\usepackage{upquote}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage[caption=false]{subfig}
+\usepackage{booktabs}
+\usepackage{bytefield}
+\usepackage{listings}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{color}
+\usepackage{fullpage}
+\usepackage{no-par-indent}
+
+\newcommand{\todo}[1]{\textbf{\textcolor{red}{To do: #1}}}
+
+%==================================================================================================
+\begin{document}
+\title{The Glasgow Packet Language: Intermediate Representation and Execution Model}
+\author{
+  Stephen McQuistin\\University of Glasgow
+\and 
+  Colin Perkins\\University of Glasgow
+}
+\date{\today}
+\maketitle
+%==================================================================================================
+\begin{abstract}
+
+% Four sentences:
+%  - State the problem
+%  - Say why it's an interesting problem
+%  - Say what your solution achieves
+%  - Say what follows from your solution
+
+
+
+\end{abstract}
+%==================================================================================================
+\section{Introduction}
+
+% Paragraph 1: Motivation. At a high level, what is the problem area you
+% are working in and why is it important? It is important to set the larger
+% context here. Why is the problem of interest and importance to the larger
+% community?
+
+
+
+% Paragraph 2: What is the specific problem considered in this paper? This
+% paragraph narrows down the topic area of the paper. In the first
+% paragraph you have established general context and importance. Here you
+% establish specific context and background.
+
+
+
+% Paragraph 3: "In this paper, we show that...". This is the key paragraph
+% in the introduction - you summarize, in one paragraph, what are the main
+% contributions of your paper, given the context established in paragraphs 
+% 1 and 2. What's the general approach taken? Why are the specific results
+% significant? The story is not what you did, but rather:
+%  - what you show, new ideas, new insights
+%  - why interesting, important?
+% State your contributions: these drive the entire paper.  Contributions
+% should be refutable claims, not vague generic statements.
+
+
+
+% Paragraph 4: What are the differences between your work, and what others
+% have done? Keep this at a high level, as you can refer to future sections
+% where specific details and differences will be given, but it is important
+% for the reader to know what is new about this work compared to other work
+% in the area.
+
+
+
+% Paragraph 5: "We structure the remainder of this paper as follows." Give
+% the reader a road-map for the rest of the paper. Try to avoid redundant
+% phrasing, "In Section 2, In section 3, ..., In Section 4, ... ", etc.
+
+
+%==================================================================================================
+\section{Intermediate Representation}
+
+The key words ``MUST'', ``MUST NOT'', ``REQUIRED'', ``SHALL'', ``SHALL
+NOT'', ``SHOULD'', ``SHOULD NOT'', ``RECOMMENDED'', ``NOT RECOMMENDED'',
+``MAY'', and ``OPTIONAL'' in this document are to be interpreted as
+described in \cite{RFC2119,RFC8174} when, and only when, they appear
+in all capitals, as shown here.
+
+
+
+The intermediate representation is specified in terms of serialised JSON
+\cite{RFC7159} objects that describe the packet formats to be specified.
+An interpreter for the intermediate representation will read a sequence of
+such objects and perform the operations described, in the order that they
+objects are read.
+
+Each JSON object in the intermediate representation MUST contain a member
+with name \texttt{irobject} that describes the contents of the object.
+Whether other members are included in the object depends on the value of
+the \texttt{irobject} member.
+
+Initially, only a single primitive type is defined, the \texttt{Bit}. A Bit
+may have value 0 or 1, or have an unspecified value. As the intermediate
+representation is loaded, it defines other types. Types MUST NOT be used
+before they have been defined.
+
+%--------------------------------------------------------------------------------------------------
+\subsection{Arrays}
+
+If an intermediate representation JSON object contains an \texttt{irobject}
+member with the value \texttt{array}, then that object defines a new array
+type. For example, a type \texttt{SeqNum}, being an array of 16 elements of
+type Bit, could be defined as follows:
+
+\begin{verbatim}
+  {
+    'irobject'    : 'array',
+    'name'        : 'SeqNum',
+    'elementType' : 'Bit'
+    'length'      : 16
+  }
+\end{verbatim}
+
+In addition to the \texttt{irobject} member, the object MUST also include
+the following members:
+\begin{itemize}
+  \item \texttt{name} indicates the name of the type being defined. It is
+    an error to define a name multiple times.
+  \item \texttt{elementType} indicates the type of the elements of the
+    array.
+  \item \texttt{length} indicates the number of elements in the array. This
+    MAY be set to \texttt{null} to indicate an array of unspecified length.
+\end{itemize}
+
+%--------------------------------------------------------------------------------------------------
+\subsection{Enumerated Types}
+
+If an intermediate representation JSON object contains an \texttt{irobject}
+member with the value \texttt{enum}, then that object defines a new enumerated
+type. For example:
+
+\begin{verbatim}
+  {
+    'irobject'    : 'enum'
+    'name'        : '<string>',
+    'variants'    : [
+      {'type' : '<typename>'},
+      ...
+    ]
+  }
+\end{verbatim}
+
+An enumerated type represents data that can be one of several possible
+variants. In addition to the \texttt{irobject} member, the object MUST
+also include the following members:
+\begin{itemize}
+  \item \texttt{name} indicates the name of the type being defined. It is
+    an error to define a name multiple times.
+  \item \texttt{variants} is a JSON array, each value of which is an object
+    containing a member named \texttt{type} that has a value indicating one
+    possible type that they enumerated type can take. The type MUST have
+    been previously defined.  The variants array MUST NOT be empty. Each
+    variant has a type, but is otherwise unnamed.
+\end{itemize}
+
+%--------------------------------------------------------------------------------------------------
+\subsection{Structure Types}
+
+If an intermediate representation JSON object contains an \texttt{irobject}
+member with the value \texttt{struct}, then that object defines a new
+structure type. For example:
+
+\begin{verbatim}
+  {
+    'irobject'    : 'struct'
+    'name'        : '<string>',
+    'fields'      : [
+                      {
+                        'name' : '...',
+                        'type' : ...
+                      },
+                      ...
+                    ],
+    'constraints' : [
+                      ...
+                    ]
+  }
+\end{verbatim}
+
+A structure type represents data comprising an ordered sequence of elements
+of possibly different types. In addition to the \texttt{irobject} member, 
+the object MUST also include the following members:
+\begin{itemize}
+  \item \texttt{name} indicates the name of the type being defined. It is
+    an error to define a name multiple times.
+  \item \texttt{fields} is a JSON array, each value of which is an object
+    containing two members, \texttt{name} and \texttt{type}, that indicate
+    the fields's name and type. The type MUST have been previously defined.
+    The fields array MUST NOT be empty; the names of each element within
+    the fields array MUST be unique, but multiple elements can have the
+    same type.
+  \item \texttt{constraints} ...
+\end{itemize}
+
+%--------------------------------------------------------------------------------------------------
+\subsection{Function Prototypes}
+
+If an intermediate representation JSON object contains an \texttt{irobject}
+member with the value \texttt{function}, then that object defines a function
+prototype. For example:
+
+\begin{verbatim}
+  {
+    'irobject'    : 'function'
+    'name'        : 'decrypt',
+    'parameters'  : [
+      {
+        'name' : 'enc_payload',
+        'type' : 'cryptobits'
+      },
+      {
+        'name' : 'pn',
+        'type' : 'full_packet_num'
+      }
+    ],
+    'returnType'  : 'bit',
+  }
+\end{verbatim}
+
+%==================================================================================================
+\section{Acknowledgements}
+
+This work was supported by the Engineering and Physical Sciences Research
+Council (grant EP/R04144X/1).
+
+%==================================================================================================
+\bibliographystyle{abbrvurl}
+\bibliography{ir.bib}
+%==================================================================================================
+% The following information gets written into the PDF file information:
+\ifpdf
+  \pdfinfo{
+    /Title        (The Glasgow Packet Language: Intermediate Representation and Execution Model)
+    /Author       (Stephen McQuistin and Colin Perkins)
+    /Subject      (The Glasgow Packet Language)
+    /Keywords     (Parsing, Network Protocols, Packet Formats)
+    /CreationDate (D:20180727162600Z)
+    /ModDate      (D:20180727162600Z)
+    /Creator      (LaTeX)
+    /Producer     (pdfTeX)
+  }
+  % Suppress unnecessary metadata, to ensure the PDF generated by pdflatex is
+  % identical each time it is built:
+  \ifdefined\pdftrailerid
+    % The \pdftrailerid and \pdfsuppressptexinfo macros were both introduced 
+    % in pdfTeX 3.14159265-2.6-1.40.17. If one is present, the other will be.
+    \pdftrailerid{}
+    \pdfsuppressptexinfo=15
+  \fi
+\fi
+%==================================================================================================
+\end{document}
+% vim: set ts=2 sw=2 tw=75 et ai:
