@@ -31,8 +31,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # =================================================================================================
 
-REGEX_CITE="Package natbib Warning: There were undefined citations."
-REGEX_LABL="LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right."
+REGEX_CITE=".*Warning: Citation.*undefined"
+REGEX_LABL=".*Warning: Label(s) may have changed. Rerun to get cross-references right."
 REGEX_BOOK="Package rerunfilecheck Warning: File .*out. has changed"
 
 # Function to display a separator:
@@ -47,9 +47,9 @@ blank_line () {
     i=`expr $i + 1`
   done
 
-  tput setaf 2 || false
+  tput setaf 2 || true
   echo $BLANK_LINE
-  tput sgr0 || false
+  tput sgr0    || true
 }
 
 # Function to display the usage message:
@@ -63,9 +63,9 @@ usage() {
 build_pdf () {
   blank_line
 
-  tput setaf 2 || false
+  tput setaf 2 || true
   echo "== Building LaTeX document: $DIR_NAME/$TEX_BASE.tex"
-  tput sgr0 || false
+  tput sgr0    || true
 
   done_bib=0
   do_bib=0
@@ -109,7 +109,7 @@ build_pdf () {
     # BibTeX was last run; if so, request a new run of BibTeX
     for f in `grep '\\\\bibdata{' $DIR_NAME/$TEX_BASE.aux | sed 's/\\\bibdata{//' | sed 's/}//' | sed 's/,/ /' `
     do
-      if [ $DIR_NAME/$f.bib -nt $DIR_NAME/$TEX_BASE.bbl ]; then
+      if [ $f.bib -nt $TEX_BASE.bbl ]; then
         do_bib=1
       fi
     done
@@ -119,7 +119,7 @@ build_pdf () {
       if [ $num_citations -gt 0 -a $done_bib = 0 ]; then
         # BibTeX has been requested and has not run already, and there are citations...
         blank_line
-        (cd $DIR_NAME && BST_INPUTS=.:../lib/tex/inputs: bibtex $TEX_BASE)
+        (cd $DIR_NAME && BSTINPUTS=.:../lib/tex/inputs: bibtex $TEX_BASE)
         if [ $? = 1 ]; then
           exit 1
         fi
@@ -172,12 +172,12 @@ build_pdf () {
   nmf=`cat $DIR_NAME/$TEX_BASE.fonts | tail -n +3 | awk '{if ($(NF-4) != "yes") print $0}' | wc -l`
 
   if [ $nmf -gt 0 ]; then \
-    tput setaf 1  || false
-    tput bold || false
+    tput setaf 1 || true
+    tput bold    || true
     echo ""
     echo "WARNING: Some fonts are not embedded"
     echo "Try running \"updmap --edit\" and setting \"pdftexDownloadBase14 true\""
-    tput sgr0 || false
+    tput sgr0    || true
   fi
 
   echo ""
