@@ -1,0 +1,346 @@
+%==================================================================================================
+% LaTeX paper template - use as a starting point for structuring a paper.
+%
+% Written by Colin Perkins (https://csperkins.org/)
+% 2002-2017
+%
+% To the extent possible under law, the author(s) have dedicated all copyright and
+% related and neighbouring rights to this software to the public domain worldwide.
+% This software is distributed without any warranty.
+%
+% You should have received a copy of the CC0 Public Domain Dedication along with
+% this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+%
+%==================================================================================================
+% General advice on technical writing:
+%  - George Gopen and Judith Swan, "The Science of Scientific Writing",
+%    American Scientist, Nov/Dec 1990. 
+%    http://www.americanscientist.org/issues/num2/the-science-of-scientific-writing/1
+%  - Stephen Pinker, "The Sense of Style: The Thinking Person's Guide to
+%    Writing in the 21st Century", Penguin, Sept 2014. ISBN 0525427929.
+%
+% The paper writing advice in the comments is derived from talks and articles
+% by Simon Peyton-Jones, Jim Kurose, Henning Schulzrinne, and Jim Bednar: 
+%  - http://research.microsoft.com/~simonpj/papers/giving-a-talk/giving-a-talk.htm
+%  - http://research.microsoft.com/~simonpj/papers/giving-a-talk/writing-a-paper-slides.pdf
+%  - http://gaia.cs.umass.edu/kurose/talks/top_10_tips_for_writing_a_paper.ppt
+%  - http://www-net.cs.umass.edu/kurose/writing/intro-style.html
+%  - http://www.cs.columbia.edu/~hgs/etc/writing-style.html
+%  - http://homepages.inf.ed.ac.uk/jbednar/writingtips.html
+%  - http://www.gabbay.org.uk/blog/paper-writing.html
+%  - http://homes.cs.washington.edu/~mernst/advice/write-technical-paper.html
+%  - https://doi.org/10.1371/journal.pcbi.1005619
+%
+%==================================================================================================
+\documentclass[10pt,sigconf]{acmart}
+% The \documentclass line will need to be updated to use the appropriate
+% class for your chosen venue. 
+% 
+% For IEEE style use:
+%   \documentclass[conference]{IEEEtran}
+%
+% For the ACM SIGCOMM style use:
+%   \documentclass{sig-alternate}
+% or
+%   \documentclass{sig-alternate-10pt}
+% 
+% The IEEE and ACM templates are included in the lib/tex/inputs directory.
+% The bin/latex-build.sh script is set to search this directory for class
+% files before the versions included with your LaTeX distribution. 
+% 
+% The ACM templates (sig-alternate.cls and sig-alternate-10pt.cls) included
+% have been edited to remove \usepackage{epsfig}, as the epsfig package has
+% long been deprecated in favour of graphicx. They also include a number of
+% other minor bug fixes. These modifications don't change the output format.
+
+% The following packages are recommended, and should be available in most
+% standard LaTeX installations (or from https://www.ctan.org/). Note that 
+% the order in which these packages are loaded is significant.
+\usepackage[l2tabu,orthodox]{nag}  % Warn about use of obsolete LaTeX packages/constructs
+\usepackage[utf8x]{inputenc}       % This file is formatted in UTF-8
+\usepackage[british]{babel}        % Use British hyphenation patterns
+\usepackage{ifpdf}                 % Support conditional use of PDF-specific features
+% Use the AMS mathematics library for improved mathematics support (see
+% http://ctan.org/pkg/amsmath). When this package is loaded, use:
+%   \begin{align}
+%     ...
+%   \end{align} 
+% instead of:
+%   \begin{eqnarray}
+%     ...
+%   \end{eqnarray}.  
+% (see https://tug.org/pracjourn/2006-4/madsen/madsen.pdf)
+\usepackage{amsmath}
+\usepackage[all]{onlyamsmath}
+% Use Times, Helvetica, and Courier fonts, rather than Computer Modern
+\usepackage{upquote}   % Fix quotes in verbatim environments
+\usepackage{graphicx}  % Enhanced graphics support
+\usepackage{url}       % Add support for typesetting URLs using \url{...}:
+% Add support for subfigures, as follows:
+%   \begin{figure}
+%     \centering
+%     \subfloat[caption for 1st subfloat]{
+%       \includegraphics{...}
+%       \label{...}
+%     }
+%     \\
+%     \subfloat[caption for 2nd subfloat]{
+%       \includegraphics{...}
+%       \label{...}
+%     }
+%     \caption{caption for entire figure}
+%     \label{...}
+%   \end{figure*}
+% The subfig package obsoletes the older subfigure package, and is itself
+% deprecated in favour of the subcaption package. However, as of April 2015
+% subcaption doesn't work with ACM or IEEE style files (this is also the
+% reason for the [caption=false] option).
+\usepackage[caption=false]{subfig}
+% Improve table formatting. This defines three new commands \toprule,
+% \midrule, and \bottomrule that should be used instead of \hline in
+% tabular environments to get well formatted tables.
+\usepackage{booktabs}
+% Add support for drawing network packet diagrams. For documentation, see
+% http://ctan.org/tex-archive/macros/latex/contrib/bytefield
+\usepackage{bytefield}
+% Add support for typesetting program source code. For documentation, see
+% http://ctan.org/tex-archive/macros/latex/contrib/listings
+\usepackage{listings}
+
+% The hyperref package is problematic. Known issues include:
+%  - Papers typeset without page numbers gives warnings of the form:
+%      "pdfTeX warning (ext4): destination with the same identifier 
+%      (name{page.}) has been already used, duplicate ignored".
+%    since hyperref tries to refer to the page number.
+%  - The algorithmic package uses the same line-numbering scheme for each
+%    algorithm, and can cause duplicate identifier warnings if you have
+%    several algorithms with line numbers (this may have been fixed with 
+%    recent versions of algorithmic...).
+%  - If using the algorithm package with hyperref, you need to load packages
+%    in the following order (see README in hyperref documentation):
+%      \usepackage{float}
+%      \usepackage{hyperref}
+%      \usepackage{algorithm}
+% For these reasons, hyperref is best to avoid for most papers, however if
+% needed, uncomment the following two lines:
+%  \usepackage{float}
+%  \usepackage{hyperref}
+
+% The algorithm package defines the algorithm environment. This is used in
+% the same way as the figure and table environments, to include algorithms
+% in a paper. The algpseudocode package provides the ability to typeset the
+% algorithms: http://ctan.org/tex-archive/macros/latex/contrib/algorithmicx
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\usepackage{color} % Add colour support:
+
+% Define a simple \todo{...} macro:
+\newcommand{\todo}[1]{\textbf{\textcolor{red}{To do: #1}}}
+
+%==================================================================================================
+\begin{document}
+\title{Improving QUIC Protocol Documents}
+
+\author{Stephen McQuistin}
+\affiliation{%
+  \institution{University of Glasgow}
+  \city{Glasgow, UK} 
+}
+\email{sm@smcquistin.uk}
+
+\author{Colin Perkins}
+\affiliation{%
+  \institution{University of Glasgow}
+  \city{Glasgow, UK} 
+}
+\email{csp@csperkins.org}
+
+\date{\today}
+
+%==================================================================================================
+\begin{abstract}
+
+% Four sentences:
+%  - State the problem
+%  - Say why it's an interesting problem
+%  - Say what your solution achieves
+%  - Say what follows from your solution
+
+\end{abstract}
+
+\maketitle
+
+%==================================================================================================
+\section{Introduction}
+
+% A good paper introduction is fairly formulaic. If you follow a simple set
+% of rules, you can write a very good introduction. The following outline can
+% be varied. For example, you can use two paragraphs instead of one, or you
+% can place more emphasis on one aspect of the intro than another. But in all
+% cases, all of the points below need to be covered in an introduction, and
+% in most papers, you don't need to cover anything more in an introduction.
+%
+% Paragraph 1: Motivation. At a high level, what is the problem area you
+% are working in and why is it important? It is important to set the larger
+% context here. Why is the problem of interest and importance to the larger
+% community?
+
+ASCII packet header diagrams are the single-most widely adopted formalism in IETF
+standards documents, allowing for the visualisation of packet formats. However, QUIC
+\cite{draft-ietf-quic-transport-latest} includes a number of features -- for example,
+packet protection and variable-length integer encoding -- that diminish the utility of
+such diagrams. As a result, correct parser implementations are much more reliant upon
+the careful interpretation of prose within the QUIC standards documents. This is a
+situation that is likely to result in non-conformant implementations.
+
+% Paragraph 2: What is the specific problem considered in this paper? This
+% paragraph narrows down the topic area of the paper. In the first
+% paragraph you have established general context and importance. Here you
+% establish specific context and background.
+
+Eliminating ambiguity in the description of protocols requires a formalism that goes
+beyond ASCII packet header diagrams, allowing for increasingly complex protocol features
+to be captured. However, such a formalism must not overly complicate the protocol
+standardisation process: the poor adoption of previous packet format definition languages
+serves as a lesson. Finally, any formalism should be flexible in how protocols are
+described, and the types of artefacts that can be generated from those descriptions.
+
+% Paragraph 3: "In this paper, we show that...". This is the key paragraph
+% in the introduction - you summarize, in one paragraph, what are the main
+% contributions of your paper, given the context established in paragraphs 
+% 1 and 2. What's the general approach taken? Why are the specific results
+% significant? The story is not what you did, but rather:
+%  - what you show, new ideas, new insights
+%  - why interesting, important?
+% State your contributions: these drive the entire paper.  Contributions
+% should be refutable claims, not vague generic statements.
+
+In this paper, we ..
+
+% Paragraph 4: What are the differences between your work, and what others
+% have done? Keep this at a high level, as you can refer to future sections
+% where specific details and differences will be given, but it is important
+% for the reader to know what is new about this work compared to other work
+% in the area.
+
+
+
+% Paragraph 5: "We structure the remainder of this paper as follows." Give
+% the reader a road-map for the rest of the paper. Try to avoid redundant
+% phrasing, "In Section 2, In section 3, ..., In Section 4, ... ", etc.
+
+We structure the remainder of this paper as follows.
+
+%==================================================================================================
+% Concentrate single-mindedly on a narrative that:
+%  - Describes the problem, and why it's interesting
+%  - Describes your idea
+%  - Defends your idea, showing how it solves the problem, and filling out
+%    the details
+% On the way, cite relevant work in passing, but defer discussion to the
+% end.
+%
+% Introduce the problem, and your idea, using examples, and only then
+% present the general case. Explain the idea as if your were speaking to
+% someone using a whiteboard. Conveying the intuition is primary; details
+% follow. Write in a top down manner: state broad themes and ideas first,
+% then go into details.
+%
+% The introduction makes claims. The body of the paper provides evidence
+% to support each claim. Check each claim in the introduction, identify
+% the evidence, and forward-reference it from the claim. 
+%==================================================================================================
+
+\section{Motivation}
+
+%==================================================================================================
+\section{SYSTEMNAME}
+
+\subsection{Contexts}
+
+\subsection{Interfaces}
+
+%==================================================================================================
+\section{Example: QUIC's Short Header}
+
+% The details
+
+% Describe results carefully:
+%  - clearly state assumptions
+%  - give enough information to allow the reader to recreate the results
+%  - ensure results are representative; statistically meaningful, etc.
+%  - don't overstate results
+%  - equally, don't understate them: consider the broader implications
+
+%==================================================================================================
+\section{Related Work}
+
+% This should come near the end, and focussing on discussing how your work
+% relates to that of others. Any relevant related work should have been
+% cited already, so this is not a list of related work, it's a discussion
+% of how that work relates.
+%
+% Why not put related work after the introduction? 1) because describing
+% alternative approaches gets between the reader and your idea; and 2)
+% because the reader knows nothing about the problem yet, so your
+% (carefully trimmed) description of various technical trade-offs is
+% absolutely incomprehensible.
+% 
+% When writing the related work:
+%  - Give credit to others where it's due; this doesn't diminish the
+%    credit you get from your paper. 
+%  - Acknowledge weaknesses in your approach.
+%  - Ensure related work is accurate and up-to-date
+
+
+%==================================================================================================
+\section{Conclusions}
+
+
+
+%==================================================================================================
+\section{Acknowledgements}
+
+This work is funded by the UK Engineering and Physical Sciences Research Council, under
+grant EP/R04144X/1.
+
+%==================================================================================================
+% Set the bibliography style. 
+\bibliographystyle{abbrvurl}
+% The abbrvurl style comes from https://www.ctan.org/pkg/urlbst, and is
+% included in most standard TeX distributions. It adds support for DOIs
+% to the standard abbrv style.
+%
+% When using the IEEE style, replace the above line with:
+%   \bibliographystyle{IEEEtran} 
+% The IEEEtran.bst file included here has been modified to support DOIs.
+
+% Load the bibliography file for this paper:
+\bibliography{improving-quic-docs}
+
+%==================================================================================================
+% The following information gets written into the PDF file information:
+\ifpdf
+  \pdfinfo{
+    /Title        (...)
+    /Author       (...)
+    /Subject      (...)
+    /Keywords     (..., ..., ...)
+    /CreationDate (D:20150827110616Z)
+    /ModDate      (D:20150827110616Z)
+    /Creator      (LaTeX)
+    /Producer     (pdfTeX)
+  }
+  % Suppress unnecessary metadata, to ensure the PDF generated by pdflatex is
+  % identical each time it is built:
+  \ifdefined\pdftrailerid
+    % The \pdftrailerid and \pdfsuppressptexinfo macros were both introduced 
+    % in pdfTeX 3.14159265-2.6-1.40.17. If one is present, the other will be.
+    \pdftrailerid{}
+    \pdfsuppressptexinfo=15
+  \fi
+\fi
+%==================================================================================================
+\end{document}
+% vim: set ts=2 sw=2 tw=75 et ai:
