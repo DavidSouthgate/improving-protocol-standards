@@ -1,7 +1,5 @@
-improving-protocol-standards.pdf
-improving-protocol-standards.fonts
-improving-protocol-standards.dep
-*.pdf
+**.pdf
+**.dep
 
 # Created by https://www.gitignore.io/api/osx,latex
 
