@@ -186,25 +186,26 @@
 % context here. Why is the problem of interest and importance to the larger
 % community?
 
-ASCII packet header diagrams are the single-most widely adopted formalism in IETF
-standards documents, allowing for the visualisation of packet formats. However, QUIC
-\cite{draft-ietf-quic-transport-latest} includes a number of features -- for example,
-packet protection and variable-length integer encoding -- that diminish the utility of
-such diagrams. As a result, correct parser implementations are much more reliant upon
-the careful interpretation of prose within the QUIC standards documents. This is a
-situation that is likely to result in non-conformant implementations.
+ASCII packet header diagrams are the most common formalism found in IETF standards
+documents. These diagrams allow for the visualisation packet formats, reducing human error
+by aiding in the implementation of protocol parsers. However, while ASCII diagrams can
+capture much of the syntax of existing protocols, like TCP and UDP, the complexity
+introduced by newer protocols, such as QUIC \cite{draft-ietf-quic-transport-latest},
+diminishes their utility. As a result, correct parser implementations are much more
+reliant upon the careful interpretation of prose descriptions of the protocol's syntax.
+This is a situation that is likely to result in buggy and non-conformant implementations.
 
 % Paragraph 2: What is the specific problem considered in this paper? This
 % paragraph narrows down the topic area of the paper. In the first
 % paragraph you have established general context and importance. Here you
 % establish specific context and background.
 
-Eliminating ambiguity in the description of protocols requires a formalism that goes
-beyond ASCII packet header diagrams, allowing for increasingly complex protocol features
-to be captured. However, such a formalism must not overly complicate the protocol
-standardisation process: the poor adoption of previous packet format definition languages
-serves as a lesson. Finally, any formalism should be flexible in how protocols are
-described, and the types of artefacts that can be generated from those descriptions.
+While there have been many previous efforts to develop formalisms that better capture the
+syntax of protocols, these are largely unsuitable for QUIC. QUIC includes protected
+packets, requiring decryption using data from packets earlier in the flow. Prior work,
+which has focussed on the parsing of individual, unencrypted packets, is unable to model
+this. As a result, QUIC, and the broader shift to pervasive encryption \cite{rfc7258},
+require a new formalism.
 
 % Paragraph 3: "In this paper, we show that...". This is the key paragraph
 % in the introduction - you summarize, in one paragraph, what are the main
@@ -216,7 +217,14 @@ described, and the types of artefacts that can be generated from those descripti
 % State your contributions: these drive the entire paper.  Contributions
 % should be refutable claims, not vague generic statements.
 
-In this paper, we ..
+In this paper, we describe SYSTEMNAME, a framework for formalising the description of
+packet layers. SYSNAME is comprised of three components: an input parser, an intermediary
+representation, and an output formatter. This architecture allows packets to be described
+using a number of different languages, and for such descriptions to be parsed into a
+common intermediate form. Output formatters can then use this intermediate representation
+to generate various artefacts, such as a parser. We provide an example of how this
+framework can be used to capture the complexity of QUIC, and automatically generate parser
+code.
 
 % Paragraph 4: What are the differences between your work, and what others
 % have done? Keep this at a high level, as you can refer to future sections
@@ -224,13 +232,25 @@ In this paper, we ..
 % for the reader to know what is new about this work compared to other work
 % in the area.
 
-
+There have been many previous attempts at defining a packet format definition language,
+including PacketTypes \cite{mccann2000packet}, Melange \cite{madhavapeddy2007melange},
+PADS \cite{fisher2005pads}, and DataScript \cite{back2002datascript}. While these
+languages differ, both in their syntax and the protocol features they can model, all are
+designed for parsing individual, unencrypted packets. SYSTEMNAME supports QUIC, and other
+protocols, by including \emph{contexts} and \emph{prototypes}, to support the flow-based
+parsing of encrypted packets.
 
 % Paragraph 5: "We structure the remainder of this paper as follows." Give
 % the reader a road-map for the rest of the paper. Try to avoid redundant
 % phrasing, "In Section 2, In section 3, ..., In Section 4, ... ", etc.
 
-We structure the remainder of this paper as follows.
+We structure the remainder of this paper as follows. Section \ref{sec:motivation} expands
+on our motivation, by assessing the utility provided by an ASCII diagram from the QUIC
+standards documents. Section \ref{sec:SYSTEMNAME} describes SYSTEMNAME, our proposed
+framework for describing packet formats. Section \ref{sec:casestudy} provides an example
+of how SYSTEMNAME can be used to better capture the syntax of QUIC's short header packets.
+Finally, Section \ref{sec:related} discusses related work, and Section
+\ref{sec:conclusion} concludes.
 
 %==================================================================================================
 % Concentrate single-mindedly on a narrative that:
@@ -253,9 +273,11 @@ We structure the remainder of this paper as follows.
 %==================================================================================================
 
 \section{Motivation}
+\label{sec:motivation}
 
 %==================================================================================================
 \section{SYSTEMNAME}
+\label{sec:SYSTEMNAME}
 
 \subsection{Contexts}
 
@@ -263,6 +285,7 @@ We structure the remainder of this paper as follows.
 
 %==================================================================================================
 \section{Example: QUIC's Short Header}
+\label{sec:casestudy}
 
 % The details
 
@@ -275,6 +298,7 @@ We structure the remainder of this paper as follows.
 
 %==================================================================================================
 \section{Related Work}
+\label{sec:related}
 
 % This should come near the end, and focussing on discussing how your work
 % relates to that of others. Any relevant related work should have been
@@ -293,11 +317,9 @@ We structure the remainder of this paper as follows.
 %  - Acknowledge weaknesses in your approach.
 %  - Ensure related work is accurate and up-to-date
 
-
 %==================================================================================================
 \section{Conclusions}
-
-
+\label{sec:conclusion}
 
 %==================================================================================================
 \section{Acknowledgements}
