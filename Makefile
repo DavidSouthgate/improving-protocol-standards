@@ -60,7 +60,6 @@ all: $(TOOLS) $(PDF_FILES)
 	@bin/latex-build.sh pdf $(notdir $(basename $<)) $(dir $<)
 	@bin/check-for-duplicate-words.perl $<
 	@bin/check-for-todo.sh              $<
-	ln -s -f $@ $(notdir $@)
 
 # Include dependency information for PDF files, if it exists:
 -include $(PDF_FILES:%.pdf=%.dep)
@@ -100,7 +99,6 @@ endef
 
 define pdfclean
 	bin/latex-build.sh clean $(notdir $(basename $(firstword $(1)))) $(dir $(firstword $(1)))
-	rm -f $(notdir $(1))
 	$(if $(wordlist 2,$(words $(1)),$(1)),$(call pdfclean,$(wordlist 2,$(words $(1)),$(1))))
 endef
 
