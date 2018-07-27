@@ -30,8 +30,8 @@
 # =================================================================================================
 # Configuration for make itself:
 
-# Warn if the Makefile references undefined variables:
-MAKEFLAGS += --warn-undefined-variables
+# Warn if the Makefile references undefined variables and remove built-in rules:
+MAKEFLAGS += --warn-undefined-variables --no-builtin-rules --no-builtin-variables
 
 # Remove output of failed commands, to avoid confusing later runs of make:
 .DELETE_ON_ERROR:
@@ -45,7 +45,10 @@ MAKEFLAGS += --warn-undefined-variables
 # =================================================================================================
 
 # The PDF files to build, each should have a corresponding .tex file:
-PDF_FILES = notes/improving-protocol-standards.pdf notes/quic-example.pdf papers/improving-quic-docs.pdf
+PDF_FILES = notes/improving-protocol-standards.pdf \
+            notes/quic-example.pdf \
+            notes/ir.pdf \
+            papers/improving-quic-docs.pdf
 
 # Tools to build before the PDF files. This is a list of executable files in
 # the bin/ directory:
@@ -60,7 +63,6 @@ all: $(TOOLS) $(PDF_FILES)
 	@bin/latex-build.sh pdf $(notdir $(basename $<)) $(dir $<)
 	@bin/check-for-duplicate-words.perl $<
 	@bin/check-for-todo.sh              $<
-	ln -s -f $@ $(notdir $@)
 
 # Include dependency information for PDF files, if it exists:
 -include $(PDF_FILES:%.pdf=%.dep)
@@ -100,7 +102,6 @@ endef
 
 define pdfclean
 	bin/latex-build.sh clean $(notdir $(basename $(firstword $(1)))) $(dir $(firstword $(1)))
-	rm -f $(notdir $(1))
 	$(if $(wordlist 2,$(words $(1)),$(1)),$(call pdfclean,$(wordlist 2,$(words $(1)),$(1))))
 endef
 
