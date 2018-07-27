@@ -57,7 +57,7 @@
 % standard LaTeX installations (or from https://www.ctan.org/). Note that 
 % the order in which these packages are loaded is significant.
 \usepackage[l2tabu,orthodox]{nag}  % Warn about use of obsolete LaTeX packages/constructs
-\usepackage[utf8x]{inputenc}       % This file is formatted in UTF-8
+\usepackage[utf8]{inputenc}       % This file is formatted in UTF-8
 \usepackage[british]{babel}        % Use British hyphenation patterns
 \usepackage{ifpdf}                 % Support conditional use of PDF-specific features
 % Use the AMS mathematics library for improved mathematics support (see
@@ -132,6 +132,7 @@
 % algorithms: http://ctan.org/tex-archive/macros/latex/contrib/algorithmicx
 \usepackage{algorithm}
 \usepackage{algpseudocode}
+\usepackage{fancyvrb}
 
 \usepackage{color} % Add colour support:
 
@@ -275,6 +276,26 @@ Finally, Section \ref{sec:related} discusses related work, and Section
 \section{Motivation}
 \label{sec:motivation}
 
+\begin{figure}
+	\centering
+    \begin{Verbatim}[fontsize=\scriptsize]
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+
+|0|K|1|1|0|R R R|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                Destination Connection ID (0..144)           ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                      Packet Number (8/16/32)                ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                     Protected Payload (*)                   ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    \end{Verbatim}
+    \caption{My Caption}
+    \label{fig:quic-short-hdr}
+\end{figure}
+
+Figure \ref{fig:quic-short-hdr}
 %==================================================================================================
 \section{SYSTEMNAME}
 \label{sec:SYSTEMNAME}
