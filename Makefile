@@ -30,8 +30,8 @@
 # =================================================================================================
 # Configuration for make itself:
 
-# Warn if the Makefile references undefined variables:
-MAKEFLAGS += --warn-undefined-variables
+# Warn if the Makefile references undefined variables and remove built-in rules:
+MAKEFLAGS += --warn-undefined-variables --no-builtin-rules --no-builtin-variables
 
 # Remove output of failed commands, to avoid confusing later runs of make:
 .DELETE_ON_ERROR:
