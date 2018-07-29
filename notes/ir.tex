@@ -108,13 +108,47 @@ with name \texttt{irobject} that describes the contents of the object.
 Whether other members are included in the object depends on the value of
 the \texttt{irobject} member.
 
-Initially, only a single primitive type is defined, the \texttt{Bit}. A Bit
-may have value 0 or 1, or have an unspecified value. As the intermediate
-representation is loaded, it defines other types. Types MUST NOT be used
-before they have been defined.
+%--------------------------------------------------------------------------------------------------
+\subsection{Bits}
+
+A single primitive type is implicitly defined, the \texttt{Bit}.
+A Bit may have value 0 or 1, or have an unspecified value. 
 
 %--------------------------------------------------------------------------------------------------
-\subsection{Arrays}
+\subsection{Type Definitions}
+
+As the intermediate representation is loaded, it defines other types. Types
+MUST NOT be used before they have been defined.
+Types can be either aliases, compound types (arrays or structure types), or
+enumerated types.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Aliases}
+
+If an intermediate representation JSON object contains an \texttt{irobject}
+member with the value \texttt{newtype}, then that object defines a new type
+as an alias for an existing type. For example, a type SpinBit could be
+defined based on the Bit type as follows:
+
+\begin{verbatim}
+  {
+    'irobject'    : 'newtype',
+    'name'        : 'SpinBit',
+    'derivedFrom' : 'Bit'
+  }
+\end{verbatim}
+
+A type derived in this way has the same representation and properties as
+the type it is derived from, but has a new name and is distinct from the
+original type.  In the example above, a SpinBit and a Bit are different
+types, and cannot be used interchangeably, even though they have the same
+representation.
+
+A new type can be derived from any existing type. It is an error to define
+a new type that has the same name as an existing type.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Arrays}
 
 If an intermediate representation JSON object contains an \texttt{irobject}
 member with the value \texttt{array}, then that object defines a new array
@@ -141,39 +175,8 @@ the following members:
     MAY be set to \texttt{null} to indicate an array of unspecified length.
 \end{itemize}
 
-%--------------------------------------------------------------------------------------------------
-\subsection{Enumerated Types}
-
-If an intermediate representation JSON object contains an \texttt{irobject}
-member with the value \texttt{enum}, then that object defines a new enumerated
-type. For example:
-
-\begin{verbatim}
-  {
-    'irobject'    : 'enum'
-    'name'        : '<string>',
-    'variants'    : [
-      {'type' : '<typename>'},
-      ...
-    ]
-  }
-\end{verbatim}
-
-An enumerated type represents data that can be one of several possible
-variants. In addition to the \texttt{irobject} member, the object MUST
-also include the following members:
-\begin{itemize}
-  \item \texttt{name} indicates the name of the type being defined. It is
-    an error to define a name multiple times.
-  \item \texttt{variants} is a JSON array, each value of which is an object
-    containing a member named \texttt{type} that has a value indicating one
-    possible type that they enumerated type can take. The type MUST have
-    been previously defined.  The variants array MUST NOT be empty. Each
-    variant has a type, but is otherwise unnamed.
-\end{itemize}
-
-%--------------------------------------------------------------------------------------------------
-\subsection{Structure Types}
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Structure Types}
 
 If an intermediate representation JSON object contains an \texttt{irobject}
 member with the value \texttt{struct}, then that object defines a new
@@ -209,6 +212,37 @@ the object MUST also include the following members:
     the fields array MUST be unique, but multiple elements can have the
     same type.
   \item \texttt{constraints} ...
+\end{itemize}
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Enumerated Types}
+
+If an intermediate representation JSON object contains an \texttt{irobject}
+member with the value \texttt{enum}, then that object defines a new enumerated
+type. For example:
+
+\begin{verbatim}
+  {
+    'irobject'    : 'enum'
+    'name'        : '<string>',
+    'variants'    : [
+      {'type' : '<typename>'},
+      ...
+    ]
+  }
+\end{verbatim}
+
+An enumerated type represents data that can be one of several possible
+variants. In addition to the \texttt{irobject} member, the object MUST
+also include the following members:
+\begin{itemize}
+  \item \texttt{name} indicates the name of the type being defined. It is
+    an error to define a name multiple times.
+  \item \texttt{variants} is a JSON array, each value of which is an object
+    containing a member named \texttt{type} that has a value indicating one
+    possible type that they enumerated type can take. The type MUST have
+    been previously defined.  The variants array MUST NOT be empty. Each
+    variant has a type, but is otherwise unnamed.
 \end{itemize}
 
 %--------------------------------------------------------------------------------------------------
