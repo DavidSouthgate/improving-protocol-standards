@@ -145,7 +145,8 @@ types, and cannot be used interchangeably, even though they have the same
 representation.
 
 A new type can be derived from any existing type. It is an error to define
-a new type that has the same name as an existing type.
+a new type that has the same name as an existing type. A new type cannot be
+derived from itself.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Arrays}
@@ -170,7 +171,8 @@ the following members:
   \item \texttt{name} indicates the name of the type being defined. It is
     an error to define a name multiple times.
   \item \texttt{elementType} indicates the type of the elements of the
-    array.
+    array. The \texttt{elementType} MUST NOT be the same as the array's
+    type (i.e., the \texttt{name}).
   \item \texttt{length} indicates the number of elements in the array. This
     MAY be set to \texttt{null} to indicate an array of unspecified length.
 \end{itemize}
