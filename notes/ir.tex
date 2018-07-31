@@ -144,6 +144,10 @@ MUST be either a structure type or an enumerated type. The array of PDUs
 MUST NOT be empty, and their types MUST be declared in the \texttt{types}
 array.
 
+\todo{Should members of the ``pdus'' field be irobjects?}
+
+\todo{Should the ``pdus'' field be an array, or an ``enum'' irobject?}
+
 %--------------------------------------------------------------------------------------------------
 \subsection{Type Definitions}
 \label{sec:types}
@@ -253,6 +257,8 @@ the object MUST also include the following members:
   \item \texttt{constraints} ...
 \end{itemize}
 
+\todo{Should fields be irobjects?}
+
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Enumerated Types}
 
@@ -284,6 +290,8 @@ also include the following members:
     variant has a type, but is otherwise unnamed.
 \end{itemize}
 
+\todo{Should variants be irobjects?}
+
 %--------------------------------------------------------------------------------------------------
 \subsection{Function Prototypes}
 \label{sec:funcs}
@@ -309,6 +317,8 @@ prototype. For example:
     'returnType'  : 'bit',
   }
 \end{verbatim}
+
+\todo{Should parameters be irobjects?}
 
 %==================================================================================================
 \section{Acknowledgements}
