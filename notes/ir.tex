@@ -109,18 +109,57 @@ Whether other members are included in the object depends on the value of
 the \texttt{irobject} member.
 
 %--------------------------------------------------------------------------------------------------
-\subsection{Bits}
+\subsection{Protocols}
 
-A single primitive type is implicitly defined, the \texttt{Bit}.
-A Bit may have value 0 or 1, or have an unspecified value. 
+The top-level object in the intermediate representation is a
+\texttt{Protocol}. A \texttt{Protocol} is represented as a JSON object
+containing an \texttt{irobject} member with the value \texttt{protocol}.
+
+\begin{verbatim}
+  {
+    'irobject'    : 'protocol',
+    'name'        : 'RTPv2',
+    'types'       : [
+                      ...
+                    ],
+    'functions'   : [
+                      ...
+                    ],
+    'pdus'        : [
+                      'RtpPacket',
+                      'RtcpPacket'
+                    ]
+  }
+\end{verbatim}
+
+The \texttt{Protocol} object MUST contain a \texttt{name} member.
+
+The \texttt{Protocol} object MUST contain a \texttt{types} member that
+contains a list of types used by the protocol, each being a JSON object
+as listed in Section \ref{sec:types}, and a \texttt{funcs} member that
+contains a list of functions used by the protocol, described in Section
+\ref{sec:funcs}. These arrays MAY be empty.
+
+The \texttt{Protocol} object MUST contain a \texttt{pdus} member. This
+will be an array listing the types of the protocol data units. Each PDU
+MUST be either a structure type or an enumerated type. The array of PDUs
+MUST NOT be empty, and their types MUST be declared in the \texttt{types}
+array.
 
 %--------------------------------------------------------------------------------------------------
 \subsection{Type Definitions}
+\label{sec:types}
 
 As the intermediate representation is loaded, it defines other types. Types
 MUST NOT be used before they have been defined.
 Types can be either aliases, compound types (arrays or structure types), or
 enumerated types.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Bits}
+
+A single primitive type is implicitly defined, the \texttt{Bit}.
+A Bit may have value 0 or 1, or have an unspecified value. 
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Aliases}
@@ -249,6 +288,7 @@ also include the following members:
 
 %--------------------------------------------------------------------------------------------------
 \subsection{Function Prototypes}
+\label{sec:funcs}
 
 If an intermediate representation JSON object contains an \texttt{irobject}
 member with the value \texttt{function}, then that object defines a function
