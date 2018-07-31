@@ -119,10 +119,7 @@ containing an \texttt{irobject} member with the value \texttt{protocol}.
   {
     'irobject'    : 'protocol',
     'name'        : 'RTPv2',
-    'types'       : [
-                      ...
-                    ],
-    'functions'   : [
+    'definitions' : [
                       ...
                     ],
     'pdus'        : [
@@ -134,11 +131,12 @@ containing an \texttt{irobject} member with the value \texttt{protocol}.
 
 The \texttt{Protocol} object MUST contain a \texttt{name} member.
 
-The \texttt{Protocol} object MUST contain a \texttt{types} member that
-contains a list of types used by the protocol, each being a JSON object
-as listed in Section \ref{sec:types}, and a \texttt{funcs} member that
-contains a list of functions used by the protocol, described in Section
-\ref{sec:funcs}. These arrays MAY be empty.
+The \texttt{Protocol} object MUST contain a \texttt{definitions} member
+that contains an array of objects representing the types and functions
+used by the protocol, as defined in Section \ref{sec:types} and Section
+\ref{sec:funcs} of this memo. This array MUST NOT be empty. The definitions
+are presented as a single list, since types and functions can reference
+each other.
 
 The \texttt{Protocol} object MUST contain a \texttt{pdus} member. This
 will be an array listing the types of the protocol data units. Each PDU
