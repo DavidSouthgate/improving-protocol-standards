@@ -168,6 +168,14 @@
 %  - Say what your solution achieves
 %  - Say what follows from your solution
 
+Standards documents have been slow to adopt formalisms that go beyond the limited syntax
+that can be captured by ASCII packet diagrams. As increasingly complex protocols,
+including QUIC, are standardised, this situation is likely to result in buggy,
+non-conformant implementations. In this paper, we develop the Glasgow Packet
+Representation, an abstract, intermediate representation that fully captures the syntax of
+packet formats. Specifying protocols in this way reduces human error, and increases the
+utility of standards documents.
+
 \end{abstract}
 
 \maketitle
@@ -205,8 +213,8 @@ While there have been many previous efforts to develop formalisms that better ca
 syntax of protocols, these are largely unsuitable for QUIC. QUIC includes protected
 packets, requiring decryption using data from packets earlier in the flow. Prior work,
 which has focussed on the parsing of individual, unencrypted packets, is unable to model
-this. As a result, QUIC, and the broader shift to pervasive encryption \cite{rfc7258},
-require a new formalism.
+this. As a result, QUIC, and the broader shift towards pervasive encryption
+\cite{rfc7258}, require a new formalism.
 
 % Paragraph 3: "In this paper, we show that...". This is the key paragraph
 % in the introduction - you summarize, in one paragraph, what are the main
@@ -218,14 +226,14 @@ require a new formalism.
 % State your contributions: these drive the entire paper.  Contributions
 % should be refutable claims, not vague generic statements.
 
-In this paper, we describe SYSTEMNAME, a framework for formalising the description of
-packet layers. SYSNAME is comprised of three components: an input parser, an intermediary
-representation, and an output formatter. This architecture allows packets to be described
-using a number of different languages, and for such descriptions to be parsed into a
-common intermediate form. Output formatters can then use this intermediate representation
-to generate various artefacts, such as a parser. We provide an example of how this
-framework can be used to capture the complexity of QUIC, and automatically generate parser
-code.
+In this paper, we describe a framework for formalising the description of packet formats.
+Our framework is comprised of three components: an input parser, an intermediary
+representation (the Glasgow Packet Representation), and an output formatter. This
+architecture allows packets to be described using a number of different languages, and for
+such descriptions to be parsed into a common intermediate form. Output formatters can then
+use this intermediate representation to generate various artefacts, including parser code.
+We provide an example of how this framework can be used to capture the complexity of QUIC,
+and automatically generate parser code.
 
 % Paragraph 4: What are the differences between your work, and what others
 % have done? Keep this at a high level, as you can refer to future sections
@@ -237,9 +245,9 @@ There have been many previous attempts at defining a packet format definition la
 including PacketTypes \cite{mccann2000packet}, Melange \cite{madhavapeddy2007melange},
 PADS \cite{fisher2005pads}, and DataScript \cite{back2002datascript}. While these
 languages differ, both in their syntax and the protocol features they can model, all are
-designed for parsing individual, unencrypted packets. SYSTEMNAME supports QUIC, and other
-protocols, by including \emph{contexts} and \emph{functions}, to support the flow-based
-parsing of encrypted packets.
+designed for parsing individual, unencrypted packets. Our framework supports QUIC, and
+other protocols, by including \emph{contexts} and \emph{functions}, to support the
+flow-based parsing of encrypted packets.
 
 % Paragraph 5: "We structure the remainder of this paper as follows." Give
 % the reader a road-map for the rest of the paper. Try to avoid redundant
@@ -247,11 +255,12 @@ parsing of encrypted packets.
 
 We structure the remainder of this paper as follows. Section \ref{sec:motivation} expands
 on our motivation, by assessing the utility provided by an ASCII diagram from the QUIC
-standards documents. Section \ref{sec:SYSTEMNAME} describes SYSTEMNAME, our proposed
-framework for describing packet formats. Section \ref{sec:casestudy} provides an example
-of how SYSTEMNAME can be used to better capture the syntax of QUIC's short header packets.
-Finally, Section \ref{sec:related} discusses related work, and Section
-\ref{sec:conclusion} concludes.
+standards documents, and outlining the requirements of our formalism. Section
+\ref{sec:formalising} describes our proposed framework for describing packet formats,
+including our intermediary representation, the Glasgow Packet Representation. Section
+\ref{sec:casestudy} provides an example of how our framework can be used to capture
+the syntax of QUIC's short header packets. Finally, Section \ref{sec:related} discusses
+related work, and Section \ref{sec:conclusion} concludes.
 
 %==================================================================================================
 % Concentrate single-mindedly on a narrative that:
