@@ -238,7 +238,7 @@ including PacketTypes \cite{mccann2000packet}, Melange \cite{madhavapeddy2007mel
 PADS \cite{fisher2005pads}, and DataScript \cite{back2002datascript}. While these
 languages differ, both in their syntax and the protocol features they can model, all are
 designed for parsing individual, unencrypted packets. SYSTEMNAME supports QUIC, and other
-protocols, by including \emph{contexts} and \emph{prototypes}, to support the flow-based
+protocols, by including \emph{contexts} and \emph{functions}, to support the flow-based
 parsing of encrypted packets.
 
 % Paragraph 5: "We structure the remainder of this paper as follows." Give
@@ -273,12 +273,13 @@ Finally, Section \ref{sec:related} discusses related work, and Section
 % the evidence, and forward-reference it from the claim. 
 %==================================================================================================
 
-\section{Motivation}
+\section{Motivation \& Requirements}
 \label{sec:motivation}
 
 \begin{figure}
 	\centering
-    \begin{Verbatim}[fontsize=\scriptsize]
+	\vspace{3mm}
+    \begin{BVerbatim}[fontsize=\scriptsize]
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
@@ -290,12 +291,50 @@ Finally, Section \ref{sec:related} discusses related work, and Section
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                     Protected Payload (*)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-    \end{Verbatim}
-    \caption{My Caption}
+    \end{BVerbatim}
+    \caption{QUIC short header format (from \cite{draft-ietf-quic-transport-latest})}
     \label{fig:quic-short-hdr}
 \end{figure}
 
-Figure \ref{fig:quic-short-hdr}
+Broadly, the requirements for our formalism are that it should:
+\begin{itemize}
+	\item be able to fully capture the information required for \emph{parsing} protocol
+		  data units (PDUs);
+	\item accommodate various classes of PDU syntax specifications, ranging from ASCII
+		  packet header diagrams to packet description languages;
+	\item produce output in a number of formats, ranging in complexity from diagrams
+	      to parser code.
+\end{itemize}
+
+To demonstrate the limitations of ASCII packet header diagrams in capturing all of the
+information required to fully parse PDUs, we consider the diagram for QUIC's short header
+PDU, as shown in Figure \ref{fig:quic-short-hdr}. From this diagram, it is clear how the
+first octet should be parsed: the widths of each field are known, and, for some, the
+values specified. However, it is not clear from the diagram how the Destination Connection
+ID, Packet Number, and Protected Payload fields should be parsed. Determining the syntax
+of these fields requires the prose descriptions that accompany the diagram.
+
+The length of the Destination Connection ID is determined by the connection IDs exchanged
+(within long header PDUs) between the client and server earlier in the flow. As a result,
+a single short header packet does not contain all of the information required to parse
+this field. To fully capture the syntax of this field, our formalism must allow per-flow
+state to be modelled.
+
+Both the Packet Number and Protected Payload fields are encrypted, using different
+algorithms. Given the complexity involved, it is sufficient for our formalism to model the
+prototype of the decryption functions needed to parse these fields. It is important to
+note that our formalism need only capture helper functions (such as decryption) that are
+required for the \emph{parsing} of PDUs: packet \emph{processing} is out-of-scope.
+Modelling decryption here is necessary because parsing QUIC's packets does not end with
+the encrypted fields; QUIC specifies the syntax of the fields after they've been
+decrypted.
+
+To fulfil our second two requirements -- flexibility in both input and output formats --
+our formalism is an abstract, intermediary representation language. Such a representation
+can be generated from an arbitrary set of input formats, and can itself be used to 
+produce various outputs. Abstracting and decoupling the input and output formats in this
+way reduces complexity.
+
 %==================================================================================================
 \section{SYSTEMNAME}
 \label{sec:SYSTEMNAME}
