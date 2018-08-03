@@ -117,14 +117,14 @@ containing an \texttt{irobject} member with the value \texttt{protocol}.
 
 \begin{verbatim}
   {
-    'irobject'    : 'protocol',
-    'name'        : 'RTPv2',
-    'definitions' : [
+    "irobject"    : "protocol",
+    "name"        : "RTPv2",
+    "definitions" : [
                       ...
                     ],
-    'pdus'        : [
-       {'type' : 'RtpPacket'},
-       {'type' : 'RtcpPacket'}
+    "pdus"        : [
+       {"type" : "RtpPacket"},
+       {"type" : "RtcpPacket"}
     ]
   }
 \end{verbatim}
@@ -169,9 +169,9 @@ defined based on the Bit type as follows:
 
 \begin{verbatim}
   {
-    'irobject'    : 'newtype',
-    'name'        : 'SpinBit',
-    'derivedFrom' : 'Bit'
+    "irobject"    : "newtype",
+    "name"        : "SpinBit",
+    "derivedFrom" : "Bit"
   }
 \end{verbatim}
 
@@ -195,10 +195,10 @@ type Bit, could be defined as follows:
 
 \begin{verbatim}
   {
-    'irobject'    : 'array',
-    'name'        : 'SeqNum',
-    'elementType' : 'Bit'
-    'length'      : 16
+    "irobject"    : "array",
+    "name"        : "SeqNum",
+    "elementType" : "Bit"
+    "length"      : 16
   }
 \end{verbatim}
 
@@ -223,17 +223,17 @@ structure type. For example:
 
 \begin{verbatim}
   {
-    'irobject'    : 'struct'
-    'name'        : '<string>',
-    'fields'      : [
+    "irobject"    : "struct"
+    "name"        : "<string>",
+    "fields"      : [
       {
-        'name'      : '...',
-        'type'      : '...',
-        'isPresent' : <boolean constraint>
+        "name"      : "...",
+        "type"      : "...",
+        "isPresent" : <boolean constraint>
       },
       ...
     ],
-    'constraints' : [
+    "constraints" : [
       ...
     ]
   }
@@ -266,10 +266,10 @@ type. For example:
 
 \begin{verbatim}
   {
-    'irobject'    : 'enum'
-    'name'        : '<string>',
-    'variants'    : [
-      {'type' : '<typename>'},
+    "irobject"    : "enum"
+    "name"        : "<string>",
+    "variants"    : [
+      {"type" : "<typename>"},
       ...
     ]
   }
@@ -298,19 +298,19 @@ prototype. For example:
 
 \begin{verbatim}
   {
-    'irobject'    : 'function'
-    'name'        : 'decrypt',
-    'parameters'  : [
+    "irobject"    : "function"
+    "name"        : "decrypt",
+    "parameters"  : [
       {
-        'name' : 'enc_payload',
-        'type' : 'cryptobits'
+        "name" : "enc_payload",
+        "type" : "cryptobits"
       },
       {
-        'name' : 'pn',
-        'type' : 'full_packet_num'
+        "name" : "pn",
+        "type" : "full_packet_num"
       }
     ],
-    'returnType'  : 'bit',
+    "returnType"  : "bit",
   }
 \end{verbatim}
 
