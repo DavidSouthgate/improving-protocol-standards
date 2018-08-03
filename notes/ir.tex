@@ -104,7 +104,7 @@ such objects and perform the operations described, in the order that they
 objects are read.
 
 Each JSON object in the intermediate representation MUST contain a member
-with name \texttt{irobject} that describes the contents of the object.
+named \texttt{irobject} that describes the contents of the object.
 Whether other members are included in the object depends on the value of
 the \texttt{irobject} member.
 
@@ -152,6 +152,9 @@ As the intermediate representation is loaded, it defines other types. Types
 MUST NOT be used before they have been defined.
 Types can be either aliases, compound types (arrays or structure types), or
 enumerated types.
+
+Type names MUST begin with an upper-case letter ('A'...'Z') and can contain
+upper- and lower-case letters, numbers, and \verb|$| signs.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Bits}
@@ -313,6 +316,9 @@ prototype. For example:
     "returnType"  : "bit",
   }
 \end{verbatim}
+
+Function names MUST begin with an lower-case letter ('a'...'z') and can contain
+upper- and lower-case letters, numbers, and \verb|$| signs.
 
 %==================================================================================================
 \section{Acknowledgements}
