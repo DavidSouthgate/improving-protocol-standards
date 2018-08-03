@@ -117,15 +117,15 @@ containing an \texttt{irobject} member with the value \texttt{protocol}.
 
 \begin{verbatim}
   {
-    'irobject'    : 'protocol',
-    'name'        : 'RTPv2',
-    'definitions' : [
+    "irobject"    : "protocol",
+    "name"        : "RTPv2",
+    "definitions" : [
                       ...
                     ],
-    'pdus'        : [
-                      'RtpPacket',
-                      'RtcpPacket'
-                    ]
+    "pdus"        : [
+       {"type" : "RtpPacket"},
+       {"type" : "RtcpPacket"}
+    ]
   }
 \end{verbatim}
 
@@ -143,10 +143,6 @@ will be an array listing the types of the protocol data units. Each PDU
 MUST be either a structure type or an enumerated type. The array of PDUs
 MUST NOT be empty, and their types MUST be declared in the \texttt{types}
 array.
-
-\todo{Should members of the ``pdus'' field be irobjects?}
-
-\todo{Should the ``pdus'' field be an array, or an ``enum'' irobject?}
 
 %--------------------------------------------------------------------------------------------------
 \subsection{Type Definitions}
@@ -173,9 +169,9 @@ defined based on the Bit type as follows:
 
 \begin{verbatim}
   {
-    'irobject'    : 'newtype',
-    'name'        : 'SpinBit',
-    'derivedFrom' : 'Bit'
+    "irobject"    : "newtype",
+    "name"        : "SpinBit",
+    "derivedFrom" : "Bit"
   }
 \end{verbatim}
 
@@ -199,10 +195,10 @@ type Bit, could be defined as follows:
 
 \begin{verbatim}
   {
-    'irobject'    : 'array',
-    'name'        : 'SeqNum',
-    'elementType' : 'Bit'
-    'length'      : 16
+    "irobject"    : "array",
+    "name"        : "SeqNum",
+    "elementType" : "Bit"
+    "length"      : 16
   }
 \end{verbatim}
 
@@ -227,18 +223,19 @@ structure type. For example:
 
 \begin{verbatim}
   {
-    'irobject'    : 'struct'
-    'name'        : '<string>',
-    'fields'      : [
-                      {
-                        'name' : '...',
-                        'type' : ...
-                      },
-                      ...
-                    ],
-    'constraints' : [
-                      ...
-                    ]
+    "irobject"    : "struct"
+    "name"        : "<string>",
+    "fields"      : [
+      {
+        "name"      : "...",
+        "type"      : "...",
+        "isPresent" : <boolean constraint>
+      },
+      ...
+    ],
+    "constraints" : [
+      ...
+    ]
   }
 \end{verbatim}
 
@@ -249,15 +246,16 @@ the object MUST also include the following members:
   \item \texttt{name} indicates the name of the type being defined. It is
     an error to define a name multiple times.
   \item \texttt{fields} is a JSON array, each value of which is an object
-    containing two members, \texttt{name} and \texttt{type}, that indicate
-    the fields's name and type. The type MUST have been previously defined.
-    The fields array MUST NOT be empty; the names of each element within
-    the fields array MUST be unique, but multiple elements can have the
-    same type.
+    containing three members, \texttt{name}, \texttt{type}, and \texttt{isPresent}.
+    The first two indicate the field's name and type. The type MUST have
+    been previously defined; the names of each element within the fields
+    array MUST be unique, but multiple elements can have the same type.
+    The \texttt{isPresent} field accounts for OPTIONAL fields, and gives
+    the constraint that specifies whether the field is present in this
+    instance of the struct.
+    The fields array MUST NOT be empty.
   \item \texttt{constraints} ...
 \end{itemize}
-
-\todo{Should fields be irobjects?}
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Enumerated Types}
@@ -268,10 +266,10 @@ type. For example:
 
 \begin{verbatim}
   {
-    'irobject'    : 'enum'
-    'name'        : '<string>',
-    'variants'    : [
-      {'type' : '<typename>'},
+    "irobject"    : "enum"
+    "name"        : "<string>",
+    "variants"    : [
+      {"type" : "<typename>"},
       ...
     ]
   }
@@ -290,8 +288,6 @@ also include the following members:
     variant has a type, but is otherwise unnamed.
 \end{itemize}
 
-\todo{Should variants be irobjects?}
-
 %--------------------------------------------------------------------------------------------------
 \subsection{Function Prototypes}
 \label{sec:funcs}
@@ -302,23 +298,21 @@ prototype. For example:
 
 \begin{verbatim}
   {
-    'irobject'    : 'function'
-    'name'        : 'decrypt',
-    'parameters'  : [
+    "irobject"    : "function"
+    "name"        : "decrypt",
+    "parameters"  : [
       {
-        'name' : 'enc_payload',
-        'type' : 'cryptobits'
+        "name" : "enc_payload",
+        "type" : "cryptobits"
       },
       {
-        'name' : 'pn',
-        'type' : 'full_packet_num'
+        "name" : "pn",
+        "type" : "full_packet_num"
       }
     ],
-    'returnType'  : 'bit',
+    "returnType"  : "bit",
   }
 \end{verbatim}
-
-\todo{Should parameters be irobjects?}
 
 %==================================================================================================
 \section{Acknowledgements}
