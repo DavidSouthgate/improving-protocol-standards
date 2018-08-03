@@ -226,15 +226,16 @@ structure type. For example:
     'irobject'    : 'struct'
     'name'        : '<string>',
     'fields'      : [
-                      {
-                        'name' : '...',
-                        'type' : ...
-                      },
-                      ...
-                    ],
+      {
+        'name'      : '...',
+        'type'      : '...',
+        'isPresent' : <boolean constraint>
+      },
+      ...
+    ],
     'constraints' : [
-                      ...
-                    ]
+      ...
+    ]
   }
 \end{verbatim}
 
@@ -245,11 +246,14 @@ the object MUST also include the following members:
   \item \texttt{name} indicates the name of the type being defined. It is
     an error to define a name multiple times.
   \item \texttt{fields} is a JSON array, each value of which is an object
-    containing two members, \texttt{name} and \texttt{type}, that indicate
-    the fields's name and type. The type MUST have been previously defined.
-    The fields array MUST NOT be empty; the names of each element within
-    the fields array MUST be unique, but multiple elements can have the
-    same type.
+    containing three members, \texttt{name}, \texttt{type}, and \texttt{isPresent}.
+    The first two indicate the field's name and type. The type MUST have
+    been previously defined; the names of each element within the fields
+    array MUST be unique, but multiple elements can have the same type.
+    The \texttt{isPresent} field accounts for OPTIONAL fields, and gives
+    the constraint that specifies whether the field is present in this
+    instance of the struct.
+    The fields array MUST NOT be empty.
   \item \texttt{constraints} ...
 \end{itemize}
 
