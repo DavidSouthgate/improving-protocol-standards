@@ -243,11 +243,13 @@ and automatically generate parser code.
 
 There have been many previous attempts at defining a packet format definition language,
 including PacketTypes \cite{mccann2000packet}, Melange \cite{madhavapeddy2007melange},
-PADS \cite{fisher2005pads}, and DataScript \cite{back2002datascript}. While these
-languages differ, both in their syntax and the protocol features they can model, all are
-designed for parsing individual, unencrypted packets. Our framework supports QUIC, and
-other protocols, by including \emph{contexts} and \emph{functions}, to support the
-flow-based parsing of encrypted packets.
+PADS \cite{fisher2005pads}, and DataScript \cite{back2002datascript}. These languages
+typically focus on the parsing of individual, unencrypted packets. Ad-hoc languages, such
+as the presentation language used in the TLS 1.3 specification
+\cite{draft-ietf-tls-tls13-28}, also see limited adoption. In contrast to these language
+definitions, in this paper we develop an abstract protocol representation that, with
+\emph{contexts} and \emph{functions} can describe the parsing of any protocol. We develop
+a language that generates this intermediate representation, and give examples using QUIC.
 
 % Paragraph 5: "We structure the remainder of this paper as follows." Give
 % the reader a road-map for the rest of the paper. Try to avoid redundant
