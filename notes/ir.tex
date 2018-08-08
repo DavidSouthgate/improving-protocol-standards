@@ -257,7 +257,11 @@ the object MUST also include the following members:
     the constraint that specifies whether the field is present in this
     instance of the struct.
     The fields array MUST NOT be empty.
-  \item \texttt{constraints} ...
+  \item \texttt{constraints} is a JSON array, containing objects that MUST have a
+    \texttt{constraint} member whose value is one of \texttt{constant},
+    \texttt{field\_name}, \texttt{binary}, or \texttt{ternary}, and that have the
+    corresponding structure as described in Section \ref{sec:constraints}. The
+    \texttt{constraints} array MAY be empty.
 \end{itemize}
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -319,6 +323,81 @@ prototype. For example:
 
 Function names MUST begin with an lower-case letter ('a'...'z') and can contain
 upper- and lower-case letters, numbers, and \verb|$| signs.
+
+%--------------------------------------------------------------------------------------------------
+\subsection{Constraints}
+\label{sec:constraints}
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{\texttt{constant}}
+
+Where \texttt{constraint} has the value \texttt{constant}, the JSON object MUST have the
+following structure:
+
+\begin{verbatim}
+  {
+    "constraint"    : "constant",
+    "value"         : "<integer>"
+  }
+\end{verbatim}
+
+All members MUST be set.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{\texttt{field\_name}}
+
+Where \texttt{constraint} has the value \texttt{field\_name}, the JSON object must have
+the following structure:
+
+\begin{verbatim}
+  {
+    "constraint" : "field_name",
+    "value"      : "<string>",
+    "property"   : "<'value'
+                    |'length'
+                    |'is_present'>"
+  }
+\end{verbatim}
+
+\texttt{value} MUST correspond to a field name defined within the \texttt{fields} JSON
+array of the enclosing structure object. \texttt{property} refers to one of the three
+inherent properties of fields: their value, length, or presence in the parsed structure.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{\texttt{binary}}
+
+Where \texttt{constraint} has the value \texttt{binary}, the JSON object must have
+the following structure:
+
+\begin{verbatim}
+  {
+    "constraint" : "binary",
+    "value"      : "<'|' |'&&'|'|' |'^' |'&' |'=='
+                    |'!='|'<='|'>='|'<' |'>' |'<<'
+                    |'>>'|'+' |'-' |'*' |'/' |'%'>",
+    "left"       : "<constraint>",
+    "right"	     : "<constraint"
+  }
+\end{verbatim}
+
+Both \texttt{left} and \texttt{right} MUST be set to constraint objects.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{\texttt{ternary}}
+
+Where \texttt{constraint} has the value \texttt{ternary}, the JSON object's structure is:
+
+\begin{verbatim}
+  {
+    "constraint" : "ternary",
+    "value"      : "?:",
+    "cond"       : "<constraint>",
+    "true"       : "<constraint>",
+    "else"       : "<constraint>"
+  }
+\end{verbatim}
+
+\texttt{cond}, \texttt{true}, and \texttt{else} MUST be set to constraint objects.
 
 %==================================================================================================
 \section{Acknowledgements}
