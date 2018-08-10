@@ -178,36 +178,20 @@ represented as in the following example:
 \begin{alltt}
   {
     "construct"   : "trait"
-    "name"        : "Eq",
+    "name"        : "\emph{name}",
     "methods"     : [
       \{
-        "name"       : "eq",
+        "name"       : "\emph{method name}",
         "parameters" : [
           \{
-            "name"   : "self",
-            "type"   : null
+            "name"   : "\emph{parameter name}",
+            "type"   : "\emph{parameter type}"
           \},
-          \{
-            "name"   : "other",
-            "type"   : null,
-          \}
+          ...
         ],
-        "returnType" : "Boolean"
+        "returnType" : "\emph{return type}"
       \},
-      \{
-        "name"       : "ne",
-        "parameters" : [
-          \{
-            "name"   : "self",
-            "type"   : null
-          \},
-          \{
-            "name"   : "other",
-            "type"   : null,
-          \}
-        ],
-        "returnType" : "Boolean"
-      \}
+      ...
     ]
   }
 \end{alltt}
@@ -282,8 +266,8 @@ bit string type constructor is represented as in the following example:
 \begin{alltt}
   \{
     "construct"   : "bitstring"
-    "name"        : "SeqNum",
-    "width"       : 16
+    "name"        : "\emph{type name}",
+    "width"       : \emph{number of bits}
   \}
 \end{alltt}
 \normalsize
@@ -318,9 +302,9 @@ array type constructor is represented as in the following example:
 \begin{alltt}
   \{
     "construct"   : "array",
-    "name"        : "CsrcList",
-    "elementType" : "Bit32"
-    "length"      : 4
+    "name"        : "\emph{type name}",
+    "elementType" : "\emph{element type}"
+    "length"      : \emph{number of elements}
   \}
 \end{alltt}
 \normalsize
@@ -350,12 +334,12 @@ constructor for a structure type is represented as in the following example:
 \begin{alltt}
   \{
     "construct"   : "struct"
-    "name"        : "<string>",
+    "name"        : "\emph{type name}",
     "fields"      : [
       \{
-        "name"      : "...",
-        "type"      : "...",
-        "isPresent" : <boolean constraint>
+        "name"      : "\emph{field name}",
+        "type"      : "\emph{field type}",
+        "isPresent" : \emph{constraint}
       \},
       ...
     ],
@@ -409,9 +393,9 @@ constructor for an enumerated type is represented as in the following example:
 \begin{alltt}
   \{
     "construct"   : "enum"
-    "name"        : "<string>",
+    "name"        : "\emph{type name}",
     "variants"    : [
-      \{"type" : "<typename>"\},
+      \{"type" : "\emph{type name}"\},
       ...
     ]
   \}
@@ -447,11 +431,11 @@ example:
 \begin{alltt}
   \{
     "construct"   : "newtype",
-    "name"        : "SpinBit",
-    "derivedFrom" : "Bit",
+    "name"        : "\emph{type name}",
+    "derivedFrom" : "\emph{type name}",
     "alsoImplements" : [
-      \{"trait" : "TraitName"\},
-      \{"trait" : "AdditionalTrait"\}
+      \{"trait" : "\emph{trait name}"\},
+      \{"trait" : "\emph{trait name}"\}
     ]
   \}
 \end{alltt}
@@ -496,18 +480,15 @@ function type constructor is represented as in the following example:
 \begin{alltt}
   \{
     "construct"   : "function"
-    "name"        : "decrypt",
+    "name"        : "\emph{function name}",
     "parameters"  : [
       \{
-        "name" : "enc\_payload",
-        "type" : "Cryptobits"
+        "name" : "\emph{parameter name}",
+        "type" : "\emph{parameter type}"
       \},
-      \{
-        "name" : "pn",
-        "type" : "FullPacketNum"
-      \}
+      ...
     ],
-    "returnType"  : "Bit",
+    "returnType"  : "\emph{return type name}",
   \}
 \end{alltt}
 \normalsize
@@ -526,13 +507,13 @@ protocol type constructor is represented as in the following example:
 \begin{alltt}
   \{
     "construct"   : "protocol",
-    "name"        : "RTPv2",
+    "name"        : "\emph{protocol type name}",
     "definitions" : [
                       ...
                     ],
     "pdus"        : [
-       \{"type" : "RtpPacket"\},
-       \{"type" : "RtcpPacket"\}
+      \{"type" : "\emph{PDU type name}"\},
+      \{"type" : "\emph{PDU type name}"\}
     ]
   \}
 \end{alltt}
