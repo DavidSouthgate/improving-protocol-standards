@@ -200,39 +200,196 @@ Unspecified types are indicated by \code{null} values in the JSON definition
 (this is distinct from a return value of \code{Nothing} that needs to be
 explicitly stated).
 
-The runtime defines the following standard traits, where \verb|_| indicates
-an unspecified type:
+The runtime implements the \code{Value} trait. This defines methods
+that can be used to get and set the value of an instance of a type. 
+Its definition is equivalent to the following definition in the JSON
+form of the intermediate representation:
 \footnotesize
 \begin{alltt}
-  trait Value \{
-    method get(self : \_) -> \_
-    method set(self : \_, value : \_) -> Nothing
+  \{
+    "construct"   : "trait"
+    "name"        : "Value",
+    "methods"     : [
+      \{
+        "name"       : "get",
+        "parameters" : [
+          \{"name"   : "self",  "type"   : null\}
+        ],
+        "returnType" : null
+      \},
+      \{
+        "name"       : "set",
+        "parameters" : [
+          \{"name"   : "self",  "type"   : null\},
+          \{"name"   : "value", "type"   : null\}
+        ],
+        "returnType" : "Nothing"
+      \}
+    ]
   \}
+\end{alltt}
+\normalsize
 
-  trait Equality \{
-    method eq(self : \_, other : \_) -> Boolean;
-    method ne(self : \_, other : \_) -> Boolean;
+The runtime implements the \code{Equality} trait. This defines methods that
+can be used to compare to instances of a type for equality.
+Its definition is equivalent to the following definition in the JSON
+form of the intermediate representation:
+\footnotesize
+\begin{alltt}
+  \{
+    "construct"   : "trait"
+    "name"        : "Equality",
+    "methods"     : [
+      \{
+        "name"       : "eq",
+        "parameters" : [
+          \{"name"   : "self",  "type"   : null\},
+          \{"name"   : "other", "type"   : null\}
+        ],
+        "returnType" : "Boolean"
+      \},
+      \{
+        "name"       : "ne",
+        "parameters" : [
+          \{"name"   : "self",  "type"   : null\},
+          \{"name"   : "other", "type"   : null\}
+        ],
+        "returnType" : "Boolean"
+      \}
+    ]
   \}
+\end{alltt}
+\normalsize
 
-  trait Ordinal \{
-    // <, <=, >, >=
-    method lt(self : \_, other : \_) -> Boolean;
-    method le(self : \_, other : \_) -> Boolean;
-    method gt(self : \_, other : \_) -> Boolean;
-    method ge(self : \_, other : \_) -> Boolean;
+The runtime implements the \code{Ordinal} trait. This defines methods that
+can be used to compare the values of instances of a type. 
+Its definition is equivalent to the following definition in the JSON
+form of the intermediate representation:
+\footnotesize
+\begin{alltt}
+  \{
+    "construct"   : "trait"
+    "name"        : "Ordinal",
+    "methods"     : [
+      \{
+        "name"       : "lt",
+        "parameters" : [
+          \{"name"   : "self",  "type"   : null\},
+          \{"name"   : "other", "type"   : null\}
+        ],
+        "returnType" : "Boolean"
+      \},
+      \{
+        "name"       : "le",
+        "parameters" : [
+          \{"name"   : "self",  "type"   : null\},
+          \{"name"   : "other", "type"   : null\}
+        ],
+        "returnType" : "Boolean"
+      \},
+      \{
+        "name"       : "gt",
+        "parameters" : [
+          \{"name"   : "self",  "type"   : null\},
+          \{"name"   : "other", "type"   : null\}
+        ],
+        "returnType" : "Boolean"
+      \},
+      \{
+        "name"       : "ge",
+        "parameters" : [
+          \{"name"   : "self",  "type"   : null\},
+          \{"name"   : "other", "type"   : null\}
+        ],
+        "returnType" : "Boolean"
+      \}
+    ]
   \}
+\end{alltt}
+\normalsize
 
-  trait Boolean \{
-    method and(self : \_, other : \_) -> Boolean;
-    method  or(self : \_, other : \_) -> Boolean;
-    method not(self : \_) -> Boolean;
+The runtime implements the \code{BooleanOps} trait. This defines methods
+that can be used to perform boolean operations on, and between, instances
+of a type.
+Its definition is equivalent to the following definition in the JSON
+form of the intermediate representation:
+\footnotesize
+\begin{alltt}
+  \{
+    "construct"   : "trait"
+    "name"        : "BooleanOps",
+    "methods"     : [
+      \{
+        "name"       : "and",
+        "parameters" : [
+          \{"name"   : "self",  "type"   : null\},
+          \{"name"   : "other", "type"   : null\}
+        ],
+        "returnType" : "Boolean"
+      \},
+      \{
+        "name"       : "or",
+        "parameters" : [
+          \{"name"   : "self",  "type"   : null\},
+          \{"name"   : "other", "type"   : null\}
+        ],
+        "returnType" : "Boolean"
+      \},
+      \{
+        "name"       : "not",
+        "parameters" : [
+          \{"name"   : "self",  "type"   : null\}
+        ],
+        "returnType" : "Boolean"
+      \}
+    ]
   \}
+\end{alltt}
+\normalsize
 
-  trait Arithmetic \{
-    method     plus(self : \_, other : \_) -> \_;
-    method    minus(self : \_, other : \_) -> \_;
-    method multiply(self : \_, other : \_) -> \_;
-    method   divide(self : \_, other : \_) -> \_;
+The runtime implements the \code{ArithmeticOps} trait. This defines methods
+that can be used to perform arithmetic operations on instances of a type.
+Its definition is equivalent to the following definition in the JSON
+form of the intermediate representation:
+\footnotesize
+\begin{alltt}
+  \{
+    "construct"   : "trait"
+    "name"        : "ArithmeticOps",
+    "methods"     : [
+      \{
+        "name"       : "plus",
+        "parameters" : [
+          \{"name"   : "self",  "type"   : null\},
+          \{"name"   : "other", "type"   : null\}
+        ],
+        "returnType" : null
+      \},
+      \{
+        "name"       : "minus",
+        "parameters" : [
+          \{"name"   : "self",  "type"   : null\},
+          \{"name"   : "other", "type"   : null\}
+        ],
+        "returnType" : null
+      \},
+      \{
+        "name"       : "multiply",
+        "parameters" : [
+          \{"name"   : "self",  "type"   : null\},
+          \{"name"   : "other", "type"   : null\}
+        ],
+        "returnType" : null
+      \},
+      \{
+        "name"       : "divide",
+        "parameters" : [
+          \{"name"   : "self",  "type"   : null\},
+          \{"name"   : "other", "type"   : null\}
+        ],
+        "returnType" : null
+      \}
+    ]
   \}
 \end{alltt}
 \normalsize
