@@ -308,6 +308,7 @@ have the same element type, \code{length}, and their elements are equal.
 
 In the JSON form of the intermediate representation, an invocation of the
 array type constructor is represented as in the following example:
+\footnotesize
 \begin{verbatim}
   {
     "construct"   : "array",
@@ -316,6 +317,7 @@ array type constructor is represented as in the following example:
     "length"      : 4
   }
 \end{verbatim}
+\normalsize
 The \code{name} field specifies the name of the newly defined type. The
 name is formed of upper- and lower-case ASCII letters, digits, and dollar
 signs (\code{A-Za-z0-9\$}).  It MUST begin with an upper case letter
@@ -553,12 +555,14 @@ structure type or enumerated type.
 Where \texttt{constraint} has the value \texttt{constant}, the JSON object MUST have the
 following structure:
 
+\footnotesize
 \begin{verbatim}
   {
     "constraint"    : "constant",
     "value"         : "<integer>"
   }
 \end{verbatim}
+\normalsize
 
 All members MUST be set.
 
@@ -567,7 +571,7 @@ All members MUST be set.
 
 Where \texttt{constraint} has the value \texttt{field\_name}, the JSON object must have
 the following structure:
-
+\footnotesize
 \begin{verbatim}
   {
     "constraint" : "field_name",
@@ -577,7 +581,7 @@ the following structure:
                     |'is_present'>"
   }
 \end{verbatim}
-
+\normalsize
 \texttt{value} MUST correspond to a field name defined within the \texttt{fields} JSON
 array of the enclosing structure object. \texttt{property} refers to one of the three
 inherent properties of fields: their value, length, or presence in the parsed structure.
@@ -587,7 +591,7 @@ inherent properties of fields: their value, length, or presence in the parsed st
 
 Where \texttt{constraint} has the value \texttt{binary}, the JSON object must have
 the following structure:
-
+\footnotesize
 \begin{verbatim}
   {
     "constraint" : "binary",
@@ -598,14 +602,14 @@ the following structure:
     "right"	     : "<constraint"
   }
 \end{verbatim}
-
+\normalsize
 Both \texttt{left} and \texttt{right} MUST be set to constraint objects.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{\texttt{ternary}}
 
 Where \texttt{constraint} has the value \texttt{ternary}, the JSON object's structure is:
-
+\footnotesize
 \begin{verbatim}
   {
     "constraint" : "ternary",
@@ -615,7 +619,7 @@ Where \texttt{constraint} has the value \texttt{ternary}, the JSON object's stru
     "else"       : "<constraint>"
   }
 \end{verbatim}
-
+\normalsize
 \texttt{cond}, \texttt{true}, and \texttt{else} MUST be set to constraint objects.
 
 %==================================================================================================
