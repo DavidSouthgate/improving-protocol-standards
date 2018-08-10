@@ -259,26 +259,27 @@ an unspecified type:
 \subsection{Representable Types}
 \label{sec:representable}
 
+The runtime does not define any representable types. Rather, it defines
+a number of \emph{type constructors} that allow appropriate types to be
+created as needed to represent a protocol.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{Bit Strings}
+\subsubsection{Bit String Types}
 \label{sec:bit-string}
 
-The base representable types are instances of \code{BitString}. They denote
-a sequence of bits can be parsed or serialised. The \code{BitString} type
-constructor has a single attribute, \code{width}, of type \code{Size}, that
-indicates the number of bits in the \code{BitString}. The width MAY be
-unspecified.
+The bit string type constructor allows construction of types representing
+multi-bit values that can be parsed or serialised. The type constructor
+has a single attribute, \code{width}, of type \code{Size}, that indicates
+the number of bits in the resulting type. The width MAY be unspecified.
 
-Instantiations of \code{BitString} types implement the \code{Value} and
+Instances of bit string types implement the \code{Value} and
 \code{Equality} traits. The former allows the value of the \code{BitString}
 instantiation to be retrieved and set. The latter allows two instantiations
 of \code{BitString} to be compared for equality; they are equal if they
 have the same name, value, and \code{width}.
 
-In the JSON form of the intermediate representation, an instance of a
-\code{BitString} type constructor is represented as in the following
-example:
+In the JSON form of the intermediate representation, an invocation of the
+bit string type constructor is represented as in the following example:
 \footnotesize
 \begin{verbatim}
   {
@@ -297,10 +298,11 @@ It is an error to define the same type more than once.
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Arrays}
 
-An array type represents a sequence of elements of some other type that can
-be parsed or serialised. The array type constructor is parameterised by the 
-name of the new array type, type of the elements it contains, and the length
-of the new array. The length MAY be unspecified. 
+The array type constructor allows creation of types that represent a
+sequence of elements of some other type that can be parsed or serialised.
+The array type constructor is parameterised by the name of the new array
+type, type of the elements it contains, and the length of the new array.
+The length MAY be unspecified. 
 
 An array has a single attribute, \code{length}, of type \code{Size}, that
 denotes the number of elements contained. An array cannot contain elements
@@ -309,14 +311,14 @@ of its own type.
 Arrays implement the \code{Equality} trait. Two arrays are equal if they
 have the same element type, \code{length}, and their elements are equal.
 
-In the JSON form of the intermediate representation, an instance of an
+In the JSON form of the intermediate representation, an invocation of the
 array type constructor is represented as in the following example:
 \begin{verbatim}
   {
     "irobject"    : "array",
-    "name"        : "SeqNum",
-    "elementType" : "Bit"
-    "length"      : 16
+    "name"        : "CsrcList",
+    "elementType" : "Bit32"
+    "length"      : 4
   }
 \end{verbatim}
 The \code{name} field specifies the name of the newly defined type. The
@@ -330,13 +332,14 @@ It is an error to define the same type more than once.
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Structure Types}
 
-A structure type represents a sequence of fields, with possibly different
-types, that can be parsed and serialised. A structure type constructor is
-parameterised by the name of the structure, details of the fields, and any
-constraints on the field values.
+The structure type constructor allows creation of types that represent a
+sequence of fields, with possibly different types, that can be parsed and
+serialised. The structure type constructor is parameterised by the name of
+the structure, details of the fields, and any constraints on the field
+values.
 
-In the JSON form of the intermediate representation, the type constructor
-for a structure type is represented as in the following example:
+In the JSON form of the intermediate representation, invocation of the type
+constructor for a structure type is represented as in the following example:
 \footnotesize
 \begin{verbatim}
   {
@@ -389,12 +392,13 @@ Section \ref{sec:constraints}.
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Enumerated Types}
 
-An enumerated type represents data that can exist as one of several possible
-variants when parsed or serialised. The type constructor is parameterised by
-the name of the new enumerated type, and the types of the variants.
+The enumerated type constructor allows creation of types that represent
+data that can exist as one of several possible variants when parsed or
+serialised. The type constructor is parameterised by the name of the new
+enumerated type, and the types of the variants.
 
-In the JSON form of the intermediate representation, the type constructor
-for an enumerated type is represented as in the following example:
+In the JSON form of the intermediate representation, invocation of the type
+constructor for an enumerated type is represented as in the following example:
 \footnotesize
 \begin{verbatim}
   {
@@ -421,17 +425,18 @@ an enumerated type have their own types, but are otherwise unnamed.
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Derived Types}
 
-A derived type constructor defines a new type as an extension of an existing
-base type. A type derived in this way has the same representation and properties
-as the type it is derived from, but has a new name and is distinct from the
-original type. It can also implement additional traits.
+The derived type constructor allows creation of types as extensions of
+existing types. A type derived in this way has the same representation
+and properties as the type it is derived from, but has a new name and is
+distinct from the original type. It can also implement additional traits.
 
 The type constructor is parameterised by the name of the new derived type,
 the base type from which it is derived, and a (possibly empty) list of any
 additional traits the new type implements.
 
-In the JSON form of the intermediate representation, a type constructor for
-a derived type is represented as in the following example:
+In the JSON form of the intermediate representation, invocation of the
+type constructor for a derived type is represented as in the following
+example:
 \footnotesize
 \begin{verbatim}
   {
@@ -467,20 +472,21 @@ type.
 \subsubsection{Functions}
 \label{sec:functions}
 
-A function definition specifies the type of a function defined in the
-runtime. The code comprising the body of the function is not specified. 
+The function type constructor allows the definition of new function types,
+giving the signature of a function to be provided by the implementation of
+the protocol. The code comprising the body of the function is not specified. 
 
-A function has a name and a return type. It takes a number of parameters,
-each of which has its own name and type. The return type \code{Nothing}
-is used for functions that return no value.
+A function type has a name and a return type. It takes a number of
+parameters, each of which has its own name and type. The return type
+\code{Nothing} is used for functions that return no value.
 
 Function names and parameter names are formed of upper and lower case ASCII
 letters, digits, dollar signs, or underscores (\code{A-Za-z0-9\$\_}), and
 MUST begin with a lower case letter (\code{a-z}).
 Function names are defined in the global type namespace.
 
-In the JSON form of the intermediate representation, a function definition
-is represented as in the following example:
+In the JSON form of the intermediate representation, invocation of the
+function type constructor is represented as in the following example:
 \footnotesize
 \begin{verbatim}
   {
@@ -504,13 +510,13 @@ is represented as in the following example:
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Protocols}
 
-A protocol type constructor describes the protocol data units (PDUs) that
-can be parsed and serialised. The type constructor is parameterised by the
-name of the protocol, a set of type definitions, and the set of PDUs used
-in the protocol.
+The protocol type constructor allows definition of new protocol types, that
+describe the types and protocol data units (PDUs) that form a protocol. The
+type constructor is parameterised by the name of the protocol, a set of
+type definitions, and the set of PDUs used in the protocol.
 
-In the JSON form of the intermediate representation, a protocol definition
-is represented as in the following example:
+In the JSON form of the intermediate representation, invocation of the
+protocol type constructor is represented as in the following example:
 \footnotesize
 \begin{verbatim}
   {
