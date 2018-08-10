@@ -176,7 +176,7 @@ represented as in the following example:
 \footnotesize
 \begin{verbatim}
   {
-    "irobject"    : "trait"
+    "construct"   : "trait"
     "name"        : "Eq",
     "methods"     : [
       {
@@ -278,7 +278,7 @@ bit string type constructor is represented as in the following example:
 \footnotesize
 \begin{verbatim}
   {
-    "irobject"    : "bitstring"
+    "construct"   : "bitstring"
     "name"        : "SeqNum",
     "width"       : 16
   }
@@ -310,7 +310,7 @@ In the JSON form of the intermediate representation, an invocation of the
 array type constructor is represented as in the following example:
 \begin{verbatim}
   {
-    "irobject"    : "array",
+    "construct"   : "array",
     "name"        : "CsrcList",
     "elementType" : "Bit32"
     "length"      : 4
@@ -338,7 +338,7 @@ constructor for a structure type is represented as in the following example:
 \footnotesize
 \begin{verbatim}
   {
-    "irobject"    : "struct"
+    "construct"   : "struct"
     "name"        : "<string>",
     "fields"      : [
       {
@@ -397,7 +397,7 @@ constructor for an enumerated type is represented as in the following example:
 \footnotesize
 \begin{verbatim}
   {
-    "irobject"    : "enum"
+    "construct"   : "enum"
     "name"        : "<string>",
     "variants"    : [
       {"type" : "<typename>"},
@@ -435,7 +435,7 @@ example:
 \footnotesize
 \begin{verbatim}
   {
-    "irobject"    : "newtype",
+    "construct"   : "newtype",
     "name"        : "SpinBit",
     "derivedFrom" : "Bit",
     "alsoImplements" : [
@@ -485,7 +485,7 @@ function type constructor is represented as in the following example:
 \footnotesize
 \begin{verbatim}
   {
-    "irobject"    : "function"
+    "construct"   : "function"
     "name"        : "decrypt",
     "parameters"  : [
       {
@@ -515,7 +515,7 @@ protocol type constructor is represented as in the following example:
 \footnotesize
 \begin{verbatim}
   {
-    "irobject"    : "protocol",
+    "construct"   : "protocol",
     "name"        : "RTPv2",
     "definitions" : [
                       ...
