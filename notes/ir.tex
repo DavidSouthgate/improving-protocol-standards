@@ -211,7 +211,9 @@ represented as in the following example:
   }
 \end{verbatim}
 \normalsize
-
+Unspecified types are indicated by \code{null} values in the JSON definition
+(this is distinct from a return value of \code{Nothing} that needs to be
+explicitly stated).
 
 The runtime defines the following standard traits, where \verb|_| indicates
 an unspecified type:
@@ -290,6 +292,9 @@ signs (\code{A-Za-z0-9\$}).  It MUST begin with an upper case letter
 (\code{A-Z}). Type names are defined in the global type namespace. 
 It is an error to define the same type more than once.
 
+The \code{width} field MAY be \code{null} in the JSON, to indicate that the
+width is unspecified.
+
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Arrays}
 
@@ -323,6 +328,9 @@ name is formed of upper- and lower-case ASCII letters, digits, and dollar
 signs (\code{A-Za-z0-9\$}).  It MUST begin with an upper case letter
 (\code{A-Z}). Type names are defined in the global type namespace.
 It is an error to define the same type more than once.
+
+The \code{length} field MAY be \code{null} in the JSON, to indicate that
+the length is unspecified.
 
 \todo{Arrays need to implement a trait that gives access to their elements}
 
@@ -461,9 +469,8 @@ derived from itself.
 The \code{alsoImplements} field is an array that specifies any additional
 traits that the new type implements compared to the base type. It is an
 error to specify traits that are implemented by the base type.
-The \code{alsoImplements} fields MAY be \code{null} to indicate that the
-derived type does not implement any additional traits compared to the base
-type.
+The \code{alsoImplements} fields MAY be an empty array if the derived type
+does not implement any additional traits compared to the base type.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Functions}
