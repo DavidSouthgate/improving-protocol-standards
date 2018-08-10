@@ -21,6 +21,7 @@
 \usepackage{no-par-indent}
 \frenchspacing
 \newcommand{\todo}[1]{\textit{\textcolor{red}{[To do: #1]}}}
+\newcommand{\code}[1]{\texttt{#1}}
 %==================================================================================================
 \begin{document}
 \title{The Glasgow Packet Language: Intermediate Representation and Execution Model}
@@ -86,7 +87,7 @@
 
 
 %==================================================================================================
-\section{Intermediate Representation}
+\section{Terminology}
 
 The key words ``MUST'', ``MUST NOT'', ``REQUIRED'', ``SHALL'', ``SHALL
 NOT'', ``SHOULD'', ``SHOULD NOT'', ``RECOMMENDED'', ``NOT RECOMMENDED'',
@@ -107,94 +108,209 @@ named \texttt{irobject} that describes the contents of the object.
 Whether other members are included in the object depends on the value of
 the \texttt{irobject} member.
 
+%==================================================================================================
+\section{Type System}
+
+Types can be \emph{internal} or \emph{representable}. A representable type
+describes something that can be parsed or serialised. An internal type is
+an artefact of the runtime, and cannot be parsed or serialised.
+
+Each type has \emph{name}. It implements one or more \emph{traits} that
+define \emph{methods} that can operate on instances of that type. Some
+types also have \emph{values} and \emph{attributes}.
+
 %--------------------------------------------------------------------------------------------------
-\subsection{Protocols}
+\subsection{Internal Types}
 
-The top-level object in the intermediate representation is a
-\texttt{Protocol}. A \texttt{Protocol} is represented as a JSON object
-containing an \texttt{irobject} member with the value \texttt{protocol}.
 
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Primitive Types}
+\label{sec:primitives}
+
+The \code{Nothing} type is the empty type. It has no value and no attributes,
+and implement no traits.
+
+The \code{Boolean} type is a boolean value, either \code{true} or \code{false}.
+It implements the traits \code{Value}, \code{Equality}, and \code{Boolean}.
+
+The \code{Size} type is a positive integral value, denoting the size of an
+instance of a representable type. It implements the traits \code{Value},
+\code{Equality}, \code{Ordinal}, and \code{Arithmetic}.
+
+The primitive types are built-in to the runtime, and are not explicitly
+defined in the JSON form of the intermediate representation.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Traits}
+\label{sec:traits}
+
+Traits define the methods that can operate on instances of types that
+implement the trait.
+
+A trait definition includes the name of the trait, and the definitions
+of the methods. It defines a new type that has the specified name.
+
+The name of a trait is formed of upper and lower case ASCII letters,
+digits, or dollar signs (\code{A-Za-z0-9\$}); it MUST begin with an
+upper case letter (\code{A-Z}). Trait names are defined in the global type
+namespace.  It is an error to define a trait that has the same name as an
+existing type.
+
+Each method definition include the method name, return type, parameters.
+Methods take one or more parameters.
+The first parameter of a method MUST have the name \code{self} and MUST
+have an unspecified type.
+Other parameters, if any, MUST have names that are unique within that
+method definition, and can have specified or unspecified types.
+The return type of a method can be specified or unspecified.  
+It is an error to define two methods that have the same name.
+
+Method names and parameter names are formed of upper and lower case ASCII
+letters, digits, dollar signs, or underscores (\code{A-Za-z0-9\$\_});
+they MUST begin with a lower case letter (\code{a-z}).
+
+When a type implements a trait, any unspecified types are set to the
+implementing type.
+
+When a method is called on an instance of a type that implements a trait,
+that instance will be passed as the first parameter of the method.
+
+In the JSON form of the intermediate representation, a trait definition is
+represented as in the following example:
+\footnotesize
 \begin{verbatim}
   {
-    "irobject"    : "protocol",
-    "name"        : "RTPv2",
-    "definitions" : [
-                      ...
-                    ],
-    "pdus"        : [
-       {"type" : "RtpPacket"},
-       {"type" : "RtcpPacket"}
+    "irobject"    : "trait"
+    "name"        : "Eq",
+    "methods"     : [
+      {
+        "name"       : "eq",
+        "parameters" : [
+          {
+            "name"   : "self",
+            "type"   : null
+          },
+          {
+            "name"   : "other",
+            "type"   : null,
+          }
+        ],
+        "returnType" : "Boolean"
+      },
+      {
+        "name"       : "ne",
+        "parameters" : [
+          {
+            "name"   : "self",
+            "type"   : null
+          },
+          {
+            "name"   : "other",
+            "type"   : null,
+          }
+        ],
+        "returnType" : "Boolean"
+      }
     ]
   }
 \end{verbatim}
+\normalsize
 
-The \texttt{Protocol} object MUST contain a \texttt{name} member.
 
-The \texttt{Protocol} object MUST contain a \texttt{definitions} member
-that contains an array of objects representing the types and functions
-used by the protocol, as defined in Section \ref{sec:types} and Section
-\ref{sec:funcs} of this memo. This array MUST NOT be empty. The definitions
-are presented as a single list, since types and functions can reference
-each other.
-
-The \texttt{Protocol} object MUST contain a \texttt{pdus} member. This
-will be an array listing the types of the protocol data units. Each PDU
-MUST be either a structure type or an enumerated type. The array of PDUs
-MUST NOT be empty, and their types MUST be declared in the \texttt{types}
-array.
-
-%--------------------------------------------------------------------------------------------------
-\subsection{Type Definitions}
-\label{sec:types}
-
-As the intermediate representation is loaded, it defines other types. Types
-MUST NOT be used before they have been defined.
-Types can be either aliases, compound types (arrays or structure types), or
-enumerated types.
-
-Type names MUST begin with an upper-case letter ('A'...'Z') and can contain
-upper- and lower-case letters, numbers, and \verb|$| signs.
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{Bits}
-
-A single primitive type is implicitly defined, the \texttt{Bit}.
-A Bit may have value 0 or 1, or have an unspecified value. 
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{Aliases}
-
-If an intermediate representation JSON object contains an \texttt{irobject}
-member with the value \texttt{newtype}, then that object defines a new type
-as an alias for an existing type. For example, a type SpinBit could be
-defined based on the Bit type as follows:
-
+The runtime defines the following standard traits, where \verb|_| indicates
+an unspecified type:
+\footnotesize
 \begin{verbatim}
-  {
-    "irobject"    : "newtype",
-    "name"        : "SpinBit",
-    "derivedFrom" : "Bit"
+  trait Value {
+    method get(self : _) -> _
+    method set(self : _, value : _) -> Nothing
+  }
+
+  trait Equality {
+    method eq(self : _, other : _) -> Boolean;
+    method ne(self : _, other : _) -> Boolean;
+  }
+
+  trait Ordinal {
+    // <, <=, >, >=
+    method lt(self : _, other : _) -> Boolean;
+    method le(self : _, other : _) -> Boolean;
+    method gt(self : _, other : _) -> Boolean;
+    method ge(self : _, other : _) -> Boolean;
+  }
+
+  trait Boolean {
+    method and(self : _, other : _) -> Boolean;
+    method  or(self : _, other : _) -> Boolean;
+    method not(self : _) -> Boolean;
+  }
+
+  trait Arithmetic {
+    method     plus(self : _, other : _) -> _;
+    method    minus(self : _, other : _) -> _;
+    method multiply(self : _, other : _) -> _;
+    method   divide(self : _, other : _) -> _;
   }
 \end{verbatim}
+\normalsize
 
-A type derived in this way has the same representation and properties as
-the type it is derived from, but has a new name and is distinct from the
-original type.  In the example above, a SpinBit and a Bit are different
-types, and cannot be used interchangeably, even though they have the same
-representation.
+%--------------------------------------------------------------------------------------------------
+\subsection{Representable Types}
+\label{sec:representable}
 
-A new type can be derived from any existing type. It is an error to define
-a new type that has the same name as an existing type. A new type cannot be
-derived from itself.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Bit Strings}
+\label{sec:bit-string}
+
+The base representable types are instances of \code{BitString}. They denote
+a sequence of bits can be parsed or serialised. The \code{BitString} type
+constructor has a single attribute, \code{width}, of type \code{Size}, that
+indicates the number of bits in the \code{BitString}. The width MAY be
+unspecified.
+
+Instantiations of \code{BitString} types implement the \code{Value} and
+\code{Equality} traits. The former allows the value of the \code{BitString}
+instantiation to be retrieved and set. The latter allows two instantiations
+of \code{BitString} to be compared for equality; they are equal if they
+have the same name, value, and \code{width}.
+
+In the JSON form of the intermediate representation, an instance of a
+\code{BitString} type constructor is represented as in the following
+example:
+\footnotesize
+\begin{verbatim}
+  {
+    "irobject"    : "bitstring"
+    "name"        : "SeqNum",
+    "width"       : 16
+  }
+\end{verbatim}
+\normalsize
+The \code{name} field specifies the name of the newly defined type. The
+name is formed of upper- and lower-case ASCII letters, digits, and dollar
+signs (\code{A-Za-z0-9\$}).  It MUST begin with an upper case letter
+(\code{A-Z}). Type names are defined in the global type namespace. 
+It is an error to define the same type more than once.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Arrays}
 
-If an intermediate representation JSON object contains an \texttt{irobject}
-member with the value \texttt{array}, then that object defines a new array
-type. For example, a type \texttt{SeqNum}, being an array of 16 elements of
-type Bit, could be defined as follows:
+An array type represents a sequence of elements of some other type that can
+be parsed or serialised. The array type constructor is parameterised by the 
+name of the new array type, type of the elements it contains, and the length
+of the new array. The length MAY be unspecified. 
 
+An array has a single attribute, \code{length}, of type \code{Size}, that
+denotes the number of elements contained. An array cannot contain elements
+of its own type.
+
+Arrays implement the \code{Equality} trait. Two arrays are equal if they
+have the same element type, \code{length}, and their elements are equal.
+
+In the JSON form of the intermediate representation, an instance of an
+array type constructor is represented as in the following example:
 \begin{verbatim}
   {
     "irobject"    : "array",
@@ -203,26 +319,25 @@ type Bit, could be defined as follows:
     "length"      : 16
   }
 \end{verbatim}
+The \code{name} field specifies the name of the newly defined type. The
+name is formed of upper- and lower-case ASCII letters, digits, and dollar
+signs (\code{A-Za-z0-9\$}).  It MUST begin with an upper case letter
+(\code{A-Z}). Type names are defined in the global type namespace.
+It is an error to define the same type more than once.
 
-In addition to the \texttt{irobject} member, the object MUST also include
-the following members:
-\begin{itemize}
-  \item \texttt{name} indicates the name of the type being defined. It is
-    an error to define a name multiple times.
-  \item \texttt{elementType} indicates the type of the elements of the
-    array. The \texttt{elementType} MUST NOT be the same as the array's
-    type (i.e., the \texttt{name}).
-  \item \texttt{length} indicates the number of elements in the array. This
-    MAY be set to \texttt{null} to indicate an array of unspecified length.
-\end{itemize}
+\todo{Arrays need to implement a trait that gives access to their elements}
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Structure Types}
 
-If an intermediate representation JSON object contains an \texttt{irobject}
-member with the value \texttt{struct}, then that object defines a new
-structure type. For example:
+A structure type represents a sequence of fields, with possibly different
+types, that can be parsed and serialised. A structure type constructor is
+parameterised by the name of the structure, details of the fields, and any
+constraints on the field values.
 
+In the JSON form of the intermediate representation, the type constructor
+for a structure type is represented as in the following example:
+\footnotesize
 \begin{verbatim}
   {
     "irobject"    : "struct"
@@ -240,36 +355,47 @@ structure type. For example:
     ]
   }
 \end{verbatim}
+\normalsize
+The \code{name} field specifies the name of the newly defined type. The
+name is formed of upper- and lower-case ASCII letters, digits, and dollar
+signs (\code{A-Za-z0-9\$}).  It MUST begin with an upper case letter
+(\code{A-Z}). Type names are defined in the global type namespace.
+It is an error to define the same type more than once.
 
-A structure type represents data comprising an ordered sequence of elements
-of possibly different types. In addition to the \texttt{irobject} member, 
-the object MUST also include the following members:
-\begin{itemize}
-  \item \texttt{name} indicates the name of the type being defined. It is
-    an error to define a name multiple times.
-  \item \texttt{fields} is a JSON array, each value of which is an object
-    containing three members, \texttt{name}, \texttt{type}, and \texttt{isPresent}.
-    The first two indicate the field's name and type. The type MUST have
-    been previously defined; the names of each element within the fields
-    array MUST be unique, but multiple elements can have the same type.
-    The \texttt{isPresent} field accounts for OPTIONAL fields, and gives
-    the constraint that specifies whether the field is present in this
-    instance of the struct.
-    The fields array MUST NOT be empty.
-  \item \texttt{constraints} is a JSON array, containing objects that MUST have a
-    \texttt{constraint} member whose value is one of \texttt{constant},
-    \texttt{field\_name}, \texttt{binary}, or \texttt{ternary}, and that have the
-    corresponding structure as described in Section \ref{sec:constraints}. The
-    \texttt{constraints} array MAY be empty.
-\end{itemize}
+The \code{fields} define the attributes of the new structure type. Each
+field has a name, a type, and a constraint that indicates if the field is
+present in a particular instantiation of the structure type. Structure
+types MUST contain at least one field.
+
+Each field has a name that is formed of upper and lower case ASCII letters,
+digits, dollar signs, or underscores (\code{A-Za-z0-9\$\_}). The field name
+MUST begin with a lower case letter (\code{a-z}).
+
+Each field has a type. That type MUST have been previously defined, and can
+be a \code{BitString}, array, structure type, or enumerated type. The names
+of each field MUST be unique within a structure definition, but several
+fields can have the same type.
+
+Each field has a \emph{constraint}, \code{isPresent}, that indicates
+whether that field is present in a particular instantiation of the
+structure type. This is used to model data formats that contain optional
+fields. Constraints are described in Section \ref{sec:constraints}.
+
+Finally, a structure type is parameterised by a set of constraints on the
+fields. The set of constraints MAY be empty. Constraints are described in
+Section \ref{sec:constraints}.
+
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Enumerated Types}
 
-If an intermediate representation JSON object contains an \texttt{irobject}
-member with the value \texttt{enum}, then that object defines a new enumerated
-type. For example:
+An enumerated type represents data that can exist as one of several possible
+variants when parsed or serialised. The type constructor is parameterised by
+the name of the new enumerated type, and the types of the variants.
 
+In the JSON form of the intermediate representation, the type constructor
+for an enumerated type is represented as in the following example:
+\footnotesize
 \begin{verbatim}
   {
     "irobject"    : "enum"
@@ -280,28 +406,82 @@ type. For example:
     ]
   }
 \end{verbatim}
+\normalsize
+The \code{name} field specifies the name of the newly defined type. The
+name is formed of upper- and lower-case ASCII letters, digits, and dollar
+signs (\code{A-Za-z0-9\$}).  It MUST begin with an upper case letter
+(\code{A-Z}). Type names are defined in the global type namespace.
+It is an error to define the same type more than once.
 
-An enumerated type represents data that can be one of several possible
-variants. In addition to the \texttt{irobject} member, the object MUST
-also include the following members:
-\begin{itemize}
-  \item \texttt{name} indicates the name of the type being defined. It is
-    an error to define a name multiple times.
-  \item \texttt{variants} is a JSON array, each value of which is an object
-    containing a member named \texttt{type} that has a value indicating one
-    possible type that they enumerated type can take. The type MUST have
-    been previously defined.  The variants array MUST NOT be empty. Each
-    variant has a type, but is otherwise unnamed.
-\end{itemize}
+The \code{variants} field is an array that specifies the possible types
+that variants of the enumerated type can take. These types MUST have been
+previously defined, and the variants array MUST NOT be empty. Variants of
+an enumerated type have their own types, but are otherwise unnamed.
 
-%--------------------------------------------------------------------------------------------------
-\subsection{Function Prototypes}
-\label{sec:funcs}
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Derived Types}
 
-If an intermediate representation JSON object contains an \texttt{irobject}
-member with the value \texttt{function}, then that object defines a function
-prototype. For example:
+A derived type constructor defines a new type as an extension of an existing
+base type. A type derived in this way has the same representation and properties
+as the type it is derived from, but has a new name and is distinct from the
+original type. It can also implement additional traits.
 
+The type constructor is parameterised by the name of the new derived type,
+the base type from which it is derived, and a (possibly empty) list of any
+additional traits the new type implements.
+
+In the JSON form of the intermediate representation, a type constructor for
+a derived type is represented as in the following example:
+\footnotesize
+\begin{verbatim}
+  {
+    "irobject"    : "newtype",
+    "name"        : "SpinBit",
+    "derivedFrom" : "Bit",
+    "alsoImplements" : [
+      {"trait" : "TraitName"},
+      {"trait" : "AdditionalTrait"}
+    ]
+  }
+\end{verbatim}
+\normalsize
+The \code{name} field specifies the name of the newly defined type. The
+name is formed of upper- and lower-case ASCII letters, digits, and dollar
+signs (\code{A-Za-z0-9\$}).  It MUST begin with an upper case letter
+(\code{A-Z}). Type names are defined in the global type namespace.
+
+The \code{derivedFrom} field indicates the type from which the new type is
+derived.  A new type can be derived from an existing \code{BitString},
+array, structure type, or enumerated type. It is an error to define a new
+type that has the same name as an existing type. A new type cannot be
+derived from itself.
+
+The \code{alsoImplements} field is an array that specifies any additional
+traits that the new type implements compared to the base type. It is an
+error to specify traits that are implemented by the base type.
+The \code{alsoImplements} fields MAY be \code{null} to indicate that the
+derived type does not implement any additional traits compared to the base
+type.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Functions}
+\label{sec:functions}
+
+A function definition specifies the type of a function defined in the
+runtime. The code comprising the body of the function is not specified. 
+
+A function has a name and a return type. It takes a number of parameters,
+each of which has its own name and type. The return type \code{Nothing}
+is used for functions that return no value.
+
+Function names and parameter names are formed of upper and lower case ASCII
+letters, digits, dollar signs, or underscores (\code{A-Za-z0-9\$\_}), and
+MUST begin with a lower case letter (\code{a-z}).
+Function names are defined in the global type namespace.
+
+In the JSON form of the intermediate representation, a function definition
+is represented as in the following example:
+\footnotesize
 \begin{verbatim}
   {
     "irobject"    : "function"
@@ -309,19 +489,58 @@ prototype. For example:
     "parameters"  : [
       {
         "name" : "enc_payload",
-        "type" : "cryptobits"
+        "type" : "Cryptobits"
       },
       {
         "name" : "pn",
-        "type" : "full_packet_num"
+        "type" : "FullPacketNum"
       }
     ],
-    "returnType"  : "bit",
+    "returnType"  : "Bit",
   }
 \end{verbatim}
+\normalsize
 
-Function names MUST begin with an lower-case letter ('a'...'z') and can contain
-upper- and lower-case letters, numbers, and \verb|$| signs.
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Protocols}
+
+A protocol type constructor describes the protocol data units (PDUs) that
+can be parsed and serialised. The type constructor is parameterised by the
+name of the protocol, a set of type definitions, and the set of PDUs used
+in the protocol.
+
+In the JSON form of the intermediate representation, a protocol definition
+is represented as in the following example:
+\footnotesize
+\begin{verbatim}
+  {
+    "irobject"    : "protocol",
+    "name"        : "RTPv2",
+    "definitions" : [
+                      ...
+                    ],
+    "pdus"        : [
+       {"type" : "RtpPacket"},
+       {"type" : "RtcpPacket"}
+    ]
+  }
+\end{verbatim}
+\normalsize
+A protocol is the top-level object in the JSON form of the intermediate
+representation.
+
+The \code{name} field specifies the name of the newly defined type. The
+name is formed of upper- and lower-case ASCII letters, digits, and dollar
+signs (\code{A-Za-z0-9\$}).  It MUST begin with an upper case letter
+(\code{A-Z}). Type names are defined in the global type namespace.
+
+The \code{definitions} field that contains an array of objects representing
+the types and functions used by the protocol. Any representable type, as
+defined in Section \ref{sec:representable}, can be included.
+
+The \code{pdus} field contains an array giving the type of the PDUs used
+in the protocol. A protocol MUST define at least one PDU. PDUs can be any
+structure type or enumerated type. 
 
 %--------------------------------------------------------------------------------------------------
 \subsection{Constraints}
