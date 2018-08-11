@@ -177,19 +177,19 @@ represented as in the following:
 \footnotesize
 \begin{alltt}
   {
-    "construct"   : "trait"
+    "construct"   : "Trait"
     "name"        : "\emph{name}",
     "methods"     : [
       \{
         "name"       : "\emph{method name}",
         "parameters" : [
           \{
-            "name"   : "\emph{parameter name}",
-            "type"   : "\emph{parameter type}"
+            "name" : "\emph{parameter name}",
+            "type" : "\emph{parameter type}"
           \},
           ...
         ],
-        "returnType" : "\emph{return type}"
+        "return\_type" : "\emph{return type}"
       \},
       ...
     ]
@@ -207,23 +207,23 @@ form of the intermediate representation:
 \footnotesize
 \begin{alltt}
   \{
-    "construct"   : "trait"
-    "name"        : "Value",
-    "methods"     : [
+    "construct" : "Trait"
+    "name"      : "Value",
+    "methods"   : [
       \{
-        "name"       : "get",
-        "parameters" : [
-          \{"name"   : "self",  "type"   : null\}
+        "name"        : "get",
+        "parameters"  : [
+          \{"name" : "self",  "type"   : null\}
         ],
-        "returnType" : null
+        "return\_type" : null
       \},
       \{
-        "name"       : "set",
-        "parameters" : [
-          \{"name"   : "self",  "type"   : null\},
-          \{"name"   : "value", "type"   : null\}
+        "name"        : "set",
+        "parameters"  : [
+          \{"name" : "self",  "type"   : null\},
+          \{"name" : "value", "type"   : null\}
         ],
-        "returnType" : "Nothing"
+        "return\_type" : "Nothing"
       \}
     ]
   \}
@@ -237,24 +237,24 @@ form of the intermediate representation:
 \footnotesize
 \begin{alltt}
   \{
-    "construct"   : "trait"
-    "name"        : "Equality",
-    "methods"     : [
+    "construct" : "Trait"
+    "name"      : "Equality",
+    "methods"   : [
       \{
-        "name"       : "eq",
-        "parameters" : [
-          \{"name"   : "self",  "type"   : null\},
-          \{"name"   : "other", "type"   : null\}
+        "name"        : "eq",
+        "parameters"  : [
+          \{"name" : "self",  "type"   : null\},
+          \{"name" : "other", "type"   : null\}
         ],
-        "returnType" : "Boolean"
+        "return\_type" : "Boolean"
       \},
       \{
-        "name"       : "ne",
-        "parameters" : [
-          \{"name"   : "self",  "type"   : null\},
-          \{"name"   : "other", "type"   : null\}
+        "name"        : "ne",
+        "parameters"  : [
+          \{"name" : "self",  "type"   : null\},
+          \{"name" : "other", "type"   : null\}
         ],
-        "returnType" : "Boolean"
+        "return\_type" : "Boolean"
       \}
     ]
   \}
@@ -268,40 +268,40 @@ form of the intermediate representation:
 \footnotesize
 \begin{alltt}
   \{
-    "construct"   : "trait"
-    "name"        : "Ordinal",
-    "methods"     : [
+    "construct" : "Trait"
+    "name"      : "Ordinal",
+    "methods"   : [
       \{
-        "name"       : "lt",
-        "parameters" : [
-          \{"name"   : "self",  "type"   : null\},
-          \{"name"   : "other", "type"   : null\}
+        "name"        : "lt",
+        "parameters"  : [
+          \{"name" : "self",  "type"   : null\},
+          \{"name" : "other", "type"   : null\}
         ],
-        "returnType" : "Boolean"
+        "return\_type" : "Boolean"
       \},
       \{
-        "name"       : "le",
-        "parameters" : [
-          \{"name"   : "self",  "type"   : null\},
-          \{"name"   : "other", "type"   : null\}
+        "name"        : "le",
+        "parameters"  : [
+          \{"name" : "self",  "type"   : null\},
+          \{"name" : "other", "type"   : null\}
         ],
-        "returnType" : "Boolean"
+        "return\_type" : "Boolean"
       \},
       \{
-        "name"       : "gt",
-        "parameters" : [
-          \{"name"   : "self",  "type"   : null\},
-          \{"name"   : "other", "type"   : null\}
+        "name"        : "gt",
+        "parameters"  : [
+          \{"name" : "self",  "type"   : null\},
+          \{"name" : "other", "type"   : null\}
         ],
-        "returnType" : "Boolean"
+        "return\_type" : "Boolean"
       \},
       \{
-        "name"       : "ge",
-        "parameters" : [
-          \{"name"   : "self",  "type"   : null\},
-          \{"name"   : "other", "type"   : null\}
+        "name"        : "ge",
+        "parameters"  : [
+          \{"name" : "self",  "type"   : null\},
+          \{"name" : "other", "type"   : null\}
         ],
-        "returnType" : "Boolean"
+        "return\_type" : "Boolean"
       \}
     ]
   \}
@@ -316,31 +316,31 @@ form of the intermediate representation:
 \footnotesize
 \begin{alltt}
   \{
-    "construct"   : "trait"
-    "name"        : "BooleanOps",
-    "methods"     : [
+    "construct" : "Trait"
+    "name"      : "BooleanOps",
+    "methods"   : [
       \{
-        "name"       : "and",
-        "parameters" : [
-          \{"name"   : "self",  "type"   : null\},
-          \{"name"   : "other", "type"   : null\}
+        "name"        : "and",
+        "parameters"  : [
+          \{"name" : "self",  "type"   : null\},
+          \{"name" : "other", "type"   : null\}
         ],
-        "returnType" : "Boolean"
+        "return\_type" : "Boolean"
       \},
       \{
-        "name"       : "or",
-        "parameters" : [
-          \{"name"   : "self",  "type"   : null\},
-          \{"name"   : "other", "type"   : null\}
+        "name"        : "or",
+        "parameters"  : [
+          \{"name" : "self",  "type"   : null\},
+          \{"name" : "other", "type"   : null\}
         ],
-        "returnType" : "Boolean"
+        "return\_type" : "Boolean"
       \},
       \{
-        "name"       : "not",
-        "parameters" : [
-          \{"name"   : "self",  "type"   : null\}
+        "name"        : "not",
+        "parameters"  : [
+          \{"name" : "self",  "type"   : null\}
         ],
-        "returnType" : "Boolean"
+        "return\_type" : "Boolean"
       \}
     ]
   \}
@@ -354,40 +354,40 @@ form of the intermediate representation:
 \footnotesize
 \begin{alltt}
   \{
-    "construct"   : "trait"
-    "name"        : "ArithmeticOps",
-    "methods"     : [
+    "construct" : "Trait"
+    "name"      : "ArithmeticOps",
+    "methods"   : [
       \{
-        "name"       : "plus",
-        "parameters" : [
-          \{"name"   : "self",  "type"   : null\},
-          \{"name"   : "other", "type"   : null\}
+        "name"        : "plus",
+        "parameters"  : [
+          \{"name" : "self",  "type"   : null\},
+          \{"name" : "other", "type"   : null\}
         ],
-        "returnType" : null
+        "return\_type" : null
       \},
       \{
-        "name"       : "minus",
-        "parameters" : [
-          \{"name"   : "self",  "type"   : null\},
-          \{"name"   : "other", "type"   : null\}
+        "name"        : "minus",
+        "parameters"  : [
+          \{"name" : "self",  "type"   : null\},
+          \{"name" : "other", "type"   : null\}
         ],
-        "returnType" : null
+        "return\_type" : null
       \},
       \{
-        "name"       : "multiply",
-        "parameters" : [
-          \{"name"   : "self",  "type"   : null\},
-          \{"name"   : "other", "type"   : null\}
+        "name"        : "multiply",
+        "parameters"  : [
+          \{"name" : "self",  "type"   : null\},
+          \{"name" : "other", "type"   : null\}
         ],
-        "returnType" : null
+        "return\_type" : null
       \},
       \{
-        "name"       : "divide",
-        "parameters" : [
-          \{"name"   : "self",  "type"   : null\},
-          \{"name"   : "other", "type"   : null\}
+        "name"        : "divide",
+        "parameters"  : [
+          \{"name" : "self",  "type"   : null\},
+          \{"name" : "other", "type"   : null\}
         ],
-        "returnType" : null
+        "return\_type" : null
       \}
     ]
   \}
@@ -422,7 +422,7 @@ bit string type constructor is represented as in the following:
 \footnotesize
 \begin{alltt}
   \{
-    "construct"   : "bitstring"
+    "construct"   : "BitString"
     "name"        : "\emph{type name}",
     "width"       : \emph{number of bits}
   \}
@@ -458,10 +458,10 @@ array type constructor is represented as in the following:
 \footnotesize
 \begin{alltt}
   \{
-    "construct"   : "array",
-    "name"        : "\emph{type name}",
-    "elementType" : "\emph{element type}"
-    "length"      : \emph{number of elements}
+    "construct"    : "Array",
+    "name"         : "\emph{type name}",
+    "element\_type" : "\emph{element type}"
+    "length"       : \emph{number of elements}
   \}
 \end{alltt}
 \normalsize
@@ -490,13 +490,13 @@ constructor for a structure type is represented as in the following:
 \footnotesize
 \begin{alltt}
   \{
-    "construct"   : "struct"
+    "construct"   : "Struct"
     "name"        : "\emph{type name}",
     "fields"      : [
       \{
-        "name"      : "\emph{field name}",
-        "type"      : "\emph{field type}",
-        "isPresent" : \emph{constraint}
+        "name"       : "\emph{field name}",
+        "type"       : "\emph{field type}",
+        "is\_present" : \emph{constraint}
       \},
       ...
     ],
@@ -549,7 +549,7 @@ constructor for an enumerated type is represented as in the following:
 \footnotesize
 \begin{alltt}
   \{
-    "construct"   : "enum"
+    "construct"   : "Enum"
     "name"        : "\emph{type name}",
     "variants"    : [
       \{"type" : "\emph{type name}"\},
@@ -586,10 +586,10 @@ type constructor for a derived type is represented as in the following:
 \footnotesize
 \begin{alltt}
   \{
-    "construct"   : "newtype",
-    "name"        : "\emph{type name}",
-    "derivedFrom" : "\emph{type name}",
-    "alsoImplements" : [
+    "construct"     : "NewType",
+    "name"          : "\emph{type name}",
+    "derived\_from"  : "\emph{type name}",
+    "implements"    : [
       \{"trait" : "\emph{trait name}"\},
       \{"trait" : "\emph{trait name}"\}
     ]
@@ -635,16 +635,16 @@ function type constructor is represented as in the following:
 \footnotesize
 \begin{alltt}
   \{
-    "construct"   : "function"
-    "name"        : "\emph{function name}",
-    "parameters"  : [
+    "construct"    : "Function"
+    "name"         : "\emph{function name}",
+    "parameters"   : [
       \{
         "name" : "\emph{parameter name}",
         "type" : "\emph{parameter type}"
       \},
       ...
     ],
-    "returnType"  : "\emph{return type name}",
+    "return\_type"  : "\emph{return type name}",
   \}
 \end{alltt}
 \normalsize
@@ -662,7 +662,7 @@ protocol type constructor is represented as in the following:
 \footnotesize
 \begin{alltt}
   \{
-    "construct"   : "protocol",
+    "construct"   : "Protocol",
     "name"        : "\emph{protocol type name}",
     "definitions" : [
                       ...
