@@ -695,77 +695,95 @@ structure type or enumerated type.
 \label{sec:constraints}
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{\texttt{constant}}
-
-Where \texttt{constraint} has the value \texttt{constant}, the JSON object MUST have the
-following structure:
+\subsubsection{\texttt{IntegerConst}}
 
 \footnotesize
 \begin{alltt}
   \{
-    "constraint"    : "constant",
-    "value"         : "<integer>"
+    "constraint"    : "IntegerConst",
+    "value"         : \emph{integer}
   \}
 \end{alltt}
 \normalsize
 
-All members MUST be set.
+The \texttt{IntegerConst} constraint implements the \texttt{Value}, \texttt{Equality},
+\texttt{Ordinal}, and \texttt{ArithmeticOps} traits.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{\texttt{field\_name}}
+\subsubsection{\texttt{BooleanConst}}
 
-Where \texttt{constraint} has the value \texttt{field\_name}, the JSON object must have
-the following structure:
 \footnotesize
 \begin{alltt}
   \{
-    "constraint" : "field\_name",
-    "value"      : "<string>",
-    "property"   : "<'value'
-                    |'length'
-                    |'is\_present'>"
+    "constraint"    : "BooleanConst",
+    "value"         : \emph{True} | \emph{False}
   \}
 \end{alltt}
 \normalsize
-\texttt{value} MUST correspond to a field name defined within the \texttt{fields} JSON
-array of the enclosing structure object. \texttt{property} refers to one of the three
-inherent properties of fields: their value, length, or presence in the parsed structure.
+
+The \texttt{BooleanConst} constraint implements the \texttt{Value}, \texttt{Equality},
+and \emph{BooleanOps} traits.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{\texttt{binary}}
+\subsubsection{\texttt{Field}}
 
-Where \texttt{constraint} has the value \texttt{binary}, the JSON object must have
-the following structure:
 \footnotesize
 \begin{alltt}
   \{
-    "constraint" : "binary",
-    "value"      : "<'|' |'&&'|'|' |'\textasciicircum' |'&' |'=='
-                    |'!='|'<='|'>='|'<' |'>' |'<<'
-                    |'>>'|'+' |'-' |'*' |'/' |'%'>",
-    "left"       : "<constraint>",
-    "right"	     : "<constraint"
+    "constraint"   : "Field",
+    "name"         : \emph{field name},
+    "property"     : \emph{is\_present} | \emph{value} | \emph{width}
   \}
 \end{alltt}
 \normalsize
-Both \texttt{left} and \texttt{right} MUST be set to constraint objects.
+
+The \texttt{Field} constraint implements the \texttt{Value} and \texttt{Equality} traits.
+
+Additionally, if \texttt{property} is set to \texttt{is\_present}, the constraint implements
+the \texttt{BooleanOps} trait. If \texttt{property} is set to \emph{value} or \emph{width},
+the constraint implements the \emph{Ordinal} and \emph{ArithmeticOps} traits.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{\texttt{ternary}}
+\subsubsection{\texttt{Arithmetic}}
 
-Where \texttt{constraint} has the value \texttt{ternary}, the JSON object's structure is:
 \footnotesize
 \begin{alltt}
   \{
-    "constraint" : "ternary",
-    "value"      : "?:",
-    "cond"       : "<constraint>",
-    "true"       : "<constraint>",
-    "else"       : "<constraint>"
+    "constraint"   : "Arithmetic",
+    "method"       : \emph{any method of the} ArithmeticOps \emph{trait},
+    "left"         : \emph{any type that implements the} ArithmeticOps \emph{trait},
+    "right"        : \emph{any type that implements the} ArithmeticOps \emph{trait},
   \}
 \end{alltt}
 \normalsize
-\texttt{cond}, \texttt{true}, and \texttt{else} MUST be set to constraint objects.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{\texttt{Ordinal}}
+
+\footnotesize
+\begin{alltt}
+  \{
+    "constraint"   : "Ordinal",
+    "method"       : \emph{any method of the} Ordinal \emph{trait},
+    "left"         : \emph{any type that implements the} Ordinal \emph{trait},
+    "right"        : \emph{any type that implements the} Ordinal \emph{trait},
+  \}
+\end{alltt}
+\normalsize
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{\texttt{Boolean}}
+
+\footnotesize
+\begin{alltt}
+  \{
+    "constraint"   : "Boolean",
+    "method"       : \emph{any method of the} BooleanOps \emph{trait},
+    "left"         : \emph{any type that implements the} BooleanOps \emph{trait},
+    "right"        : \emph{any type that implements the} BooleanOps \emph{trait},
+  \}
+\end{alltt}
+\normalsize
 
 %==================================================================================================
 \section{Acknowledgements}
