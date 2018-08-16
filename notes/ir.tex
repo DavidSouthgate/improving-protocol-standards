@@ -128,11 +128,15 @@ The \code{Nothing} type is the empty type. It has no value and no attributes,
 and implement no traits.
 
 The \code{Boolean} type is a boolean value, either \code{true} or \code{false}.
-It implements the traits \code{Value}, \code{Equality}, and \code{Boolean}.
+It implements the traits \code{Value}, \code{Equality} (two \code{Boolean}s are equal if
+they have the same value), and \code{BooleanOps}.
 
 The \code{Size} type is a positive integral value, denoting the size of an
 instance of a representable type. It implements the traits \code{Value},
-\code{Equality}, \code{Ordinal}, and \code{Arithmetic}.
+\code{Equality}, \code{Ordinal}, and \code{ArithmeticOps}.
+
+The \code{Integer} type is an integer value. It implements the traits \code{Value},
+\code{Equality}, \code{Ordinal}, and \code{ArithmeticOps}.
 
 The primitive types are built-in to the runtime, and are not explicitly
 defined in the JSON form of the intermediate representation.
