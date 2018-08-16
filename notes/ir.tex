@@ -700,8 +700,8 @@ structure type or enumerated type.
 \subsection{Constraints}
 \label{sec:constraints}
 
-Contraints are split into two classes: leaf (\texttt{Constant} and \texttt{Field}) and tree
-(\texttt{Equality}, \texttt{Ordinal}, \texttt{Boolean}, and \texttt{Arithmetic}). 
+Contraints are split into two classes: leaf (\texttt{Constant} and \texttt{Field}) and
+tree (\texttt{Equality}, \texttt{Ordinal}, \texttt{Boolean}, and \texttt{Arithmetic}). 
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Tree Constraints}
@@ -720,8 +720,14 @@ Contraints are split into two classes: leaf (\texttt{Constant} and \texttt{Field
 \end{alltt}
 \normalsize
 
-An \texttt{Equality} constraint is evaluated as a \emph{Boolean}, owing to the return
-type of the \texttt{method} called on the \texttt{left} and \texttt{right} members.
+The \code{Equality} constraint implements the \code{Value} trait. The \code{get} method
+returns the result of applying the specified \code{method} on the \code{left} and
+\code{right} members. Given that the method must be from the \code{Equality} trait,
+\code{get} returns a Boolean. The \code{set} method will have no affect on the value of
+the constraint.
+
+Both the \code{left} and \code{right} members MUST implement the \code{Value} trait, whose
+\code{get} methods MUST return types that implement the \code{Equality} trait.
 
 % . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 \textbf{\texttt{Ordinal}}
@@ -737,8 +743,14 @@ type of the \texttt{method} called on the \texttt{left} and \texttt{right} membe
 \end{alltt}
 \normalsize
 
-An \texttt{Ordinal} constraint is evaluated as a \emph{Boolean}, owing to the return
-type of the \texttt{method} called on the \texttt{left} and \texttt{right} members.
+The \code{Ordinal} constraint implements the \code{Value} trait. The \code{get} method
+returns the result of applying the specified \code{method} on the \code{left} and
+\code{right} members. Given that the \code{method} must be defined in the \code{Equality}
+trait, \code{get} returns a Boolean. The \code{set} method will have no affect on the
+value of the constraint.
+
+Both the \code{left} and \code{right} members MUST implement the \code{Value} trait, whose
+\code{get} methods MUST return types that implement the \code{Ordinal} trait.
 
 % . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 \textbf{\texttt{Boolean}}
@@ -754,8 +766,14 @@ type of the \texttt{method} called on the \texttt{left} and \texttt{right} membe
 \end{alltt}
 \normalsize
 
-An \texttt{Boolean} constraint is evaluated as a \emph{Boolean}, owing to the return
-type of the \texttt{method} called on the \texttt{left} and \texttt{right} members.
+The \code{Boolean} constraint implements the \code{Value} trait. The \code{get} method
+returns the result of applying the specified \code{method} on the \code{left} and
+\code{right} members. Given that the \code{method} must be defined in the \code{Boolean}
+trait, \code{get} returns a Boolean. The \code{set} method will have no affect on the
+value of the constraint.
+
+Both the \code{left} and \code{right} members MUST implement the \code{Value} trait, whose
+\code{get} methods MUST return types that implement the \code{Boolean} trait.
 
 % . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 \textbf{\texttt{Arithmetic}}
@@ -771,8 +789,13 @@ type of the \texttt{method} called on the \texttt{left} and \texttt{right} membe
 \end{alltt}
 \normalsize
 
-An \texttt{Arithmetic} constraint is evaluated as the return type of the \texttt{method}
-called on the \texttt{left} and \texttt{right} members.
+The \code{Arithmetic} constraint implements the \code{Value} trait. Both the type and
+value returned by the \code{get} method are determined by the result of applying the
+specified \code{method} on the \code{left} and \code{right} methods. The \code{set} method
+will have no affect on the value of the constraint.
+
+Both the \code{left} and \code{right} members MUST implement the \code{Value} trait, whose
+\code{get} methods MUST return types that implement the \code{Arithmetic} trait.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Leaf Constraints}
@@ -790,8 +813,8 @@ called on the \texttt{left} and \texttt{right} members.
 \end{alltt}
 \normalsize
 
-A \texttt{Constant} constraint is evaluated as the type specified in the \texttt{type}
-member.
+The \code{Constant} constraint implements the \code{Value} trait. The \code{get} method
+returns \code{value}, with type \code{type}.
 
 % . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 \textbf{\texttt{Field}}
@@ -806,6 +829,11 @@ member.
 \end{alltt}
 \normalsize
 
+The \code{Field} constraint implements the \code{Value} trait. The \code{get} method
+returns the \code{property} of the field. A field has three properties: \code{isPresent}
+(a constraint specified in the \code{isPresent} member of the containing struct), its
+value, and its width (i.e., the number of bits the field takes up within the containing
+struct). The \code{set} method will have no affect on the value of the constraint.
 
 %==================================================================================================
 \section{Acknowledgements}
