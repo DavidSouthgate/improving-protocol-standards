@@ -694,96 +694,112 @@ structure type or enumerated type.
 \subsection{Constraints}
 \label{sec:constraints}
 
+Contraints are split into two classes: leaf (\texttt{Constant} and \texttt{Field}) and tree
+(\texttt{Equality}, \texttt{Ordinal}, \texttt{Boolean}, and \texttt{Arithmetic}). 
+
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{\texttt{IntegerConst}}
+\subsubsection{Tree Constraints}
+
+% . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+\textbf{\texttt{Equality}}
 
 \footnotesize
 \begin{alltt}
   \{
-    "constraint"    : "IntegerConst",
-    "value"         : \emph{integer}
+    "constraint"   : "Equality",
+    "method"       : \emph{any method of the} Equality \emph{trait},
+    "left"         : \emph{constraint},
+    "right"        : \emph{constraint}
   \}
 \end{alltt}
 \normalsize
 
-The \texttt{IntegerConst} constraint implements the \texttt{Value}, \texttt{Equality},
-\texttt{Ordinal}, and \texttt{ArithmeticOps} traits.
+An \texttt{Equality} constraint is evaluated as a \emph{Boolean}, owing to the return
+type of the \texttt{method} called on the \texttt{left} and \texttt{right} members.
 
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{\texttt{BooleanConst}}
-
-\footnotesize
-\begin{alltt}
-  \{
-    "constraint"    : "BooleanConst",
-    "value"         : \emph{True} | \emph{False}
-  \}
-\end{alltt}
-\normalsize
-
-The \texttt{BooleanConst} constraint implements the \texttt{Value}, \texttt{Equality},
-and \emph{BooleanOps} traits.
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{\texttt{Field}}
-
-\footnotesize
-\begin{alltt}
-  \{
-    "constraint"   : "Field",
-    "name"         : \emph{field name},
-    "property"     : \emph{is\_present} | \emph{value} | \emph{width}
-  \}
-\end{alltt}
-\normalsize
-
-The \texttt{Field} constraint implements the \texttt{Value} and \texttt{Equality} traits.
-
-Additionally, if \texttt{property} is set to \texttt{is\_present}, the constraint implements
-the \texttt{BooleanOps} trait. If \texttt{property} is set to \emph{value} or \emph{width},
-the constraint implements the \emph{Ordinal} and \emph{ArithmeticOps} traits.
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{\texttt{Arithmetic}}
-
-\footnotesize
-\begin{alltt}
-  \{
-    "constraint"   : "Arithmetic",
-    "method"       : \emph{any method of the} ArithmeticOps \emph{trait},
-    "left"         : \emph{any type that implements the} ArithmeticOps \emph{trait},
-    "right"        : \emph{any type that implements the} ArithmeticOps \emph{trait},
-  \}
-\end{alltt}
-\normalsize
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{\texttt{Ordinal}}
+% . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+\textbf{\texttt{Ordinal}}
 
 \footnotesize
 \begin{alltt}
   \{
     "constraint"   : "Ordinal",
     "method"       : \emph{any method of the} Ordinal \emph{trait},
-    "left"         : \emph{any type that implements the} Ordinal \emph{trait},
-    "right"        : \emph{any type that implements the} Ordinal \emph{trait},
+    "left"         : \emph{constraint},
+    "right"        : \emph{constraint}
   \}
 \end{alltt}
 \normalsize
 
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{\texttt{Boolean}}
+An \texttt{Ordinal} constraint is evaluated as a \emph{Boolean}, owing to the return
+type of the \texttt{method} called on the \texttt{left} and \texttt{right} members.
+
+% . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+\textbf{\texttt{Boolean}}
 
 \footnotesize
 \begin{alltt}
   \{
     "constraint"   : "Boolean",
     "method"       : \emph{any method of the} BooleanOps \emph{trait},
-    "left"         : \emph{any type that implements the} BooleanOps \emph{trait},
-    "right"        : \emph{any type that implements the} BooleanOps \emph{trait},
+    "left"         : \emph{constraint},
+    "right"        : \emph{constraint}
   \}
 \end{alltt}
 \normalsize
+
+An \texttt{Boolean} constraint is evaluated as a \emph{Boolean}, owing to the return
+type of the \texttt{method} called on the \texttt{left} and \texttt{right} members.
+
+% . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+\textbf{\texttt{Arithmetic}}
+
+\footnotesize
+\begin{alltt}
+  \{
+    "constraint"   : "Arithmetic",
+    "method"       : \emph{any method of the} ArithmeticOps \emph{trait},
+    "left"         : \emph{constraint},
+    "right"        : \emph{constraint}
+  \}
+\end{alltt}
+\normalsize
+
+An \texttt{Arithmetic} constraint is evaluated as the return type of the \texttt{method}
+called on the \texttt{left} and \texttt{right} members.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Leaf Constraints}
+
+% . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+\textbf{\texttt{Constant}}
+
+\footnotesize
+\begin{alltt}
+  \{
+    "constraint"   : "Constant",
+    "type"         : "\emph{type name}",
+    "value"        : \emph{value}
+  \}
+\end{alltt}
+\normalsize
+
+A \texttt{Constant} constraint is evaluated as the type specified in the \texttt{type}
+member.
+
+% . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+\textbf{\texttt{Field}}
+
+\footnotesize
+\begin{alltt}
+  \{
+    "constraint"   : "Field",
+    "name"         : "\emph{field name}",
+    "property"     : "\emph{is\_present} or \emph{value} or \emph{width}"
+  \}
+\end{alltt}
+\normalsize
+
 
 %==================================================================================================
 \section{Acknowledgements}
