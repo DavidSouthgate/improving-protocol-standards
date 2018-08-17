@@ -234,6 +234,38 @@ form of the intermediate representation:
 \end{alltt}
 \normalsize
 
+The runtime implements the \code{Collection} trait. This defines methods
+that can be used to get and set the values of elements of a multivariable
+data structure. Its definition is equivalent to the following definition in the JSON
+form of the intermediate representation:
+\footnotesize
+\begin{alltt}
+  \{
+    "construct" : "Trait"
+    "name"      : "Collection",
+    "methods"   : [
+      \{
+        "name"        : "get",
+        "parameters"  : [
+          \{"name" : "self",    "type"   : null\},
+          \{"name" : "element", "type"   : null\}
+        ],
+        "return\_type" : null
+      \},
+      \{
+        "name"        : "set",
+        "parameters"  : [
+          \{"name" : "self",    "type"   : null\},
+          \{"name" : "element", "type"   : null\}
+        ],
+        "return\_type" : "Nothing"
+      \}
+    ]
+  \}
+\end{alltt}
+\normalsize
+
+
 The runtime implements the \code{Equality} trait. This defines methods that
 can be used to compare to instances of a type for equality.
 Its definition is equivalent to the following definition in the JSON
@@ -457,6 +489,9 @@ of its own type.
 Arrays implement the \code{Equality} trait. Two arrays are equal if they
 have the same element type, \code{length}, and their elements are equal.
 
+Arrays implement the \code{Collection} trait. Elements are numbered from $0$ to
+$\code{length}-1$.
+
 In the JSON form of the intermediate representation, an invocation of the
 array type constructor is represented as in the following:
 \footnotesize
@@ -477,8 +512,6 @@ It is an error to define the same type more than once.
 
 The \code{length} field MAY be \code{null} in the JSON, to indicate that
 the length is unspecified.
-
-\todo{Arrays need to implement a trait that gives access to their elements}
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Structure Types}
@@ -520,6 +553,9 @@ The \code{fields} define the attributes of the new structure type. Each
 field has a name, a type, and a constraint that indicates if the field is
 present in a particular instantiation of the structure type. Structure
 types MUST contain at least one field.
+
+Structures implement the \code{Collection} trait. Its elements, \code{fields}, are
+accessed by their \code{name}.
 
 Each field has a name that is formed of upper and lower case ASCII letters,
 digits, dollar signs, or underscores (\code{A-Za-z0-9\$\_}). The field name
