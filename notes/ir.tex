@@ -554,9 +554,6 @@ field has a name, a type, and a constraint that indicates if the field is
 present in a particular instantiation of the structure type. Structure
 types MUST contain at least one field.
 
-Structures implement the \code{Collection} trait. Its elements, \code{fields}, are
-accessed by their \code{name}.
-
 Each field has a name that is formed of upper and lower case ASCII letters,
 digits, dollar signs, or underscores (\code{A-Za-z0-9\$\_}). The field name
 MUST begin with a lower case letter (\code{a-z}).
@@ -571,12 +568,58 @@ whether that field is present in a particular instantiation of the
 structure type. This is used to model data formats that contain optional
 fields. Constraints are described in Section \ref{sec:constraints}.
 
+Structures implement the \code{Collection} trait. Its elements, \code{fields}, are
+accessed by their \code{name}.
+
 Finally, a structure type is parameterised by a set of constraints on the
 fields. The set of constraints MAY be empty. Constraints are described in
 Section \ref{sec:constraints}.
 
 Both the per-field \code{isPresent} and struct-level \code{constraints} members MUST
 only constraints that evaluate to Boolean types.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Context Types}
+
+The context type constructor allows creation of types that represent a sequence of fields,
+possibly of different types, that can be accessed in the parsing of other types, where
+needed. The context type constructor is parameterised by the details of the fields it
+includes.
+
+In the JSON form of the intermediate representation, invocation of the type
+constructor for a context type is represented as in the following:
+\footnotesize
+\begin{alltt}
+  \{
+    "construct"   : "Context"
+    "fields"      : [
+      \{
+        "name"       : "\emph{field name}",
+        "type"       : "\emph{field type}"
+      \}
+  \}
+\end{alltt}
+\normalsize
+
+At most one context can be instantiated. If a context is instantiated, it is named
+\code{\$Context} in the global type namespace. 
+
+The \code{fields} define the attributes of the new structure type. Each
+field has a name, a type, and a constraint that indicates if the field is
+present in a particular instantiation of the structure type. Structure
+types MUST contain at least one field.
+
+Each field has a name that is formed of upper and lower case ASCII letters,
+digits, dollar signs, or underscores (\code{A-Za-z0-9\$\_}). The field name
+MUST begin with a lower case letter (\code{a-z}).
+
+Each field has a type. That type MUST have been previously defined, and can
+be a \code{BitString}, array, structure type, or enumerated type. The names
+of each field MUST be unique within a structure definition, but several
+fields can have the same type.
+
+Contexts implement the \code{Collection} trait. Its elements, \code{fields}, are
+accessed by their \code{name}.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Enumerated Types}
