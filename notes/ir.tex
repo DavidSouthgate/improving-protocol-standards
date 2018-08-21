@@ -772,8 +772,9 @@ the types and functions used by the protocol. Any representable type, as
 defined in Section \ref{sec:representable}, can be included.
 
 The \code{pdus} field contains an array giving the type of the PDUs used
-in the protocol. A protocol MUST define at least one PDU. PDUs can be any
-structure type or enumerated type. 
+in the protocol. The PDUs array MAY be empty, although this represents a
+protocol that is useless. PDUs can be any structure type or enumerated
+type. 
 
 %--------------------------------------------------------------------------------------------------
 \subsection{Constraints}
