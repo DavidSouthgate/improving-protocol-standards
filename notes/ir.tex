@@ -779,8 +779,9 @@ structure type or enumerated type.
 \subsection{Constraints}
 \label{sec:constraints}
 
-Contraints are split into two classes: leaf (\texttt{Constant} and \texttt{Field}) and
-tree (\texttt{Equality}, \texttt{Ordinal}, \texttt{Boolean}, and \texttt{Arithmetic}). 
+Contraints are split into two classes: leaf (\code{Constant} and \code{Field}) and tree
+(\code{Equality}, \code{Ordinal}, \code{Boolean}, \code{Arithmetic}, and
+\code{Conditional}). 
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Tree Constraints}
@@ -792,21 +793,21 @@ tree (\texttt{Equality}, \texttt{Ordinal}, \texttt{Boolean}, and \texttt{Arithme
 \begin{alltt}
   \{
     "constraint"   : "Equality",
-    "method"       : \emph{any method of the} Equality \emph{trait},
+    "method"       : "\emph{name of any method of the}
+                     Equality \emph{trait}",
     "left"         : \emph{constraint},
     "right"        : \emph{constraint}
   \}
 \end{alltt}
 \normalsize
 
-The \code{Equality} constraint implements the \code{Value} trait. The \code{get} method
-returns the result of applying the specified \code{method} on the \code{left} and
-\code{right} members. Given that the method must be from the \code{Equality} trait,
-\code{get} returns a Boolean. The \code{set} method will have no affect on the value of
-the constraint.
+The \code{Equality} constraint implements the \code{Value} trait. The constraint's value
+is computed by applying the \code{method} on the \code{left} and \code{right} members.
+Given that \code{method} must be a method of the \code{Equality} trait, the constraint's
+value is a Boolean. The \code{set} method has no effect.
 
-Both the \code{left} and \code{right} members MUST implement the \code{Value} trait, whose
-\code{get} methods MUST return types that implement the \code{Equality} trait.
+Both the \code{left} and \code{right} members MUST be specified (as a constraint described
+in this section), and MUST have values that implement the \code{Equality} trait.
 
 % . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 \textbf{\texttt{Ordinal}}
@@ -815,21 +816,21 @@ Both the \code{left} and \code{right} members MUST implement the \code{Value} tr
 \begin{alltt}
   \{
     "constraint"   : "Ordinal",
-    "method"       : \emph{any method of the} Ordinal \emph{trait},
+    "method"       : "\emph{name of any method of the}
+                     Ordinal \emph{trait}",
     "left"         : \emph{constraint},
     "right"        : \emph{constraint}
   \}
 \end{alltt}
 \normalsize
 
-The \code{Ordinal} constraint implements the \code{Value} trait. The \code{get} method
-returns the result of applying the specified \code{method} on the \code{left} and
-\code{right} members. Given that the \code{method} must be defined in the \code{Equality}
-trait, \code{get} returns a Boolean. The \code{set} method will have no affect on the
-value of the constraint.
+The \code{Ordinal} constraint implements the \code{Value} trait. The constraint's value is
+computed by applying the \code{method} on the \code{left} and \code{right} members. Given
+that \code{method} must be a method of the \code{Ordinal} trait, the constraint's value is
+a Boolean. The \code{set} method has no effect.
 
-Both the \code{left} and \code{right} members MUST implement the \code{Value} trait, whose
-\code{get} methods MUST return types that implement the \code{Ordinal} trait.
+Both the \code{left} and \code{right} members MUST be specified (as a constraint described
+in this section), and MUST have values that implement the \code{Ordinal} trait.
 
 % . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 \textbf{\texttt{Boolean}}
@@ -838,21 +839,21 @@ Both the \code{left} and \code{right} members MUST implement the \code{Value} tr
 \begin{alltt}
   \{
     "constraint"   : "Boolean",
-    "method"       : \emph{any method of the} BooleanOps \emph{trait},
+    "method"       : "\emph{name of any method of the}
+                     BooleanOps \emph{trait}",
     "left"         : \emph{constraint},
     "right"        : \emph{constraint}
   \}
 \end{alltt}
 \normalsize
 
-The \code{Boolean} constraint implements the \code{Value} trait. The \code{get} method
-returns the result of applying the specified \code{method} on the \code{left} and
-\code{right} members. Given that the \code{method} must be defined in the \code{Boolean}
-trait, \code{get} returns a Boolean. The \code{set} method will have no affect on the
-value of the constraint.
+The \code{Boolean} constraint implements the \code{Value} trait. The constraint's value is
+computed by applying the \code{method} on the \code{left} and \code{right} members. Given
+that \code{method} must be a method of the \code{BooleanOps} trait, the constraint's value
+is a Boolean. The \code{set} method has no effect.
 
-Both the \code{left} and \code{right} members MUST implement the \code{Value} trait, whose
-\code{get} methods MUST return types that implement the \code{Boolean} trait.
+Both the \code{left} and \code{right} members MUST be specified (as a constraint described
+in this section), and MUST have values that implement the \code{BooleanOps} trait.
 
 % . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 \textbf{\texttt{Arithmetic}}
@@ -861,20 +862,20 @@ Both the \code{left} and \code{right} members MUST implement the \code{Value} tr
 \begin{alltt}
   \{
     "constraint"   : "Arithmetic",
-    "method"       : \emph{any method of the} ArithmeticOps \emph{trait},
+    "method"       : "\emph{name of any method of the}
+                     ArithmeticOps \emph{trait}",
     "left"         : \emph{constraint},
     "right"        : \emph{constraint}
   \}
 \end{alltt}
 \normalsize
 
-The \code{Arithmetic} constraint implements the \code{Value} trait. Both the type and
-value returned by the \code{get} method are determined by the result of applying the
-specified \code{method} on the \code{left} and \code{right} methods. The \code{set} method
-will have no affect on the value of the constraint.
+The \code{Arithmetic} constraint implements the \code{Value} trait. The constraint's value
+is computed by applying the \code{method} on the \code{left} and \code{right} members. The
+\code{set} method has no effect.
 
-Both the \code{left} and \code{right} members MUST implement the \code{Value} trait, whose
-\code{get} methods MUST return types that implement the \code{Arithmetic} trait.
+Both the \code{left} and \code{right} members MUST be specified (as a constraint described
+in this section), and MUST have values that implement the \code{ArithmeticOps} trait.
 
 % . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 \textbf{\texttt{Conditional}}
@@ -913,8 +914,8 @@ method has no effect.
 \end{alltt}
 \normalsize
 
-The \code{Constant} constraint implements the \code{Value} trait. The \code{get} method
-returns \code{value}, with type \code{type}.
+The \code{Constant} constraint implements the \code{Value} trait. The constraint's value
+is specified in the \code{value} member.
 
 % . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 \textbf{\texttt{Field}}
@@ -923,17 +924,63 @@ returns \code{value}, with type \code{type}.
 \begin{alltt}
   \{
     "constraint"   : "Field",
-    "name"         : "\emph{field name}",
-    "property"     : "\emph{is\_present} or \emph{value} or \emph{width}"
+    "field"        : \emph{Value getter} or
+                     \emph{NamedCollection getter} or
+                     \emph{NumberedCollection getter}
   \}
 \end{alltt}
 \normalsize
 
-The \code{Field} constraint implements the \code{Value} trait. The \code{get} method
-returns the \code{property} of the field. A field has three properties: \code{isPresent}
-(a constraint specified in the \code{isPresent} member of the containing struct), its
-value, and its width (i.e., the number of bits the field takes up within the containing
-struct). The \code{set} method will have no affect on the value of the constraint.
+The JSON form of a \code{Value} getter is:
+
+\footnotesize
+\begin{alltt}
+  \{
+    "name"         : "\emph{Field name}"
+  \}
+\end{alltt}
+\normalsize
+
+A \code{Value} getter is used when the \code{name} member refers to a field that
+implements the \code{Value} trait. The \code{Value} getter takes on the value of the field
+specified in \code{name}.
+
+The JSON form of a \code{NamedCollection} getter is:
+
+\footnotesize
+\begin{alltt}
+  \{
+    "name"         : "\emph{Name of field that implements
+                      NamedCollection trait}",
+    "member"       : \emph{Value getter} or
+                     \emph{NamedCollection getter} or
+                     \emph{NumberedCollection getter}
+  \}
+\end{alltt}
+\normalsize
+
+A \code{NamedCollection} getter is used when the \code{name} member refers to a field that
+implements the \code{NamedCollection} trait. The \code{NamedCollection} getter takes on
+the value of the \code{member} member.
+
+The JSON form of a \code{NumberedCollection} getter is:
+
+\footnotesize
+\begin{alltt}
+  \{
+    "name"         : "\emph{Name of field that implements
+                      NumberedCollection trait}",
+    "index"        : \emph{index},
+    "member"       : \emph{Value getter} or
+                     \emph{NamedCollection getter} or
+                     \emph{NumberedCollection getter} or
+                     None
+  \}
+\end{alltt}
+\normalsize
+
+A \code{NumberedCollection} getter is used when the \code{name} member refers to a field
+that implements the \code{NumberedCollection} trait.
 
 %==================================================================================================
 \section{Acknowledgements}
