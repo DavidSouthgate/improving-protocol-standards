@@ -957,63 +957,150 @@ is specified in the \code{value} member.
 \begin{alltt}
   \{
     "constraint"   : "Field",
-    "field"        : \emph{Value getter} or
-                     \emph{NamedCollection getter} or
-                     \emph{NumberedCollection getter}
+    "accessor"     : \emph{NamedCollection getter}
   \}
 \end{alltt}
 \normalsize
-
-The JSON form of a \code{Value} getter is:
-
-\footnotesize
-\begin{alltt}
-  \{
-    "name"         : "\emph{Field name}"
-  \}
-\end{alltt}
-\normalsize
-
-A \code{Value} getter is used when the \code{name} member refers to a field that
-implements the \code{Value} trait. The \code{Value} getter takes on the value of the field
-specified in \code{name}.
 
 The JSON form of a \code{NamedCollection} getter is:
 
 \footnotesize
 \begin{alltt}
   \{
-    "name"         : "\emph{Name of field that implements
-                      NamedCollection trait}",
-    "member"       : \emph{Value getter} or
-                     \emph{NamedCollection getter} or
-                     \emph{NumberedCollection getter}
+    "key"          : "\emph{Key for NamedCollection}",
+    "accessor"     : \emph{NamedCollection getter} or
+                     \emph{NumberedCollection getter} or
+                     \emph{null}
   \}
 \end{alltt}
 \normalsize
-
-A \code{NamedCollection} getter is used when the \code{name} member refers to a field that
-implements the \code{NamedCollection} trait. The \code{NamedCollection} getter takes on
-the value of the \code{member} member.
 
 The JSON form of a \code{NumberedCollection} getter is:
 
 \footnotesize
 \begin{alltt}
   \{
-    "name"         : "\emph{Name of field that implements
-                      NumberedCollection trait}",
-    "index"        : \emph{index},
-    "member"       : \emph{Value getter} or
-                     \emph{NamedCollection getter} or
+    "index"        : \emph{Index for NumberedCollection},
+    "accessor"     : \emph{NamedCollection getter} or
                      \emph{NumberedCollection getter} or
-                     None
+                     \emph{null}
   \}
 \end{alltt}
 \normalsize
 
-A \code{NumberedCollection} getter is used when the \code{name} member refers to a field
-that implements the \code{NumberedCollection} trait.
+\textbf{Example}
+
+\footnotesize
+\begin{alltt}
+  \{
+    "construct"    : "BitString",
+    "name"         : "BitString1",
+    "width"        : 1
+  \}
+  
+  \{
+    "construct"    : "Array",
+    "name"         : "ArrayBitString1",
+    "element_type" : "BitString1",
+    "length"       : 10
+  \}
+  
+  \{
+    "construct"    : "Struct",
+    "name"         : "StructTypeA",
+    "fields"       : [\{"name": "fieldA", "type": "BitString1"\},
+    				  \{"name": "fieldF", "type": "ArrayBitString1"\}],
+    "constraints"  : null
+  \}
+  
+  \{
+    "construct"    : "Array",
+    "name"         : "ArrayTypeA",
+    "element_type" : "StructTypeA",
+    "length"       : 4
+  \}
+  
+  \{
+    "construct"    : "Struct",
+    "name"         : "StructTypeB",
+    "fields"       : [\{"name": "fieldB", "type": "ArrayTypeA"\}, 
+                      \{"name": "fieldC", "type": "BitString1"\},
+                      \{"name": "fieldD", "type": "ArrayBitString1"\},
+                      \{"name": "fieldE", "type": "StructTypeA"\}],
+    "constraints"  : null
+  \}
+\end{alltt}
+\normalsize
+
+The JSON representation of a \code{Field} constraint that refers to \code{StructTypeB}'s
+\code{fieldC} is:
+
+\footnotesize
+\begin{alltt}
+  \{
+    "constraint"   : "Field",
+    "accessor"     : \{"key"     : "fieldC",
+                       "accessor": null\}
+  \}
+\end{alltt}
+\normalsize
+
+The JSON representation of a \code{Field} constraint that refers to \code{fieldA} within
+\code{StructTypeB}'s \code{fieldE} is:
+
+\footnotesize
+\begin{alltt}
+  \{
+    "constraint"   : "Field",
+    "accessor"     : \{"key"     : "fieldE",
+                       "accessor" : \{"key": "fieldA"\}\}
+  \}
+\end{alltt}
+\normalsize
+
+The JSON representation of a \code{Field} constraint that refers to the 2nd element of
+\code{fieldF} within \code{StructTypeB}'s \code{fieldE} is:
+
+\footnotesize
+\begin{alltt}
+  \{
+    "constraint"   : "Field",
+    "accessor"     : \{"key"     : "fieldE",
+                      "accessor" : \{"key"      : "fieldF",
+                      				 "accessor" : \{"index": 1, 
+                      				                "accessor" : null\}\}
+  \}
+\end{alltt}
+\normalsize
+
+The JSON representation of a \code{Field} constraint that refers to the 5th element of
+\code{StructTypeB}'s \code{fieldD} is:
+
+\footnotesize
+\begin{alltt}
+  \{
+    "constraint"   : "Field",
+    "accessor"     : \{"key"      : "fieldD",
+                       "accessor" : \{"index": 4, 
+                      				  "accessor" : null\}\}
+  \}
+\end{alltt}
+\normalsize
+
+The JSON representation of a \code{Field} constraint that refers to the \code{fieldA}
+within the 1st element of \code{StructTypeB}'s \code{fieldB} is:
+
+\footnotesize
+\begin{alltt}
+  \{
+    "constraint"   : "Field",
+    "accessor"     : \{"key"     : "fieldB",
+                      "accessor" : \{"index": 0, 
+                      				 "accessor" : \{"key"      : "fieldA", 
+                      				                "accessor" : null\}\}\}\}
+  \}
+\end{alltt}
+\normalsize
 
 %==================================================================================================
 \section{Acknowledgements}
