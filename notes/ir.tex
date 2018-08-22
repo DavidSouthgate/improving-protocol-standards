@@ -876,6 +876,27 @@ will have no affect on the value of the constraint.
 Both the \code{left} and \code{right} members MUST implement the \code{Value} trait, whose
 \code{get} methods MUST return types that implement the \code{Arithmetic} trait.
 
+% . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+\textbf{\texttt{Conditional}}
+
+\footnotesize
+\begin{alltt}
+  \{
+    "constraint"   : "Conditional",
+    "condition"    : \emph{constraint},
+    "true"         : \emph{constraint},
+    "false"        : \emph{constraint}
+  \}
+\end{alltt}
+\normalsize
+
+The \code{condition} MUST be a constraint whose value is a Boolean.
+
+The \code{Conditional} constraint implements the \code{Value} trait. If the
+\code{condition} evaluates to \code{True}, then the constraint's value is the \code{true}
+member. Otherwise, the constraint's value is the \code{false} member. The \code{set}
+method has no effect.
+
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Leaf Constraints}
 
