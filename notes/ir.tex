@@ -247,16 +247,17 @@ form of the intermediate representation:
       \{
         "name"        : "get",
         "parameters"  : [
-          \{"name" : "self",    "type"   : null\},
-          \{"name" : "element", "type"   : null\}
+          \{"name" : "self",  "type"   : null\},
+          \{"name" : "index", "type"   : "Size"\}
         ],
         "return\_type" : null
       \},
       \{
         "name"        : "set",
         "parameters"  : [
-          \{"name" : "self",    "type"   : null\},
-          \{"name" : "element", "type"   : null\}
+          \{"name" : "self",  "type"   : null\},
+          \{"name" : "index", "type"   : "Size"\}
+          \{"name" : "value", "type"   : null\}
         ],
         "return\_type" : "Nothing"
       \}
