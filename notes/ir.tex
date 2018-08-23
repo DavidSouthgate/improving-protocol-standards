@@ -834,13 +834,11 @@ Contraints are split into two classes: leaf (\code{Constant} and \code{Field}) a
 \end{alltt}
 \normalsize
 
-The \code{Equality} constraint implements the \code{Value} trait. The constraint's value
-is computed by applying the \code{method} on the \code{left} and \code{right} members.
-Given that \code{method} must be a method of the \code{Equality} trait, the constraint's
-value is a Boolean. The \code{set} method has no effect.
+The \code{Equality} constraint evaluates to the result of applying the \code{method} on
+the \code{left} and \code{right} members.
 
 Both the \code{left} and \code{right} members MUST be specified (as a constraint described
-in this section), and MUST have values that implement the \code{Equality} trait.
+in this section), and MUST evaluate to types that implement \code{Equality} trait.
 
 % . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 \textbf{\texttt{Ordinal}}
@@ -857,13 +855,11 @@ in this section), and MUST have values that implement the \code{Equality} trait.
 \end{alltt}
 \normalsize
 
-The \code{Ordinal} constraint implements the \code{Value} trait. The constraint's value is
-computed by applying the \code{method} on the \code{left} and \code{right} members. Given
-that \code{method} must be a method of the \code{Ordinal} trait, the constraint's value is
-a Boolean. The \code{set} method has no effect.
+The \code{Ordinal} constraint evaluates to the result of applying the \code{method} on
+the \code{left} and \code{right} members.
 
 Both the \code{left} and \code{right} members MUST be specified (as a constraint described
-in this section), and MUST have values that implement the \code{Ordinal} trait.
+in this section), and MUST evaluate to types that implement \code{Ordinal} trait.
 
 % . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 \textbf{\texttt{Boolean}}
@@ -880,13 +876,11 @@ in this section), and MUST have values that implement the \code{Ordinal} trait.
 \end{alltt}
 \normalsize
 
-The \code{Boolean} constraint implements the \code{Value} trait. The constraint's value is
-computed by applying the \code{method} on the \code{left} and \code{right} members. Given
-that \code{method} must be a method of the \code{BooleanOps} trait, the constraint's value
-is a Boolean. The \code{set} method has no effect.
+The \code{Boolean} constraint evaluates to the result of applying the \code{method} on
+the \code{left} and \code{right} members.
 
 Both the \code{left} and \code{right} members MUST be specified (as a constraint described
-in this section), and MUST have values that implement the \code{BooleanOps} trait.
+in this section), and MUST evaluate to types that implement \code{BooleanOps} trait.
 
 % . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 \textbf{\texttt{Arithmetic}}
@@ -903,12 +897,11 @@ in this section), and MUST have values that implement the \code{BooleanOps} trai
 \end{alltt}
 \normalsize
 
-The \code{Arithmetic} constraint implements the \code{Value} trait. The constraint's value
-is computed by applying the \code{method} on the \code{left} and \code{right} members. The
-\code{set} method has no effect.
+The \code{Arithmetic} constraint evaluates to the result of applying the \code{method} on
+the \code{left} and \code{right} members.
 
 Both the \code{left} and \code{right} members MUST be specified (as a constraint described
-in this section), and MUST have values that implement the \code{ArithmeticOps} trait.
+in this section), and MUST evaluate to types that implement \code{ArithmeticOps} trait.
 
 % . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 \textbf{\texttt{Conditional}}
@@ -924,12 +917,10 @@ in this section), and MUST have values that implement the \code{ArithmeticOps} t
 \end{alltt}
 \normalsize
 
-The \code{condition} MUST be a constraint whose value is a Boolean.
+The \code{condition} MUST be a constraint that evaluates to the \code{Boolean} type.
 
-The \code{Conditional} constraint implements the \code{Value} trait. If the
-\code{condition} evaluates to \code{True}, then the constraint's value is the \code{true}
-member. Otherwise, the constraint's value is the \code{false} member. The \code{set}
-method has no effect.
+The \code{Conditional} constraint evaluates to the \code{true} member, if \code{condition}
+is \code{True}. Otherwise, the constraint evaluates to the \code{false} member.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Leaf Constraints}
@@ -947,8 +938,7 @@ method has no effect.
 \end{alltt}
 \normalsize
 
-The \code{Constant} constraint implements the \code{Value} trait. The constraint's value
-is specified in the \code{value} member.
+The \code{Constant} constraint evaluates to the \code{value} member, with type \code{type}.
 
 % . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 \textbf{\texttt{Field}}
@@ -961,6 +951,10 @@ is specified in the \code{value} member.
   \}
 \end{alltt}
 \normalsize
+
+The \code{Field} constraint evaluates to the field specified by the chain of
+\code{accessor}s. The containing structure and, if it exists, \code{Context}, are in
+scope.
 
 The JSON form of a \code{NamedCollection} getter is:
 
