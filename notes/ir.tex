@@ -814,7 +814,7 @@ type.
 \label{sec:constraints}
 
 Constraints are split into two classes: 
-tree (\code{Equality}, \code{Ordinal}, \code{Boolean}, \code{Arithmetic}, and \code{Conditional})
+tree (\code{Equality}, \code{Ordinal}, \code{Boolean}, \code{Arithmetic}, and \code{IfElse})
 and 
 leaf (\code{Constant} and \code{Field}).
 
@@ -893,21 +893,21 @@ the \code{left} and \code{right} members.
 Both the \code{left} and \code{right} members MUST be specified (as a constraint described
 in this section), and MUST evaluate to types that implement \code{ArithmeticOps} trait.
 
-A \code{Conditional} tree constraint is represented in the JSON form of the
+A \code{IfElse} tree constraint is represented in the JSON form of the
 intermediate representation as:
 \footnotesize
 \begin{alltt}
   \{
-    "constraint"   : "Conditional",
-    "condition"    : \emph{constraint},
-    "true"         : \emph{constraint},
-    "false"        : \emph{constraint}
+    "constraint"  : "IfElse",
+    "condition"   : \emph{constraint},
+    "if\_true"     : \emph{constraint},
+    "if\_false"    : \emph{constraint}
   \}
 \end{alltt}
 \normalsize
-The \code{condition} MUST be a constraint that evaluates to the \code{Boolean} type.
-The \code{Conditional} constraint evaluates to the \code{true} member, if \code{condition}
-is \code{True}. Otherwise, the constraint evaluates to the \code{false} member.
+The \code{IfElse} includes a \code{condition} that evaluates to the \code{Boolean} type.
+The \code{IfElse} constraint evaluates to the \code{if\_true} member, if \code{condition}
+is \code{True}. Otherwise, the constraint evaluates to the \code{if\_false} member.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Leaf Constraints}
