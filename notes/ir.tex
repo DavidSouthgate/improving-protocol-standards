@@ -728,6 +728,28 @@ error to specify traits that are implemented by the base type.
 The \code{implements} fields MAY be an empty array if the derived type
 does not implement any additional traits compared to the base type.
 
+A common use for derived types is to extend Bit String types with additional
+traits, allowing them to represent integral values that can be compared or
+have arithmetic operations performed on them. For example, to define a 16-bit
+integer type:
+\footnotesize
+\begin{alltt}
+  \{
+    "construct"     : "BitString",
+    "name"          : "Bits16",
+    "width"         : 16
+  \},
+  \{
+    "construct"     : "NewType",
+    "name"          : "Int16",
+    "derived\_from"  : "Bits16",
+    "implements"    : [
+      \{"trait" : "Ordinal"\},
+      \{"trait" : "ArithmeticOps"\}
+    ]
+  \}
+\end{alltt}
+\normalsize
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Functions}
 \label{sec:functions}
