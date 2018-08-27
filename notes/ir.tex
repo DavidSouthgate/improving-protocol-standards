@@ -204,7 +204,7 @@ Unspecified types are indicated by \code{null} values in the JSON definition
 (this is distinct from a return value of \code{Nothing} that needs to be
 explicitly stated).
 
-The runtime implements the \code{Value} trait. This defines methods
+The runtime defines the \code{Value} trait. This defines methods
 that can be used to get and set the value of an instance of a type. 
 Its definition is equivalent to the following definition in the JSON
 form of the intermediate representation:
@@ -234,7 +234,7 @@ form of the intermediate representation:
 \end{alltt}
 \normalsize
 
-The runtime implements the \code{IndexCollection} trait. This defines methods that can
+The runtime defines the \code{IndexCollection} trait. This defines methods that can
 be used to get and set the values of elements of an array-like data structure, which has
 multiple, numerically indexed elements. Its definition is equivalent to the following
 definition in the JSON form of the intermediate representation:
@@ -266,7 +266,7 @@ definition in the JSON form of the intermediate representation:
 \end{alltt}
 \normalsize
 
-The runtime implements the \code{NamedCollection} trait. This defines methods that can
+The runtime defines the \code{NamedCollection} trait. This defines methods that can
 be used to get and set the values of elements of a map-like data structure, which has
 multiple, named indexed elements. Its definition is equivalent to the following
 definition in the JSON form of the intermediate representation:
@@ -298,7 +298,7 @@ definition in the JSON form of the intermediate representation:
 \end{alltt}
 \normalsize
 
-The runtime implements the \code{Equality} trait. This defines methods that
+The runtime defines the \code{Equality} trait. This defines methods that
 can be used to compare to instances of a type for equality.
 Its definition is equivalent to the following definition in the JSON
 form of the intermediate representation:
@@ -329,7 +329,7 @@ form of the intermediate representation:
 \end{alltt}
 \normalsize
 
-The runtime implements the \code{Ordinal} trait. This defines methods that
+The runtime defines the \code{Ordinal} trait. This defines methods that
 can be used to compare the values of instances of a type. 
 Its definition is equivalent to the following definition in the JSON
 form of the intermediate representation:
@@ -376,7 +376,7 @@ form of the intermediate representation:
 \end{alltt}
 \normalsize
 
-The runtime implements the \code{BooleanOps} trait. This defines methods
+The runtime defines the \code{BooleanOps} trait. This defines methods
 that can be used to perform boolean operations on, and between, instances
 of a type.
 Its definition is equivalent to the following definition in the JSON
@@ -415,7 +415,7 @@ form of the intermediate representation:
 \end{alltt}
 \normalsize
 
-The runtime implements the \code{ArithmeticOps} trait. This defines methods
+The runtime defines the \code{ArithmeticOps} trait. This defines methods
 that can be used to perform arithmetic operations on instances of a type.
 Its definition is equivalent to the following definition in the JSON
 form of the intermediate representation:
