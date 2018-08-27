@@ -759,13 +759,15 @@ giving the signature of a function to be provided by the implementation of
 the protocol. The code comprising the body of the function is not specified. 
 
 A function type has a name and a return type. It takes a number of
-parameters, each of which has its own name and type. The return type
-\code{Nothing} is used for functions that return no value.
+parameters, each of which has its own name and type. 
+The types of parameters, and the return type, MUST be specified.
+The return type \code{Nothing} is used for functions that return no value.
 
 Function names and parameter names are formed of upper and lower case ASCII
 letters, digits, dollar signs, or underscores (\code{A-Za-z0-9\$\_}), and
 MUST begin with a lower case letter (\code{a-z}).
 Function names are defined in the global type namespace.
+Each parameter within a function definition MUST have a unique name.
 
 In the JSON form of the intermediate representation, invocation of the
 function type constructor is represented as in the following:
