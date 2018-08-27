@@ -595,7 +595,7 @@ be a \code{BitString}, array, structure type, or enumerated type. The names
 of each field MUST be unique within a structure definition, but several
 fields can have the same type.
 
-Each field has a \emph{constraint}, \code{isPresent}, that indicates
+Each field has a \emph{constraint}, \code{is\_present}, that indicates
 whether that field is present in a particular instantiation of the
 structure type. This is used to model data formats that contain optional
 fields. Constraints are described in Section \ref{sec:constraints}.
@@ -607,8 +607,8 @@ Finally, a structure type is parameterised by a set of constraints on the
 fields. The set of constraints MAY be empty. Constraints are described in
 Section \ref{sec:constraints}.
 
-Both the per-field \code{isPresent} and struct-level \code{constraints} members MUST
-only constraints that evaluate to Boolean types.
+Both the per-field \code{is\_present} constraint, and struct-level
+\code{constraints} on members, MUST evaluate to \code{Boolean} values.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Context Types}
@@ -629,6 +629,7 @@ constructor for a context type is represented as in the following:
         "name"       : "\emph{field name}",
         "type"       : "\emph{field type}"
       \}
+      ...
   \}
 \end{alltt}
 \normalsize
@@ -692,7 +693,7 @@ an enumerated type have their own types, but are otherwise unnamed.
 The derived type constructor allows creation of types as extensions of
 existing types. A type derived in this way has the same representation
 and properties as the type it is derived from, but has a new name and is
-distinct from the original type. It can also implement additional traits.
+distinct from the original type. It MAY also implement additional traits.
 
 The type constructor is parameterised by the name of the new derived type,
 the base type from which it is derived, and a (possibly empty) list of any
@@ -718,16 +719,16 @@ name is formed of upper- and lower-case ASCII letters, digits, and dollar
 signs (\code{A-Za-z0-9\$}).  It MUST begin with an upper case letter
 (\code{A-Z}). Type names are defined in the global type namespace.
 
-The \code{derivedFrom} field indicates the type from which the new type is
+The \code{derived\_from} field indicates the type from which the new type is
 derived.  A new type can be derived from an existing \code{BitString},
 array, structure type, or enumerated type. It is an error to define a new
 type that has the same name as an existing type. A new type cannot be
 derived from itself.
 
-The \code{alsoImplements} field is an array that specifies any additional
+The \code{implements} field is an array that specifies any additional
 traits that the new type implements compared to the base type. It is an
 error to specify traits that are implemented by the base type.
-The \code{alsoImplements} fields MAY be an empty array if the derived type
+The \code{implements} fields MAY be an empty array if the derived type
 does not implement any additional traits compared to the base type.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
