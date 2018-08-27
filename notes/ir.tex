@@ -608,50 +608,6 @@ Both the per-field \code{is\_present} constraint, and struct-level
 \code{constraints} on members, MUST evaluate to \code{Boolean} values.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{Context Types}
-
-The context type constructor allows creation of types that represent a sequence of fields,
-possibly of different types, that can be accessed in the parsing of other types, where
-needed. The context type constructor is parameterised by the details of the fields it
-includes.
-
-In the JSON form of the intermediate representation, invocation of the type
-constructor for a context type is represented as in the following:
-\footnotesize
-\begin{alltt}
-  \{
-    "construct"   : "Context"
-    "fields"      : [
-      \{
-        "name"       : "\emph{field name}",
-        "type"       : "\emph{field type}"
-      \}
-      ...
-  \}
-\end{alltt}
-\normalsize
-
-At most one context can be instantiated. If a context is instantiated, it is named
-\code{\$Context} in the global type namespace. 
-
-The \code{fields} define the attributes of the new structure type. Each
-field has a name, a type, and a constraint that indicates if the field is
-present in a particular instantiation of the structure type. Structure
-types MUST contain at least one field.
-
-Each field has a name that is formed of upper and lower case ASCII letters,
-digits, dollar signs, or underscores (\code{A-Za-z0-9\$\_}). The field name
-MUST begin with a lower case letter (\code{a-z}).
-
-Each field has a type. That type MUST have been previously defined, and can
-be a \code{BitString}, array, structure type, or enumerated type. The names
-of each field MUST be unique within a structure definition, but several
-fields can have the same type.
-
-Contexts implement the \code{NamedCollection} trait. Its elements, \code{fields}, are
-accessed by their \code{name}.
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Enumerated Types}
 
 The enumerated type constructor allows creation of types that represent
@@ -829,6 +785,55 @@ The \code{pdus} field contains an array giving the type of the PDUs used
 in the protocol. The PDUs array MAY be empty, although this represents a
 protocol that is useless. PDUs can be any structure type or enumerated
 type. 
+
+%--------------------------------------------------------------------------------------------------
+\subsection{The Parsing Context}
+\label{sec:context}
+
+The \code{Context} type constructor allows creation of a type that
+represents a sequence of fields, possibly of different types, that can be
+accessed in the parsing of other types, where needed. The context type
+constructor is parameterised by the details of the fields it includes.
+
+The \code{Context} holds internal state for the parser, and does not
+represent a PDU, or any part of a PDU, of the protocol being parsed.
+The \code{Context} is defined along with the other \code{definitions}
+in a \code{Protocol}, however, since it is specific to a protocol.
+
+In the JSON form of the intermediate representation, invocation of the type
+constructor for a context type is represented as in the following:
+\footnotesize
+\begin{alltt}
+  \{
+    "construct"   : "Context"
+    "fields"      : [
+      \{
+        "name"       : "\emph{field name}",
+        "type"       : "\emph{field type}"
+      \}
+      ...
+  \}
+\end{alltt}
+\normalsize
+At most one context can be instantiated. If a context is instantiated, it
+is named \code{\$Context} in the global type namespace. 
+
+The \code{fields} define the attributes of the new structure type. Each
+field has a name, a type, and a constraint that indicates if the field is
+present in a particular instantiation of the structure type. Structure
+types MUST contain at least one field.
+
+Each field has a name that is formed of upper and lower case ASCII letters,
+digits, dollar signs, or underscores (\code{A-Za-z0-9\$\_}). The field name
+MUST begin with a lower case letter (\code{a-z}).
+
+Each field has a type. That type MUST have been previously defined, and can
+be a \code{BitString}, array, structure type, or enumerated type. The names
+of each field MUST be unique within a structure definition, but several
+fields can have the same type.
+
+Contexts implement the \code{NamedCollection} trait. Its \code{fields} are
+accessed by their \code{name}.
 
 %--------------------------------------------------------------------------------------------------
 \subsection{Constraints}
