@@ -234,7 +234,7 @@ form of the intermediate representation:
 \end{alltt}
 \normalsize
 
-The runtime implements the \code{IndexedCollection} trait. This defines methods that can
+The runtime implements the \code{IndexCollection} trait. This defines methods that can
 be used to get and set the values of elements of an array-like data structure, which has
 multiple, numerically indexed elements. Its definition is equivalent to the following
 definition in the JSON form of the intermediate representation:
@@ -242,7 +242,7 @@ definition in the JSON form of the intermediate representation:
 \begin{alltt}
   \{
     "construct" : "Trait"
-    "name"      : "IndexedCollection",
+    "name"      : "IndexCollection",
     "methods"   : [
       \{
         "name"        : "get",
@@ -521,7 +521,7 @@ of its own type.
 Arrays implement the \code{Equality} trait. Two arrays are equal if they
 have the same element type, \code{length}, and their elements are equal.
 
-Arrays implement the \code{IndexedCollection} trait. Elements are numbered from $0$ to
+Arrays implement the \code{IndexCollection} trait. Elements are numbered from $0$ to
 $\code{length}-1$.
 
 In the JSON form of the intermediate representation, an invocation of the
@@ -963,20 +963,20 @@ The JSON form of a \code{NamedCollection} getter is:
   \{
     "key"          : "\emph{Key for NamedCollection}",
     "accessor"     : \emph{NamedCollection getter} or
-                     \emph{IndexedCollection getter} or
+                     \emph{IndexCollection getter} or
                      \emph{null}
   \}
 \end{alltt}
 \normalsize
 
-The JSON form of a \code{IndexedCollection} getter is:
+The JSON form of a \code{IndexCollection} getter is:
 
 \footnotesize
 \begin{alltt}
   \{
-    "index"        : \emph{Index for IndexedCollection},
+    "index"        : \emph{Index for IndexCollection},
     "accessor"     : \emph{NamedCollection getter} or
-                     \emph{IndexedCollection getter} or
+                     \emph{IndexCollection getter} or
                      \emph{null}
   \}
 \end{alltt}
