@@ -764,7 +764,7 @@ protocol type constructor is represented as in the following:
                     ],
     "pdus"        : [
       \{"type" : "\emph{PDU type name}"\},
-      \{"type" : "\emph{PDU type name}"\}
+      ...
     ]
   \}
 \end{alltt}
@@ -808,10 +808,11 @@ constructor for a context type is represented as in the following:
     "construct"   : "Context"
     "fields"      : [
       \{
-        "name"       : "\emph{field name}",
-        "type"       : "\emph{field type}"
-      \}
+        "name"    : "\emph{field name}",
+        "type"    : "\emph{field type}"
+      \},
       ...
+    ]
   \}
 \end{alltt}
 \normalsize
