@@ -812,16 +812,16 @@ type.
 \subsection{Constraints}
 \label{sec:constraints}
 
-Contraints are split into two classes: leaf (\code{Constant} and \code{Field}) and tree
-(\code{Equality}, \code{Ordinal}, \code{Boolean}, \code{Arithmetic}, and
-\code{Conditional}). 
+Constraints are split into two classes: 
+tree (\code{Equality}, \code{Ordinal}, \code{Boolean}, \code{Arithmetic}, and \code{Conditional})
+and 
+leaf (\code{Constant} and \code{Field}).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Tree Constraints}
 
-% . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-\textbf{\texttt{Equality}}
-
+An \code{Equality} tree constraint is represented in the JSON form of the
+intermediate representation as:
 \footnotesize
 \begin{alltt}
   \{
@@ -833,16 +833,13 @@ Contraints are split into two classes: leaf (\code{Constant} and \code{Field}) a
   \}
 \end{alltt}
 \normalsize
-
 The \code{Equality} constraint evaluates to the result of applying the \code{method} on
 the \code{left} and \code{right} members.
-
 Both the \code{left} and \code{right} members MUST be specified (as a constraint described
 in this section), and MUST evaluate to types that implement \code{Equality} trait.
 
-% . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-\textbf{\texttt{Ordinal}}
-
+An \code{Ordinal} tree constraint is represented in the JSON form of the
+intermediate representation as:
 \footnotesize
 \begin{alltt}
   \{
@@ -854,16 +851,13 @@ in this section), and MUST evaluate to types that implement \code{Equality} trai
   \}
 \end{alltt}
 \normalsize
-
 The \code{Ordinal} constraint evaluates to the result of applying the \code{method} on
 the \code{left} and \code{right} members.
-
 Both the \code{left} and \code{right} members MUST be specified (as a constraint described
 in this section), and MUST evaluate to types that implement \code{Ordinal} trait.
 
-% . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-\textbf{\texttt{Boolean}}
-
+A \code{Boolean} tree constraint is represented in the JSON form of the
+intermediate representation as:
 \footnotesize
 \begin{alltt}
   \{
@@ -875,16 +869,13 @@ in this section), and MUST evaluate to types that implement \code{Ordinal} trait
   \}
 \end{alltt}
 \normalsize
-
 The \code{Boolean} constraint evaluates to the result of applying the \code{method} on
 the \code{left} and \code{right} members.
-
 Both the \code{left} and \code{right} members MUST be specified (as a constraint described
 in this section), and MUST evaluate to types that implement \code{BooleanOps} trait.
 
-% . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-\textbf{\texttt{Arithmetic}}
-
+An \code{Arithmetic} tree constraint is represented in the JSON form of the
+intermediate representation as:
 \footnotesize
 \begin{alltt}
   \{
@@ -896,16 +887,13 @@ in this section), and MUST evaluate to types that implement \code{BooleanOps} tr
   \}
 \end{alltt}
 \normalsize
-
 The \code{Arithmetic} constraint evaluates to the result of applying the \code{method} on
 the \code{left} and \code{right} members.
-
 Both the \code{left} and \code{right} members MUST be specified (as a constraint described
 in this section), and MUST evaluate to types that implement \code{ArithmeticOps} trait.
 
-% . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-\textbf{\texttt{Conditional}}
-
+A \code{Conditional} tree constraint is represented in the JSON form of the
+intermediate representation as:
 \footnotesize
 \begin{alltt}
   \{
@@ -916,18 +904,15 @@ in this section), and MUST evaluate to types that implement \code{ArithmeticOps}
   \}
 \end{alltt}
 \normalsize
-
 The \code{condition} MUST be a constraint that evaluates to the \code{Boolean} type.
-
 The \code{Conditional} constraint evaluates to the \code{true} member, if \code{condition}
 is \code{True}. Otherwise, the constraint evaluates to the \code{false} member.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Leaf Constraints}
 
-% . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-\textbf{\texttt{Constant}}
-
+A \code{Constant} leaf constraint is represented in the JSON form of the
+intermediate representation as:
 \footnotesize
 \begin{alltt}
   \{
@@ -937,17 +922,15 @@ is \code{True}. Otherwise, the constraint evaluates to the \code{false} member.
   \}
 \end{alltt}
 \normalsize
-
 The \code{Constant} constraint evaluates to the \code{value} member, with type \code{type}.
 
-% . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-\textbf{\texttt{Field}}
-
+A \code{Field} leaf constraint is represented in the JSON form of the
+intermediate representation as:
 \footnotesize
 \begin{alltt}
   \{
     "constraint"   : "Field",
-    "accessor"     : \emph{NamedCollection getter}
+    "accessor"     : \emph{accessor}
   \}
 \end{alltt}
 \normalsize
@@ -956,145 +939,84 @@ The \code{Field} constraint evaluates to the field specified by the chain of
 \code{accessor}s. The containing structure and, if it exists, \code{Context}, are in
 scope.
 
-The JSON form of a \code{NamedCollection} getter is:
-
+In the JSON form of the intermediate representation, an \code{accessor} is
+represented by an object structured as follows:
 \footnotesize
 \begin{alltt}
   \{
-    "key"          : "\emph{Key for NamedCollection}",
-    "accessor"     : \emph{NamedCollection getter} or
-                     \emph{IndexCollection getter} or
-                     \emph{null}
+    "access" : \emph{AccessorType},
+    "key"    : \emph{key},
+    "next"   : \emph{NextAccessor}
   \}
 \end{alltt}
 \normalsize
 
-The JSON form of a \code{IndexCollection} getter is:
+If \emph{AccessorType} is \code{NamedCollection}, then the \code{key}
+is a string representing the name of the field to be accessed within the
+collection.
+%
+If \emph{AccessorType} is \code{IndexCollection}, then the \code{key} is
+the integer index to be accessed within the array.
+%
+If \emph{AccessorType} is \code{Attribute}, then the \code{key} is a string
+representing the name of an attribute of the access type.
 
+The \emph{NextAccessor} is either \code{null} or is an \code{assessor}
+object.
+
+
+For example, a leaf constraint referring to the field \code{seq\_num} of a
+structure type could be written:
 \footnotesize
 \begin{alltt}
   \{
-    "index"        : \emph{Index for IndexCollection},
-    "accessor"     : \emph{NamedCollection getter} or
-                     \emph{IndexCollection getter} or
-                     \emph{null}
+    "constraint" : "Field",
+    "accessor" : \{
+      "access" : "NamedCollection",
+      "key"    : "seq\_num",
+      "next"   : null
+    \}
+  \}
+\end{alltt}
+\normalsize
+A leaf constraint referring to the 4th element of an array field named
+\code{csrc\_list} in a structure would be written:
+\footnotesize
+\begin{alltt}
+  \{
+    "constraint" : "Field",
+    "accessor" : \{
+      "access" : "NamedCollection",
+      "key"    : "csrc\_list",
+      "next"   : \{
+        "access" : "IndexCollection",
+        "key" : 4,
+        "next" : null
+      \}
+    \}
+  \}
+\end{alltt}
+\normalsize
+A leaf constraint referring to the \code{length} attribute of an array
+field named \code{csrc\_list} in a structure would be written:
+\footnotesize
+\begin{alltt}
+  \{
+    "constraint" : "Field",
+    "accessor" : \{
+      "access" : "NamedCollection",
+      "key"    : "csrc\_list",
+      "next"   : \{
+        "access" : "Attribute",
+        "key" : "length",
+        "next" : null
+      \}
+    \}
   \}
 \end{alltt}
 \normalsize
 
-\textbf{Example}
-
-\footnotesize
-\begin{alltt}
-  \{
-    "construct"    : "BitString",
-    "name"         : "BitString1",
-    "width"        : 1
-  \}
-  
-  \{
-    "construct"    : "Array",
-    "name"         : "ArrayBitString1",
-    "element_type" : "BitString1",
-    "length"       : 10
-  \}
-  
-  \{
-    "construct"    : "Struct",
-    "name"         : "StructTypeA",
-    "fields"       : [\{"name": "fieldA", "type": "BitString1"\},
-    				  \{"name": "fieldF", "type": "ArrayBitString1"\}],
-    "constraints"  : null
-  \}
-  
-  \{
-    "construct"    : "Array",
-    "name"         : "ArrayTypeA",
-    "element_type" : "StructTypeA",
-    "length"       : 4
-  \}
-  
-  \{
-    "construct"    : "Struct",
-    "name"         : "StructTypeB",
-    "fields"       : [\{"name": "fieldB", "type": "ArrayTypeA"\}, 
-                      \{"name": "fieldC", "type": "BitString1"\},
-                      \{"name": "fieldD", "type": "ArrayBitString1"\},
-                      \{"name": "fieldE", "type": "StructTypeA"\}],
-    "constraints"  : null
-  \}
-\end{alltt}
-\normalsize
-
-The JSON representation of a \code{Field} constraint that refers to \code{StructTypeB}'s
-\code{fieldC} is:
-
-\footnotesize
-\begin{alltt}
-  \{
-    "constraint"   : "Field",
-    "accessor"     : \{"key"     : "fieldC",
-                       "accessor": null\}
-  \}
-\end{alltt}
-\normalsize
-
-The JSON representation of a \code{Field} constraint that refers to \code{fieldA} within
-\code{StructTypeB}'s \code{fieldE} is:
-
-\footnotesize
-\begin{alltt}
-  \{
-    "constraint"   : "Field",
-    "accessor"     : \{"key"     : "fieldE",
-                       "accessor" : \{"key": "fieldA"\}\}
-  \}
-\end{alltt}
-\normalsize
-
-The JSON representation of a \code{Field} constraint that refers to the 2nd element of
-\code{fieldF} within \code{StructTypeB}'s \code{fieldE} is:
-
-\footnotesize
-\begin{alltt}
-  \{
-    "constraint"   : "Field",
-    "accessor"     : \{"key"     : "fieldE",
-                      "accessor" : \{"key"      : "fieldF",
-                      				 "accessor" : \{"index": 1, 
-                      				                "accessor" : null\}\}
-  \}
-\end{alltt}
-\normalsize
-
-The JSON representation of a \code{Field} constraint that refers to the 5th element of
-\code{StructTypeB}'s \code{fieldD} is:
-
-\footnotesize
-\begin{alltt}
-  \{
-    "constraint"   : "Field",
-    "accessor"     : \{"key"      : "fieldD",
-                       "accessor" : \{"index": 4, 
-                      				  "accessor" : null\}\}
-  \}
-\end{alltt}
-\normalsize
-
-The JSON representation of a \code{Field} constraint that refers to the \code{fieldA}
-within the 1st element of \code{StructTypeB}'s \code{fieldB} is:
-
-\footnotesize
-\begin{alltt}
-  \{
-    "constraint"   : "Field",
-    "accessor"     : \{"key"     : "fieldB",
-                      "accessor" : \{"index": 0, 
-                      				 "accessor" : \{"key"      : "fieldA", 
-                      				                "accessor" : null\}\}\}\}
-  \}
-\end{alltt}
-\normalsize
+Accessors can be chained to arbitrary degree.
 
 %==================================================================================================
 \section{Acknowledgements}
