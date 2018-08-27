@@ -135,9 +135,6 @@ The \code{Size} type is a positive integral value, denoting the size of an
 instance of a representable type. It implements the traits \code{Value},
 \code{Equality}, \code{Ordinal}, and \code{ArithmeticOps}.
 
-The \code{Integer} type is an integer value. It implements the traits \code{Value},
-\code{Equality}, \code{Ordinal}, and \code{ArithmeticOps}.
-
 The primitive types are built-in to the runtime, and are not explicitly
 defined in the JSON form of the intermediate representation.
 
@@ -957,7 +954,7 @@ is a string representing the name of the field to be accessed within the
 collection.
 %
 If \emph{AccessorType} is \code{IndexCollection}, then the \code{key} is
-the integer index to be accessed within the array.
+an index to be accessed within the array.
 %
 If \emph{AccessorType} is \code{Attribute}, then the \code{key} is a string
 representing the name of an attribute of the access type.
