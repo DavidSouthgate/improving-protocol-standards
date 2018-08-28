@@ -568,6 +568,9 @@ constructor for a structure type is represented as in the following:
     ],
     "constraints" : [
       ...
+    ],
+    "actions" : [
+      ...
     ]
   \}
 \end{alltt}
@@ -595,18 +598,20 @@ fields can have the same type.
 Each field has an \emph{expression}, \code{is\_present}, that indicates
 whether that field is present in a particular instantiation of the
 structure type. This is used to model data formats that contain optional
-fields. Expressions are described in Section \ref{sec:expressions}.
+fields. Expressions are described in Section \ref{sec:expressions}. The
+\code{is\_present} expression MUST evaluate to \code{True}.
 
 Structures implement the \code{NamedCollection} trait. Its elements, \code{fields}, are
 accessed by their \code{name}.
 
-Finally, a structure type is parameterised by a set of constraints (i.e., boolean
-expressions that MUST evaluate to true) on the
+A structure type is parameterised by a set of constraints (i.e., boolean
+expressions that MUST evaluate to \code{True}) on the
 fields. The set of constraints MAY be empty. Expressions are described in
 Section \ref{sec:expressions}.
 
-Both the per-field \code{is\_present} expression, and struct-level
-\code{constraints} on members, MUST evaluate to \code{Boolean} values.
+Finally, on the successful parsing of the struct, the expressions
+in \code{actions} are evaluated. The set of actions MAY be empty. The expressions
+in the set of actions MUST be \code{Mutator} tree expressions.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Enumerated Types}
@@ -817,8 +822,7 @@ constructor for a context type is represented as in the following:
   \}
 \end{alltt}
 \normalsize
-At most one context can be instantiated. If a context is instantiated, it
-is named \code{\$Context} in the global type namespace. 
+At most one context can be instantiated.
 
 The \code{fields} define the attributes of the new structure type. Each
 field has a name, a type, and an expression that indicates if the field is
