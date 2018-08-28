@@ -125,7 +125,7 @@ types also have \emph{values} and \emph{attributes}.
 \label{sec:primitives}
 
 The \code{Nothing} type is the empty type. It has no value and no attributes,
-and implement no traits.
+and implements no traits.
 
 The \code{Boolean} type is a boolean value, either \code{true} or \code{false}.
 It implements the traits \code{Value}, \code{Equality} (two \code{Boolean}s are equal if
@@ -842,7 +842,8 @@ accessed by their \code{name}.
 \label{sec:expressions}
 
 Expressions are split into two classes: 
-tree (\code{Equality}, \code{Ordinal}, \code{Boolean}, \code{Arithmetic}, and \code{IfElse})
+tree (\code{Equality}, \code{Ordinal}, \code{Boolean}, \code{Arithmetic}, \code{IfElse}, and
+\code{Mutator})
 and 
 leaf (\code{Constant}, \code{Field}, and \code{ContextField}).
 
@@ -928,14 +929,30 @@ intermediate representation as:
   \{
     "expression"  : "IfElse",
     "condition"   : \emph{expression},
-    "if\_true"     : \emph{expression},
-    "if\_false"    : \emph{expression}
+    "if\_true"    : \emph{expression},
+    "if\_false"   : \emph{expression}
   \}
 \end{alltt}
 \normalsize
 The \code{IfElse} includes a \code{condition} that evaluates to the \code{Boolean} type.
 The \code{IfElse} expression evaluates to the \code{if\_true} member, if \code{condition}
 is \code{True}. Otherwise, the expression evaluates to the \code{if\_false} member.
+
+A \code{Mutator} tree expression is represented in the JSON form of the
+intermediate representation as:
+\footnotesize
+\begin{alltt}
+  \{
+    "expression"  : "Mutator",
+    "left"        : \emph{Field or ContextField 
+                    leaf expression},
+    "right"       : \emph{expression}
+  \}
+\end{alltt}
+\normalsize
+The \code{Mutator} tree expression sets the field specified in \code{left} to the value
+expressed in \code{right}. The \code{Mutator} tree expression itself evaluates to
+\code{Nothing}.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Leaf Expressions}
