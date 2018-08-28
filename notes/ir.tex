@@ -562,7 +562,7 @@ constructor for a structure type is represented as in the following:
       \{
         "name"       : "\emph{field name}",
         "type"       : "\emph{field type}",
-        "is\_present" : \emph{constraint}
+        "is\_present" : \emph{expression}
       \},
       ...
     ],
@@ -579,7 +579,7 @@ signs (\code{A-Za-z0-9\$}).  It MUST begin with an upper case letter
 It is an error to define the same type more than once.
 
 The \code{fields} define the attributes of the new structure type. Each
-field has a name, a type, and a constraint that indicates if the field is
+field has a name, a type, and an expression that indicates if the field is
 present in a particular instantiation of the structure type. Structure
 types MUST contain at least one field.
 
@@ -592,19 +592,20 @@ be a \code{BitString}, array, structure type, or enumerated type. The names
 of each field MUST be unique within a structure definition, but several
 fields can have the same type.
 
-Each field has a \emph{constraint}, \code{is\_present}, that indicates
+Each field has an \emph{expression}, \code{is\_present}, that indicates
 whether that field is present in a particular instantiation of the
 structure type. This is used to model data formats that contain optional
-fields. Constraints are described in Section \ref{sec:constraints}.
+fields. Expressions are described in Section \ref{sec:expressions}.
 
 Structures implement the \code{NamedCollection} trait. Its elements, \code{fields}, are
 accessed by their \code{name}.
 
-Finally, a structure type is parameterised by a set of constraints on the
-fields. The set of constraints MAY be empty. Constraints are described in
-Section \ref{sec:constraints}.
+Finally, a structure type is parameterised by a set of constraints (i.e., boolean
+expressions that MUST evaluate to true) on the
+fields. The set of constraints MAY be empty. Expressions are described in
+Section \ref{sec:expressions}.
 
-Both the per-field \code{is\_present} constraint, and struct-level
+Both the per-field \code{is\_present} expression, and struct-level
 \code{constraints} on members, MUST evaluate to \code{Boolean} values.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -820,7 +821,7 @@ At most one context can be instantiated. If a context is instantiated, it
 is named \code{\$Context} in the global type namespace. 
 
 The \code{fields} define the attributes of the new structure type. Each
-field has a name, a type, and a constraint that indicates if the field is
+field has a name, a type, and an expression that indicates if the field is
 present in a particular instantiation of the structure type. Structure
 types MUST contain at least one field.
 
@@ -837,133 +838,133 @@ Contexts implement the \code{NamedCollection} trait. Its \code{fields} are
 accessed by their \code{name}.
 
 %--------------------------------------------------------------------------------------------------
-\subsection{Constraints}
-\label{sec:constraints}
+\subsection{Expressions}
+\label{sec:expressions}
 
-Constraints are split into two classes: 
+Expressions are split into two classes: 
 tree (\code{Equality}, \code{Ordinal}, \code{Boolean}, \code{Arithmetic}, and \code{IfElse})
 and 
 leaf (\code{Constant} and \code{Field}).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{Tree Constraints}
+\subsubsection{Tree Expressions}
 
-An \code{Equality} tree constraint is represented in the JSON form of the
+An \code{Equality} tree expression is represented in the JSON form of the
 intermediate representation as:
 \footnotesize
 \begin{alltt}
   \{
-    "constraint"   : "Equality",
+    "expression"   : "Equality",
     "method"       : "\emph{name of any method of the}
                      Equality \emph{trait}",
-    "left"         : \emph{constraint},
-    "right"        : \emph{constraint}
+    "left"         : \emph{expression},
+    "right"        : \emph{expression}
   \}
 \end{alltt}
 \normalsize
-The \code{Equality} constraint evaluates to the result of applying the \code{method} on
+The \code{Equality} expression evaluates to the result of applying the \code{method} on
 the \code{left} and \code{right} members.
-Both the \code{left} and \code{right} members MUST be specified (as a constraint described
+Both the \code{left} and \code{right} members MUST be specified (as a expression described
 in this section), and MUST evaluate to types that implement \code{Equality} trait.
 
-An \code{Ordinal} tree constraint is represented in the JSON form of the
+An \code{Ordinal} tree expression is represented in the JSON form of the
 intermediate representation as:
 \footnotesize
 \begin{alltt}
   \{
-    "constraint"   : "Ordinal",
+    "expression"   : "Ordinal",
     "method"       : "\emph{name of any method of the}
                      Ordinal \emph{trait}",
-    "left"         : \emph{constraint},
-    "right"        : \emph{constraint}
+    "left"         : \emph{expression},
+    "right"        : \emph{expression}
   \}
 \end{alltt}
 \normalsize
-The \code{Ordinal} constraint evaluates to the result of applying the \code{method} on
+The \code{Ordinal} expression evaluates to the result of applying the \code{method} on
 the \code{left} and \code{right} members.
-Both the \code{left} and \code{right} members MUST be specified (as a constraint described
+Both the \code{left} and \code{right} members MUST be specified (as a expression described
 in this section), and MUST evaluate to types that implement \code{Ordinal} trait.
 
-A \code{Boolean} tree constraint is represented in the JSON form of the
+A \code{Boolean} tree expression is represented in the JSON form of the
 intermediate representation as:
 \footnotesize
 \begin{alltt}
   \{
-    "constraint"   : "Boolean",
+    "expression"   : "Boolean",
     "method"       : "\emph{name of any method of the}
                      BooleanOps \emph{trait}",
-    "left"         : \emph{constraint},
-    "right"        : \emph{constraint}
+    "left"         : \emph{expression},
+    "right"        : \emph{expression}
   \}
 \end{alltt}
 \normalsize
-The \code{Boolean} constraint evaluates to the result of applying the \code{method} on
+The \code{Boolean} expression evaluates to the result of applying the \code{method} on
 the \code{left} and \code{right} members.
-Both the \code{left} and \code{right} members MUST be specified (as a constraint described
+Both the \code{left} and \code{right} members MUST be specified (as a expression described
 in this section), and MUST evaluate to types that implement \code{BooleanOps} trait.
 
-An \code{Arithmetic} tree constraint is represented in the JSON form of the
+An \code{Arithmetic} tree expression is represented in the JSON form of the
 intermediate representation as:
 \footnotesize
 \begin{alltt}
   \{
-    "constraint"   : "Arithmetic",
+    "expression"   : "Arithmetic",
     "method"       : "\emph{name of any method of the}
                      ArithmeticOps \emph{trait}",
-    "left"         : \emph{constraint},
-    "right"        : \emph{constraint}
+    "left"         : \emph{expression},
+    "right"        : \emph{expression}
   \}
 \end{alltt}
 \normalsize
-The \code{Arithmetic} constraint evaluates to the result of applying the \code{method} on
+The \code{Arithmetic} expression evaluates to the result of applying the \code{method} on
 the \code{left} and \code{right} members.
-Both the \code{left} and \code{right} members MUST be specified (as a constraint described
+Both the \code{left} and \code{right} members MUST be specified (as a expression described
 in this section), and MUST evaluate to types that implement \code{ArithmeticOps} trait.
 
-A \code{IfElse} tree constraint is represented in the JSON form of the
+A \code{IfElse} tree expression is represented in the JSON form of the
 intermediate representation as:
 \footnotesize
 \begin{alltt}
   \{
-    "constraint"  : "IfElse",
-    "condition"   : \emph{constraint},
-    "if\_true"     : \emph{constraint},
-    "if\_false"    : \emph{constraint}
+    "expression"  : "IfElse",
+    "condition"   : \emph{expression},
+    "if\_true"     : \emph{expression},
+    "if\_false"    : \emph{expression}
   \}
 \end{alltt}
 \normalsize
 The \code{IfElse} includes a \code{condition} that evaluates to the \code{Boolean} type.
-The \code{IfElse} constraint evaluates to the \code{if\_true} member, if \code{condition}
-is \code{True}. Otherwise, the constraint evaluates to the \code{if\_false} member.
+The \code{IfElse} expression evaluates to the \code{if\_true} member, if \code{condition}
+is \code{True}. Otherwise, the expression evaluates to the \code{if\_false} member.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{Leaf Constraints}
+\subsubsection{Leaf Expressions}
 
-A \code{Constant} leaf constraint is represented in the JSON form of the
+A \code{Constant} leaf expression is represented in the JSON form of the
 intermediate representation as:
 \footnotesize
 \begin{alltt}
   \{
-    "constraint"   : "Constant",
+    "expression"   : "Constant",
     "type"         : "\emph{type name}",
     "value"        : \emph{value}
   \}
 \end{alltt}
 \normalsize
-The \code{Constant} constraint evaluates to the \code{value} member, with type \code{type}.
+The \code{Constant} expression evaluates to the \code{value} member, with type \code{type}.
 
-A \code{Field} leaf constraint is represented in the JSON form of the
+A \code{Field} leaf expression is represented in the JSON form of the
 intermediate representation as:
 \footnotesize
 \begin{alltt}
   \{
-    "constraint"   : "Field",
+    "expression"   : "Field",
     "accessor"     : \emph{accessor}
   \}
 \end{alltt}
 \normalsize
 
-The \code{Field} constraint evaluates to the field specified by the chain of
+The \code{Field} expression evaluates to the field specified by the chain of
 \code{accessor}s. The containing structure and, if it exists, \code{Context}, are in
 scope.
 
@@ -993,12 +994,12 @@ The \emph{NextAccessor} is either \code{null} or is an \code{assessor}
 object.
 
 
-For example, a leaf constraint referring to the field \code{seq\_num} of a
+For example, a leaf expression referring to the field \code{seq\_num} of a
 structure type could be written:
 \footnotesize
 \begin{alltt}
   \{
-    "constraint" : "Field",
+    "expression" : "Field",
     "accessor" : \{
       "access" : "NamedCollection",
       "key"    : "seq\_num",
@@ -1007,12 +1008,12 @@ structure type could be written:
   \}
 \end{alltt}
 \normalsize
-A leaf constraint referring to the 4th element of an array field named
+A leaf expression referring to the 4th element of an array field named
 \code{csrc\_list} in a structure would be written:
 \footnotesize
 \begin{alltt}
   \{
-    "constraint" : "Field",
+    "expression" : "Field",
     "accessor" : \{
       "access" : "NamedCollection",
       "key"    : "csrc\_list",
@@ -1025,12 +1026,12 @@ A leaf constraint referring to the 4th element of an array field named
   \}
 \end{alltt}
 \normalsize
-A leaf constraint referring to the \code{length} attribute of an array
+A leaf expression referring to the \code{length} attribute of an array
 field named \code{csrc\_list} in a structure would be written:
 \footnotesize
 \begin{alltt}
   \{
-    "constraint" : "Field",
+    "expression" : "Field",
     "accessor" : \{
       "access" : "NamedCollection",
       "key"    : "csrc\_list",
