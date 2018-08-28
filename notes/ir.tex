@@ -562,7 +562,8 @@ constructor for a structure type is represented as in the following:
       \{
         "name"       : "\emph{field name}",
         "type"       : "\emph{field type}",
-        "is\_present" : \emph{expression}
+        "is\_present" : \emph{expression},
+        "transform"  : \emph{FunctionInvocation expression}
       \},
       ...
     ],
@@ -595,11 +596,14 @@ be a \code{BitString}, array, structure type, or enumerated type. The names
 of each field MUST be unique within a structure definition, but several
 fields can have the same type.
 
-Each field has an \emph{expression}, \code{is\_present}, that indicates
+Each field has an \code{is\_present} expression that indicates
 whether that field is present in a particular instantiation of the
 structure type. This is used to model data formats that contain optional
 fields. Expressions are described in Section \ref{sec:expressions}. The
 \code{is\_present} expression MUST evaluate to \code{True}.
+
+Each field has an \code{transform} \code{FunctionInvocation} expression. The
+\code{transform} field MAY be \code{null}. 
 
 Structures implement the \code{NamedCollection} trait. Its elements, \code{fields}, are
 accessed by their \code{name}.
