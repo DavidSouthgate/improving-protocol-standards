@@ -844,7 +844,7 @@ accessed by their \code{name}.
 Expressions are split into two classes: 
 tree (\code{Equality}, \code{Ordinal}, \code{Boolean}, \code{Arithmetic}, and \code{IfElse})
 and 
-leaf (\code{Constant} and \code{Field}).
+leaf (\code{Constant}, \code{Field}, and \code{ContextField}).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Tree Expressions}
@@ -965,8 +965,7 @@ intermediate representation as:
 \normalsize
 
 The \code{Field} expression evaluates to the field specified by the chain of
-\code{accessor}s. The containing structure and, if it exists, \code{Context}, are in
-scope.
+\code{accessor}s. The containing structure is in scope.
 
 In the JSON form of the intermediate representation, an \code{accessor} is
 represented by an object structured as follows:
@@ -1046,6 +1045,20 @@ field named \code{csrc\_list} in a structure would be written:
 \normalsize
 
 Accessors can be chained to arbitrary degree.
+
+A \code{ContextField} leaf expression is represented in the JSON form of the
+intermediate representation as:
+\footnotesize
+\begin{alltt}
+  \{
+    "expression"   : "ContextField",
+    "accessor"     : \emph{accessor}
+  \}
+\end{alltt}
+\normalsize
+
+\code{ContextField} expressions mirror \code{Field} expression, except only the
+\code{Context}, if it exists, is in scope.
 
 %==================================================================================================
 \section{Acknowledgements}
