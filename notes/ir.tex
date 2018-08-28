@@ -849,7 +849,7 @@ Expressions are split into two classes:
 tree (\code{Equality}, \code{Ordinal}, \code{Boolean}, \code{Arithmetic}, \code{IfElse}, and
 \code{Mutator})
 and 
-leaf (\code{Constant}, \code{Field}, and \code{ContextField}).
+leaf (\code{Constant}, \code{Field}, \code{ContextField}, and \code{FunctionInvocation}).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Tree Expressions}
@@ -1077,9 +1077,31 @@ intermediate representation as:
   \}
 \end{alltt}
 \normalsize
-
 \code{ContextField} expressions mirror \code{Field} expression, except only the
 \code{Context}, if it exists, is in scope.
+
+A \code{FunctionInvocation} leaf expression is represented in the JSON form of the
+intermediate representation as:
+\footnotesize
+\begin{alltt}
+  \{
+    "expression"   : "FunctionInvocation",
+    "name"         : \emph{function name},
+    "arguments"    : [
+      \{
+        "name"  : "\emph{parameter name}",
+        "value" : \emph{expression}
+      \},
+      ...
+    ]
+  \}
+\end{alltt}
+\normalsize
+\code{name} MUST refer to a previously defined \code{Function}. The set of
+\code{arguments} MUST contain values for all of the parameters specified in the
+\code{Function} definition. The \code{value} expressions MUST evaluate to the parameter
+type specified in the \code{Function} definition. The \code{FunctionInvocation} expression
+itself evaluates to the \code{return\_type} specified in the \code{Function} definition.
 
 %==================================================================================================
 \section{Acknowledgements}
