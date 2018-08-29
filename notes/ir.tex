@@ -587,10 +587,10 @@ signs (\code{A-Za-z0-9\$}).  It MUST begin with an upper case letter
 (\code{A-Z}). Type names are defined in the global type namespace.
 It is an error to define the same type more than once.
 
-The \code{fields} define the attributes of the new structure type. Each
-field has a name, a type, and an expression that indicates if the field is
-present in a particular instantiation of the structure type. Structure
-types MUST contain at least one field.
+The \code{fields} define the contents of the new structure type. Each
+field has a name, a type, an expression that indicates if the field is
+present in a particular instantiation of the structure type, and a
+transform function. Structure types MUST contain at least one field.
 
 Each field has a name that is formed of upper and lower case ASCII letters,
 digits, dollar signs, or underscores (\code{A-Za-z0-9\$\_}). The field name
