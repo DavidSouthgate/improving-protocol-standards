@@ -539,6 +539,11 @@ signs (\code{A-Za-z0-9\$}).  It MUST begin with an upper case letter
 (\code{A-Z}). Type names are defined in the global type namespace.
 It is an error to define the same type more than once.
 
+The \code{element\_type} field specifies the type of the array elements.
+The element type MUST have been previously defined, and can be a BitString,
+array, structure type, or enumerated type, or a type derived from such a
+type. The \code{element\_type} MUST be specified.
+
 The \code{length} field MAY be \code{null} in the JSON, to indicate that
 the length is unspecified.
 
