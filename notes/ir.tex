@@ -511,9 +511,10 @@ The array type constructor is parameterised by the name of the new array
 type, type of the elements it contains, and the length of the new array.
 The length MAY be unspecified. 
 
-An array has a single attribute, \code{length}, of type \code{Size}, that
-denotes the number of elements contained. An array cannot contain elements
-of its own type.
+An array has two attributes, \code{length} and \code{size}, both of type
+\code{Size}. The \code{length} denotes the number of elements contained
+in the array. The \code{size} is the size of the array in bits, and will
+equal the \code{length} multiplied by the size of the \code{element\_type}.
 
 Arrays implement the \code{Equality} trait. Two arrays are equal if they
 have the same element type, \code{length}, and their elements are equal.
@@ -543,6 +544,7 @@ The \code{element\_type} field specifies the type of the array elements.
 The element type MUST have been previously defined, and can be a BitString,
 array, structure type, or enumerated type, or a type derived from such a
 type. The \code{element\_type} MUST be specified.
+An array cannot contain elements of its own type.
 
 The \code{length} field MAY be \code{null} in the JSON, to indicate that
 the length is unspecified.
