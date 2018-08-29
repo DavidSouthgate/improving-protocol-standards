@@ -591,10 +591,10 @@ Each field has a name that is formed of upper and lower case ASCII letters,
 digits, dollar signs, or underscores (\code{A-Za-z0-9\$\_}). The field name
 MUST begin with a lower case letter (\code{a-z}).
 
-Each field has a type. That type MUST have been previously defined, and can
-be a \code{BitString}, array, structure type, or enumerated type. The names
-of each field MUST be unique within a structure definition, but several
-fields can have the same type.
+Each field has a type. The field type MUST have been previously defined.
+Fields can be of \code{BitString}, array, structure type, or enumerated type,
+or a type derived from such a type. The names of each field MUST be unique
+within a structure definition, but several fields can have the same type.
 
 Each field has an \code{is\_present} expression that indicates
 whether that field is present in a particular instantiation of the
