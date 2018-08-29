@@ -473,23 +473,23 @@ created as needed to represent a protocol.
 
 The bit string type constructor allows construction of types representing
 multi-bit values that can be parsed or serialised. The type constructor
-has a single attribute, \code{width}, of type \code{Size}, that indicates
-the number of bits in the resulting type. The width MAY be unspecified.
+has a single attribute, \code{size}, of type \code{Size}, that indicates
+the number of bits in the resulting type. The size MAY be unspecified.
 
 Instances of bit string types implement the \code{Value} and
 \code{Equality} traits. The former allows the value of the \code{BitString}
 instantiation to be retrieved and set. The latter allows two instantiations
 of \code{BitString} to be compared for equality; they are equal if they
-have the same name, value, and \code{width}.
+have the same name, value, and \code{size}.
 
 In the JSON form of the intermediate representation, an invocation of the
 bit string type constructor is represented as in the following:
 \footnotesize
 \begin{alltt}
   \{
-    "construct"   : "BitString"
-    "name"        : "\emph{type name}",
-    "width"       : \emph{number of bits}
+    "construct" : "BitString"
+    "name"      : "\emph{type name}",
+    "size"      : \emph{number of bits}
   \}
 \end{alltt}
 \normalsize
@@ -499,8 +499,8 @@ signs (\code{A-Za-z0-9\$}).  It MUST begin with an upper case letter
 (\code{A-Z}). Type names are defined in the global type namespace. 
 It is an error to define the same type more than once.
 
-The \code{width} field MAY be \code{null} in the JSON, to indicate that the
-width is unspecified.
+The \code{size} field MAY be \code{null} in the JSON, to indicate that the
+size is unspecified.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Arrays}
