@@ -568,7 +568,7 @@ constructor for a structure type is represented as in the following:
         "name"       : "\emph{field name}",
         "type"       : "\emph{field type}",
         "is\_present" : \emph{expression},
-        "transform"  : \emph{FunctionInvocation expression}
+        "transform"  : \emph{transform expression}
       \},
       ...
     ],
@@ -607,9 +607,25 @@ structure type. This is used to model data formats that contain optional
 fields. Expressions are described in Section \ref{sec:expressions}. The
 \code{is\_present} expression MUST evaluate to \code{True}.
 
-Each field has a \code{transform} \code{FunctionInvocation} expression.
-The \code{transform} field MAY be \code{null}, indicating that no transform
-is performed.
+Each field has a \code{transform} expression.
+The \code{transform} expression MAY be \code{null}, indicating that no
+transform is performed.
+Alternatively, it is represented as a JSON object as follows:
+\footnotesize
+\begin{alltt}
+  \{
+    "into\_name" : "\emph{transformed name}",
+    "into\_type" : "\emph{transformed type}",
+    "using"      : \emph{FunctionInvocation}
+  \}
+\end{alltt}
+\normalsize
+If the transform expression is present, it indicates that the original
+field is parsed, then the \code{using} function is invoked, then the field
+is replaced by a new field called \code{into\_name} with type \code{into\_type}.
+The return type of the \code{using} function MUST match \code{into\_type},
+and \code{into\_type} MUST have the same size as the original \code{type}
+of the field.
 
 A structure type implements the \code{NamedCollection} trait. Its elements,
 \code{fields}, are accessed by \code{name}.
