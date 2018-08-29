@@ -1103,11 +1103,13 @@ intermediate representation as:
   \}
 \end{alltt}
 \normalsize
-\code{name} MUST refer to a previously defined \code{Function}. The set of
-\code{arguments} MUST contain values for all of the parameters specified in the
-\code{Function} definition. The \code{value} expressions MUST evaluate to the parameter
-type specified in the \code{Function} definition. The \code{FunctionInvocation} expression
-itself evaluates to the \code{return\_type} specified in the \code{Function} definition.
+The \code{name} MUST refer to a previously defined \code{Function}. The set
+of \code{arguments} MUST contain values for all of the parameters specified
+in the \code{Function} definition, and the \code{value} expression for each
+MUST evaluate to a value matching the type of the parameter as specified in
+the \code{Function} definition. The \code{FunctionInvocation} expression
+itself evaluates to the \code{return\_type} specified in the
+\code{Function} definition.
 
 %==================================================================================================
 \section{Acknowledgements}
