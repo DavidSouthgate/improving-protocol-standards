@@ -602,11 +602,12 @@ structure type. This is used to model data formats that contain optional
 fields. Expressions are described in Section \ref{sec:expressions}. The
 \code{is\_present} expression MUST evaluate to \code{True}.
 
-Each field has an \code{transform} \code{FunctionInvocation} expression. The
-\code{transform} field MAY be \code{null}. 
+Each field has a \code{transform} \code{FunctionInvocation} expression.
+The \code{transform} field MAY be \code{null}, indicating that no transform
+is performed.
 
-Structures implement the \code{NamedCollection} trait. Its elements, \code{fields}, are
-accessed by their \code{name}.
+A structure type implements the \code{NamedCollection} trait. Its elements,
+\code{fields}, are accessed by \code{name}.
 
 A structure type is parameterised by a set of constraints (i.e., boolean
 expressions that MUST evaluate to \code{True}) on the
