@@ -613,9 +613,11 @@ expressions that MUST evaluate to \code{True}) on the
 fields. The set of constraints MAY be empty. Expressions are described in
 Section \ref{sec:expressions}.
 
-Finally, on the successful parsing of the struct, the expressions
-in \code{actions} are evaluated. The set of actions MAY be empty. The expressions
-in the set of actions MUST be \code{Update} tree expressions.
+Finally, on the successful parsing of the structure type, the expressions
+in \code{actions} are evaluated. The set of actions MAY be empty. The
+expressions in the set of actions MUST be \code{Update} tree expressions,
+and each expression MUST return \code{Nothing}. Actions are typically
+expected to update the parsing context (see Section \ref{sec:context}).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Enumerated Types}
@@ -961,9 +963,6 @@ intermediate representation as:
 The \code{Update} tree expression sets the field specified in \code{left} to the value
 expressed in \code{right}. The \code{Update} tree expression itself evaluates to
 \code{Nothing}.
-
-% TODO: it might make sense for an \code{Update} expression to evaluate to
-% the value of \code{left}.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Leaf Expressions}
