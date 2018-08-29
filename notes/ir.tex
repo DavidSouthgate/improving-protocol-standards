@@ -629,6 +629,9 @@ The return type of the \code{using} function MUST match \code{into\_type},
 and \code{into\_type} MUST have the same size as the original \code{type}
 of the field.
 
+A structure type has a size attribute. The size of a structure type is
+equal to the sum of the sizes of its fields.
+
 A structure type implements the \code{NamedCollection} trait. Its elements,
 \code{fields}, are accessed by \code{name}.
 
