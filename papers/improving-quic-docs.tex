@@ -417,6 +417,26 @@ Also point to other formalisms in use in IETF docs. Some are a bit tangential, b
 discussing them here might be a good opportunity to nod at future work (capturing
 semantics for packet processing, for example).
 
+
+\cite{mccann2000packet}
+
+P4 \cite{bosshart:2014:p4,p4consortium:2018:v16spec-20180531} is a language
+for programming the data plane of network devices. It is widely used in
+software defined networking applications.
+P4 describes how packets are parsed and serialised and what state tables
+exist in a network devices, and specifies a series of match-action rules
+that describe the packet processing and forwarding behaviour of the device.
+Parsers in P4 are implemented imperatively, and are built-up from a series
+of state machines.
+In terms of expressive power, parsers in P4 are comparable to the parsers
+we describe and can parse the same formats.
+Our approach differs from P4 in that we declaratively define the packet
+format, and derive the parser implementation from that declaration. P4,
+on the other hand, simply specifies the parser implementation. As such,
+P4 could be an appropriate output language for our system.
+
+
+
 %==================================================================================================
 \section{Conclusions}
 \label{sec:conclusion}
