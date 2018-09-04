@@ -889,85 +889,59 @@ accessed by their \code{name}.
 \label{sec:expressions}
 
 Expressions are split into two classes: 
-tree (\code{Equality}, \code{Ordinal}, \code{Boolean}, \code{Arithmetic}, \code{IfElse}, and
-\code{Update})
+tree (\code{MethodInvocation}, \code{FunctionInvocation}, \code{IfElse}, and \code{Update})
 and 
-leaf (\code{Constant}, \code{Field}, \code{ContextField}, and \code{FunctionInvocation}).
+leaf (\code{Constant}, \code{Field}, and \code{ContextField}).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Tree Expressions}
 
-An \code{Equality} tree expression is represented in the JSON form of the
+A \code{MethodInvocation} tree expression is represented in the JSON form of the
 intermediate representation as:
 \footnotesize
 \begin{alltt}
   \{
-    "expression"   : "Equality",
-    "method"       : "\emph{name of any method of the}
-                     Equality \emph{trait}",
-    "left"         : \emph{expression},
-    "right"        : \emph{expression}
+    "expression"   : "MethodInvocation",
+    "method"       : "\emph{name of any method implemented}
+                      \emph{by} self \emph{type}",
+    "self"         : \emph{expression},
+    "arguments"    : [
+      \{
+        "name"  : "\emph{parameter name}",
+        "value" : \emph{expression}
+      \},
+      ...
+    ]
   \}
 \end{alltt}
 \normalsize
-The \code{Equality} expression evaluates to the result of applying the \code{method} on
-the \code{left} and \code{right} members.
-Both the \code{left} and \code{right} members MUST be specified (as a expression described
-in this section), and MUST evaluate to types that implement \code{Equality} trait.
+The \code{MethodInvocation} expression evaluates to the result of applying \code{method}
+on \code{self}, with the arguments specified in \code{arguments}.
 
-An \code{Ordinal} tree expression is represented in the JSON form of the
+A \code{FunctionInvocation} tree expression is represented in the JSON form of the
 intermediate representation as:
 \footnotesize
 \begin{alltt}
   \{
-    "expression"   : "Ordinal",
-    "method"       : "\emph{name of any method of the}
-                     Ordinal \emph{trait}",
-    "left"         : \emph{expression},
-    "right"        : \emph{expression}
+    "expression"   : "FunctionInvocation",
+    "name"         : \emph{function name},
+    "arguments"    : [
+      \{
+        "name"  : "\emph{parameter name}",
+        "value" : \emph{expression}
+      \},
+      ...
+    ]
   \}
 \end{alltt}
 \normalsize
-The \code{Ordinal} expression evaluates to the result of applying the \code{method} on
-the \code{left} and \code{right} members.
-Both the \code{left} and \code{right} members MUST be specified (as a expression described
-in this section), and MUST evaluate to types that implement \code{Ordinal} trait.
-
-A \code{Boolean} tree expression is represented in the JSON form of the
-intermediate representation as:
-\footnotesize
-\begin{alltt}
-  \{
-    "expression"   : "Boolean",
-    "method"       : "\emph{name of any method of the}
-                     BooleanOps \emph{trait}",
-    "left"         : \emph{expression},
-    "right"        : \emph{expression}
-  \}
-\end{alltt}
-\normalsize
-The \code{Boolean} expression evaluates to the result of applying the \code{method} on
-the \code{left} and \code{right} members.
-Both the \code{left} and \code{right} members MUST be specified (as a expression described
-in this section), and MUST evaluate to types that implement \code{BooleanOps} trait.
-
-An \code{Arithmetic} tree expression is represented in the JSON form of the
-intermediate representation as:
-\footnotesize
-\begin{alltt}
-  \{
-    "expression"   : "Arithmetic",
-    "method"       : "\emph{name of any method of the}
-                     ArithmeticOps \emph{trait}",
-    "left"         : \emph{expression},
-    "right"        : \emph{expression}
-  \}
-\end{alltt}
-\normalsize
-The \code{Arithmetic} expression evaluates to the result of applying the \code{method} on
-the \code{left} and \code{right} members.
-Both the \code{left} and \code{right} members MUST be specified (as a expression described
-in this section), and MUST evaluate to types that implement \code{ArithmeticOps} trait.
+The \code{name} MUST refer to a previously defined \code{Function}. The set
+of \code{arguments} MUST contain values for all of the parameters specified
+in the \code{Function} definition, and the \code{value} expression for each
+MUST evaluate to a value matching the type of the parameter as specified in
+the \code{Function} definition. The \code{FunctionInvocation} expression
+itself evaluates to the \code{return\_type} specified in the
+\code{Function} definition.
 
 A \code{IfElse} tree expression is represented in the JSON form of the
 intermediate representation as:
@@ -1000,32 +974,6 @@ intermediate representation as:
 The \code{Update} tree expression sets the field specified in \code{left} to the value
 expressed in \code{right}. The \code{Update} tree expression itself evaluates to
 \code{Nothing}.
-
-A \code{FunctionInvocation} tree expression is represented in the JSON form of the
-intermediate representation as:
-\footnotesize
-\begin{alltt}
-  \{
-    "expression"   : "FunctionInvocation",
-    "name"         : \emph{function name},
-    "arguments"    : [
-      \{
-        "name"  : "\emph{parameter name}",
-        "value" : \emph{expression}
-      \},
-      ...
-    ]
-  \}
-\end{alltt}
-\normalsize
-The \code{name} MUST refer to a previously defined \code{Function}. The set
-of \code{arguments} MUST contain values for all of the parameters specified
-in the \code{Function} definition, and the \code{value} expression for each
-MUST evaluate to a value matching the type of the parameter as specified in
-the \code{Function} definition. The \code{FunctionInvocation} expression
-itself evaluates to the \code{return\_type} specified in the
-\code{Function} definition.
-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Leaf Expressions}
@@ -1081,7 +1029,6 @@ representing the name of an attribute of the access type.
 
 The \emph{NextAccessor} is either \code{null} or is an \code{assessor}
 object.
-
 
 For example, a leaf expression referring to the field \code{seq\_num} of a
 structure type could be written:
