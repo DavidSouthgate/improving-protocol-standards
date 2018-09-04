@@ -472,24 +472,24 @@ created as needed to represent a protocol.
 \label{sec:bit-string}
 
 The bit string type constructor allows construction of types representing
-multi-bit values that can be parsed or serialised. The type constructor
-has a single attribute, \code{width}, of type \code{Size}, that indicates
-the number of bits in the resulting type. The width MAY be unspecified.
+multi-bit values that can be parsed or serialised. The constructed type
+has a single attribute, \code{size}, of type \code{Size}, that indicates
+the number of bits in the resulting type. The size MAY be unspecified.
 
 Instances of bit string types implement the \code{Value} and
 \code{Equality} traits. The former allows the value of the \code{BitString}
 instantiation to be retrieved and set. The latter allows two instantiations
 of \code{BitString} to be compared for equality; they are equal if they
-have the same name, value, and \code{width}.
+have the same name, value, and \code{size}.
 
 In the JSON form of the intermediate representation, an invocation of the
 bit string type constructor is represented as in the following:
 \footnotesize
 \begin{alltt}
   \{
-    "construct"   : "BitString"
-    "name"        : "\emph{type name}",
-    "width"       : \emph{number of bits}
+    "construct" : "BitString"
+    "name"      : "\emph{type name}",
+    "size"      : \emph{number of bits}
   \}
 \end{alltt}
 \normalsize
@@ -499,8 +499,8 @@ signs (\code{A-Za-z0-9\$}).  It MUST begin with an upper case letter
 (\code{A-Z}). Type names are defined in the global type namespace. 
 It is an error to define the same type more than once.
 
-The \code{width} field MAY be \code{null} in the JSON, to indicate that the
-width is unspecified.
+The \code{size} field MAY be \code{null} in the JSON, to indicate that the
+size is unspecified.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Arrays}
@@ -511,12 +511,13 @@ The array type constructor is parameterised by the name of the new array
 type, type of the elements it contains, and the length of the new array.
 The length MAY be unspecified. 
 
-An array has a single attribute, \code{length}, of type \code{Size}, that
-denotes the number of elements contained. An array cannot contain elements
-of its own type.
+An array has two attributes, \code{length} and \code{size}, both of type
+\code{Size}. The \code{length} denotes the number of elements contained
+in the array. The \code{size} is the size of the array in bits, and will
+equal the \code{length} multiplied by the size of the \code{element\_type}.
 
 Arrays implement the \code{Equality} trait. Two arrays are equal if they
-have the same element type, \code{length}, and their elements are equal.
+have the same element type, \code{length}, \code{size}, and their elements are equal.
 
 Arrays implement the \code{IndexCollection} trait. Elements are numbered from $0$ to
 $\code{length}-1$.
@@ -538,6 +539,12 @@ name is formed of upper- and lower-case ASCII letters, digits, and dollar
 signs (\code{A-Za-z0-9\$}).  It MUST begin with an upper case letter
 (\code{A-Z}). Type names are defined in the global type namespace.
 It is an error to define the same type more than once.
+
+The \code{element\_type} field specifies the type of the array elements.
+The element type MUST have been previously defined, and can be a BitString,
+array, structure type, or enumerated type, or a type derived from such a
+type. The \code{element\_type} MUST be specified.
+An array cannot contain elements of its own type.
 
 The \code{length} field MAY be \code{null} in the JSON, to indicate that
 the length is unspecified.
@@ -563,7 +570,7 @@ constructor for a structure type is represented as in the following:
         "name"       : "\emph{field name}",
         "type"       : "\emph{field type}",
         "is\_present" : \emph{expression},
-        "transform"  : \emph{FunctionInvocation expression}
+        "transform"  : \emph{transform expression}
       \},
       ...
     ],
@@ -582,19 +589,19 @@ signs (\code{A-Za-z0-9\$}).  It MUST begin with an upper case letter
 (\code{A-Z}). Type names are defined in the global type namespace.
 It is an error to define the same type more than once.
 
-The \code{fields} define the attributes of the new structure type. Each
-field has a name, a type, and an expression that indicates if the field is
-present in a particular instantiation of the structure type. Structure
-types MUST contain at least one field.
+The \code{fields} define the contents of the new structure type. Each
+field has a name, a type, an expression that indicates if the field is
+present in a particular instantiation of the structure type, and a
+transform function. Structure types MUST contain at least one field.
 
 Each field has a name that is formed of upper and lower case ASCII letters,
 digits, dollar signs, or underscores (\code{A-Za-z0-9\$\_}). The field name
 MUST begin with a lower case letter (\code{a-z}).
 
-Each field has a type. That type MUST have been previously defined, and can
-be a \code{BitString}, array, structure type, or enumerated type. The names
-of each field MUST be unique within a structure definition, but several
-fields can have the same type.
+Each field has a type. The field type MUST have been previously defined.
+Fields can be of \code{BitString}, array, structure type, or enumerated type,
+or a type derived from such a type. The names of each field MUST be unique
+within a structure definition, but several fields can have the same type.
 
 Each field has an \code{is\_present} expression that indicates
 whether that field is present in a particular instantiation of the
@@ -602,9 +609,28 @@ structure type. This is used to model data formats that contain optional
 fields. Expressions are described in Section \ref{sec:expressions}. The
 \code{is\_present} expression MUST evaluate to \code{True}.
 
-Each field has a \code{transform} \code{FunctionInvocation} expression.
-The \code{transform} field MAY be \code{null}, indicating that no transform
-is performed.
+Each field has a \code{transform} expression.
+The \code{transform} expression MAY be \code{null}, indicating that no
+transform is performed.
+Alternatively, it is represented as a JSON object as follows:
+\footnotesize
+\begin{alltt}
+  \{
+    "into\_name" : "\emph{transformed name}",
+    "into\_type" : "\emph{transformed type}",
+    "using"      : \emph{FunctionInvocation}
+  \}
+\end{alltt}
+\normalsize
+If the transform expression is present, it indicates that the original
+field is parsed, then the \code{using} function is invoked, then the field
+is replaced by a new field called \code{into\_name} with type \code{into\_type}.
+The return type of the \code{using} function MUST match \code{into\_type},
+and \code{into\_type} MUST have the same size as the original \code{type}
+of the field.
+
+A structure type has a size attribute. The size of a structure type is
+equal to the sum of the sizes of its fields.
 
 A structure type implements the \code{NamedCollection} trait. Its elements,
 \code{fields}, are accessed by \code{name}.
@@ -652,6 +678,12 @@ The \code{variants} field is an array that specifies the possible types
 that variants of the enumerated type can take. These types MUST have been
 previously defined, and the variants array MUST NOT be empty. Variants of
 an enumerated type have their own types, but are otherwise unnamed.
+Variants can be of BitString, array, structure type, or enumerated type, or
+a type derived from such a type.
+
+An enumerated type has a size attribute. The size of an enumerated type
+is equal to the size of the instantiated variant. Variants are not
+necessarily all the same size.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Derived Types}
@@ -719,6 +751,10 @@ integer type:
   \}
 \end{alltt}
 \normalsize
+
+The size of a derived type is equal to the size of the type it was derived
+from.
+
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Functions}
 \label{sec:functions}
