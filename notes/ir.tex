@@ -889,9 +889,9 @@ accessed by their \code{name}.
 \label{sec:expressions}
 
 Expressions are split into two classes: 
-tree (\code{MethodInvocation}, \code{FunctionInvocation}, \code{IfElse}, and \code{Update})
+tree (\code{MethodInvocation}, \code{FunctionInvocation}, and \code{IfElse})
 and 
-leaf (\code{Constant}, \code{Field}, and \code{ContextField}).
+leaf (\code{Constant} and \code{TypeInstance}).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Tree Expressions}
@@ -959,22 +959,6 @@ The \code{IfElse} includes a \code{condition} that evaluates to the \code{Boolea
 The \code{IfElse} expression evaluates to the \code{if\_true} member, if \code{condition}
 is \code{True}. Otherwise, the expression evaluates to the \code{if\_false} member.
 
-An \code{Update} tree expression is represented in the JSON form of the
-intermediate representation as:
-\footnotesize
-\begin{alltt}
-  \{
-    "expression"  : "Update",
-    "left"        : \emph{Field or ContextField 
-                    leaf expression},
-    "right"       : \emph{expression}
-  \}
-\end{alltt}
-\normalsize
-The \code{Update} tree expression sets the field specified in \code{left} to the value
-expressed in \code{right}. The \code{Update} tree expression itself evaluates to
-\code{Nothing}.
-
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Leaf Expressions}
 
@@ -991,110 +975,53 @@ intermediate representation as:
 \normalsize
 The \code{Constant} expression evaluates to the \code{value} member, with type \code{type}.
 
-A \code{Field} leaf expression is represented in the JSON form of the
+A \code{TypeInstance} leaf expression is represented in the JSON form of the
 intermediate representation as:
 \footnotesize
 \begin{alltt}
   \{
-    "expression"   : "Field",
-    "accessor"     : \emph{accessor}
+    "expression"   : "TypeInstance",
+    "name"         : "\emph{type instance name} or
+                      self"
   \}
 \end{alltt}
 \normalsize
+The \code{TypeInstance} expression evaluates to the \code{name} member. \code{name} MUST
+be a name in the global type namespace, or ``self''. If \code{name} is ``self'', the 
+\code{TypeInstance} expression evaluates to the containing type instance.
 
-The \code{Field} expression evaluates to the field specified by the chain of
-\code{accessor}s. The containing structure is in scope.
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Examples}
 
-In the JSON form of the intermediate representation, an \code{accessor} is
-represented by an object structured as follows:
+An expression referring to the length attribute of an array field named \code{csrc\_list}
+in a structure would be written:
 \footnotesize
 \begin{alltt}
   \{
-    "access" : \emph{AccessorType},
-    "key"    : \emph{key},
-    "next"   : \emph{NextAccessor}
+    "expression"   : "MethodInvocation",
+    "method"       : "length"
+    "self"         : \{
+        "expression" : "MethodInvocation",
+        "method"     : "get",
+        "self"       : \{
+            "expression" : "TypeInstance",
+            "name"       : "self"
+        \},
+        "arguments" : [
+            \{
+                "name"  : "key",
+                "value" : \{
+                    "expression": "Constant",
+                    "type": "String",
+                    "value": "csrc_list"
+                \}
+            \}
+        ]
+    \},
+    "arguments"    : null 
   \}
 \end{alltt}
 \normalsize
-
-If \emph{AccessorType} is \code{NamedCollection}, then the \code{key}
-is a string representing the name of the field to be accessed within the
-collection.
-%
-If \emph{AccessorType} is \code{IndexCollection}, then the \code{key} is
-an index to be accessed within the array.
-%
-If \emph{AccessorType} is \code{Attribute}, then the \code{key} is a string
-representing the name of an attribute of the access type.
-
-The \emph{NextAccessor} is either \code{null} or is an \code{assessor}
-object.
-
-For example, a leaf expression referring to the field \code{seq\_num} of a
-structure type could be written:
-\footnotesize
-\begin{alltt}
-  \{
-    "expression" : "Field",
-    "accessor" : \{
-      "access" : "NamedCollection",
-      "key"    : "seq\_num",
-      "next"   : null
-    \}
-  \}
-\end{alltt}
-\normalsize
-A leaf expression referring to the 4th element of an array field named
-\code{csrc\_list} in a structure would be written:
-\footnotesize
-\begin{alltt}
-  \{
-    "expression" : "Field",
-    "accessor" : \{
-      "access" : "NamedCollection",
-      "key"    : "csrc\_list",
-      "next"   : \{
-        "access" : "IndexCollection",
-        "key" : 4,
-        "next" : null
-      \}
-    \}
-  \}
-\end{alltt}
-\normalsize
-A leaf expression referring to the \code{length} attribute of an array
-field named \code{csrc\_list} in a structure would be written:
-\footnotesize
-\begin{alltt}
-  \{
-    "expression" : "Field",
-    "accessor" : \{
-      "access" : "NamedCollection",
-      "key"    : "csrc\_list",
-      "next"   : \{
-        "access" : "Attribute",
-        "key"    : "length",
-        "next"   : null
-      \}
-    \}
-  \}
-\end{alltt}
-\normalsize
-
-Accessors can be chained to arbitrary degree.
-
-A \code{ContextField} leaf expression is represented in the JSON form of the
-intermediate representation as:
-\footnotesize
-\begin{alltt}
-  \{
-    "expression"   : "ContextField",
-    "accessor"     : \emph{accessor}
-  \}
-\end{alltt}
-\normalsize
-\code{ContextField} expressions mirror \code{Field} expression, except only the
-\code{Context}, if it exists, is in scope.
 
 %==================================================================================================
 \section{Acknowledgements}
