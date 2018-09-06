@@ -111,9 +111,10 @@ Types can be \emph{internal} or \emph{representable}. A representable type
 describes something that can be parsed or serialised. An internal type is
 an artefact of the runtime, and cannot be parsed or serialised.
 
+Representable types MUST implement the \code{Size} trait.
+
 Each type has \emph{name}. It implements one or more \emph{traits} that
-define \emph{methods} that can operate on instances of that type. Some
-types also have \emph{values} and \emph{attributes}.
+define \emph{methods} that can operate on instances of that type.
 
 %--------------------------------------------------------------------------------------------------
 \subsection{Internal Types}
@@ -124,8 +125,7 @@ types also have \emph{values} and \emph{attributes}.
 \subsubsection{Primitive Types}
 \label{sec:primitives}
 
-The \code{Nothing} type is the empty type. It has no value and no attributes,
-and implements no traits.
+The \code{Nothing} type is the empty type. It implements no traits.
 
 The \code{Boolean} type is a boolean value, either \code{true} or \code{false}.
 It implements the traits \code{Value}, \code{Equality} (two \code{Boolean}s are equal if
@@ -225,6 +225,29 @@ form of the intermediate representation:
           \{"name" : "value", "type"   : null\}
         ],
         "return\_type" : "Nothing"
+      \},
+      
+    ]
+  \}
+\end{alltt}
+\normalsize
+
+The runtime defines the \code{Size} trait. This defines a method
+that can be used to get the size, in bits, of an instance of a type. 
+Its definition is equivalent to the following definition in the JSON
+form of the intermediate representation:
+\footnotesize
+\begin{alltt}
+  \{
+    "construct" : "Trait"
+    "name"      : "Size",
+    "methods"   : [
+      \{
+        "name"        : "size",
+        "parameters"  : [
+          \{"name" : "self",  "type"   : null\}
+        ],
+        "return\_type" : "Size"
       \}
     ]
   \}
@@ -257,6 +280,13 @@ definition in the JSON form of the intermediate representation:
           \{"name" : "value", "type"   : null\}
         ],
         "return\_type" : "Nothing"
+      \},
+      \{
+        "name"        : "length",
+        "parameters"  : [
+          \{"name" : "self",  "type"   : null\}
+        ],
+        "return\_type" : "Size"
       \}
     ]
   \}
@@ -285,10 +315,17 @@ definition in the JSON form of the intermediate representation:
         "name"        : "set",
         "parameters"  : [
           \{"name" : "self",  "type"   : null\},
-          \{"name" : "key", "type"   : "String"\}
+          \{"name" : "key", "type"   : "String"\},
           \{"name" : "value", "type"   : null\}
         ],
         "return\_type" : "Nothing"
+      \},
+      \{
+        "name"        : "length",
+        "parameters"  : [
+          \{"name" : "self",  "type"   : null\}
+        ],
+        "return\_type" : "Size"
       \}
     ]
   \}
@@ -472,9 +509,10 @@ created as needed to represent a protocol.
 \label{sec:bit-string}
 
 The bit string type constructor allows construction of types representing
-multi-bit values that can be parsed or serialised. The constructed type
-has a single attribute, \code{size}, of type \code{Size}, that indicates
-the number of bits in the resulting type. The size MAY be unspecified.
+multi-bit values that can be parsed or serialised.
+
+Instances of bit string types implement the \code{Size} trait. The size
+MAY be unspecified.
 
 Instances of bit string types implement the \code{Value} and
 \code{Equality} traits. The former allows the value of the \code{BitString}
@@ -511,16 +549,15 @@ The array type constructor is parameterised by the name of the new array
 type, type of the elements it contains, and the length of the new array.
 The length MAY be unspecified. 
 
-An array has two attributes, \code{length} and \code{size}, both of type
-\code{Size}. The \code{length} denotes the number of elements contained
-in the array. The \code{size} is the size of the array in bits, and will
-equal the \code{length} multiplied by the size of the \code{element\_type}.
-
 Arrays implement the \code{Equality} trait. Two arrays are equal if they
 have the same element type, \code{length}, \code{size}, and their elements are equal.
 
+Arrays implement the \code{Size} trait. The size of the array is \code{length}
+multiplied by the size of \code{element\_type}.
+
 Arrays implement the \code{IndexCollection} trait. Elements are numbered from $0$ to
-$\code{length}-1$.
+$\code{length}-1$. The \code{length} of an array is the number of elements that it
+contains.
 
 In the JSON form of the intermediate representation, an invocation of the
 array type constructor is represented as in the following:
@@ -569,7 +606,6 @@ constructor for a structure type is represented as in the following:
       \{
         "name"       : "\emph{field name}",
         "type"       : "\emph{field type}",
-        "is\_present" : \emph{expression},
         "transform"  : \emph{transform expression}
       \},
       ...
@@ -603,14 +639,8 @@ Fields can be of \code{BitString}, array, structure type, or enumerated type,
 or a type derived from such a type. The names of each field MUST be unique
 within a structure definition, but several fields can have the same type.
 
-Each field has an \code{is\_present} expression that indicates
-whether that field is present in a particular instantiation of the
-structure type. This is used to model data formats that contain optional
-fields. Expressions are described in Section \ref{sec:expressions}. The
-\code{is\_present} expression MUST evaluate to \code{True}.
-
-Each field has a \code{transform} expression.
-The \code{transform} expression MAY be \code{null}, indicating that no
+Each field has a \code{transform} member.
+The \code{transform} member MAY be \code{null}, indicating that no
 transform is performed.
 Alternatively, it is represented as a JSON object as follows:
 \footnotesize
@@ -622,18 +652,19 @@ Alternatively, it is represented as a JSON object as follows:
   \}
 \end{alltt}
 \normalsize
-If the transform expression is present, it indicates that the original
+If the transform member is specified, it indicates that the original
 field is parsed, then the \code{using} function is invoked, then the field
 is replaced by a new field called \code{into\_name} with type \code{into\_type}.
 The return type of the \code{using} function MUST match \code{into\_type},
 and \code{into\_type} MUST have the same size as the original \code{type}
 of the field.
 
-A structure type has a size attribute. The size of a structure type is
-equal to the sum of the sizes of its fields.
+A structure type implements the \code{Size} trait. The size of a structure is the
+sum of the sizes of its fields.
 
 A structure type implements the \code{NamedCollection} trait. Its elements,
-\code{fields}, are accessed by \code{name}.
+\code{fields}, are accessed by \code{name}. A structure's \code{length} is the number
+of fields that it contains.
 
 A structure type is parameterised by a set of constraints (i.e., boolean
 expressions that MUST evaluate to \code{True}) on the
@@ -681,7 +712,7 @@ an enumerated type have their own types, but are otherwise unnamed.
 Variants can be of BitString, array, structure type, or enumerated type, or
 a type derived from such a type.
 
-An enumerated type has a size attribute. The size of an enumerated type
+An enumerated type implements the \code{Size} trait. The size of an enumerated type
 is equal to the size of the instantiated variant. Variants are not
 necessarily all the same size.
 
@@ -752,8 +783,8 @@ integer type:
 \end{alltt}
 \normalsize
 
-The size of a derived type is equal to the size of the type it was derived
-from.
+As derived types inherit the traits of their base type, the size of a derived type is
+equal to the size of the type it was derived from.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Functions}
@@ -792,6 +823,9 @@ function type constructor is represented as in the following:
   \}
 \end{alltt}
 \normalsize
+
+A function type implements the \code{Size} trait. The size of the function is that of the
+\code{return\_type}.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Protocols}
@@ -866,11 +900,6 @@ constructor for a context type is represented as in the following:
 \end{alltt}
 \normalsize
 At most one context can be instantiated.
-
-The \code{fields} define the attributes of the new structure type. Each
-field has a name, a type, and an expression that indicates if the field is
-present in a particular instantiation of the structure type. Structure
-types MUST contain at least one field.
 
 Each field has a name that is formed of upper and lower case ASCII letters,
 digits, dollar signs, or underscores (\code{A-Za-z0-9\$\_}). The field name
