@@ -891,7 +891,7 @@ accessed by their \code{name}.
 Expressions are split into two classes: 
 tree (\code{MethodInvocation}, \code{FunctionInvocation}, and \code{IfElse})
 and 
-leaf (\code{Constant} and \code{TypeInstance}).
+leaf (\code{Constant}).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Tree Expressions}
@@ -904,7 +904,9 @@ intermediate representation as:
     "expression"   : "MethodInvocation",
     "method"       : "\emph{name of any method implemented}
                       \emph{by} self \emph{type}",
-    "self"         : \emph{expression},
+    "self"         : "\emph{this}" or
+                     "\emph{context}" or
+    				 \emph{expression},
     "arguments"    : [
       \{
         "name"  : "\emph{parameter name}",
@@ -916,7 +918,9 @@ intermediate representation as:
 \end{alltt}
 \normalsize
 The \code{MethodInvocation} expression evaluates to the result of applying \code{method}
-on \code{self}, with the arguments specified in \code{arguments}.
+on \code{self}, with the arguments specified in \code{arguments}. If \code{self} is
+``this'' or ``context'', \code{self} refers to either the containing structure, or the
+context (if it exists), respectively.
 
 A \code{FunctionInvocation} tree expression is represented in the JSON form of the
 intermediate representation as:
@@ -974,21 +978,6 @@ intermediate representation as:
 \end{alltt}
 \normalsize
 The \code{Constant} expression evaluates to the \code{value} member, with type \code{type}.
-
-A \code{TypeInstance} leaf expression is represented in the JSON form of the
-intermediate representation as:
-\footnotesize
-\begin{alltt}
-  \{
-    "expression"   : "TypeInstance",
-    "name"         : "\emph{type instance name} or
-                      self"
-  \}
-\end{alltt}
-\normalsize
-The \code{TypeInstance} expression evaluates to the \code{name} member. \code{name} MUST
-be a name in the global type namespace, or ``self''. If \code{name} is ``self'', the 
-\code{TypeInstance} expression evaluates to the containing type instance.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Examples}
