@@ -31,7 +31,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # =================================================================================================
 
-REGEX_CITE="Package natbib Warning: There were undefined citations."
+REGEX_CITE="LaTeX Warning: Citation .* undefined"
 REGEX_LABL=".*Warning: Label(s) may have changed. Rerun to get cross-references right."
 REGEX_BOOK="Package rerunfilecheck Warning: File .*out. has changed"
 
