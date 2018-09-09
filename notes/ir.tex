@@ -57,7 +57,13 @@
 % paragraph you have established general context and importance. Here you
 % establish specific context and background.
 
-
+In order to generate a parser for a protocol, it's necessary to describe
+the format of protocol data units (PDUs).
+These can be described by a set of types that represent the objects to be
+parsed, along with constraints on the parsed values.
+If there are multiple ways of describing these types, it's necessary to
+have a common \emph{intermediate representation} into which all those input
+formats can be converted, and from which parsers can be generated.
 
 % Paragraph 3: "In this paper, we show that...". This is the key paragraph
 % in the introduction - you summarize, in one paragraph, what are the main
@@ -69,7 +75,10 @@
 % State your contributions: these drive the entire paper.  Contributions
 % should be refutable claims, not vague generic statements.
 
-
+We describe such an intermediate representation in this memo.
+It specifies a set of internal types used by the parsers, and constructors
+for representable types that describe the PDUs to be parsed.
+The execution model of the parsers is also described.
 
 % Paragraph 4: What are the differences between your work, and what others
 % have done? Keep this at a high level, as you can refer to future sections
