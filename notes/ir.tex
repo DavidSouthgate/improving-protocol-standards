@@ -36,13 +36,10 @@
 %==================================================================================================
 \begin{abstract}
 
-% Four sentences:
-%  - State the problem
-%  - Say why it's an interesting problem
-%  - Say what your solution achieves
-%  - Say what follows from your solution
-
-
+  This memo defines the intermediate representation used in the
+  implementation of the Glasgow Packet Language. It also describes
+  the execution model used to parse protocols described in that
+  language.
 
 \end{abstract}
 %==================================================================================================
@@ -60,7 +57,13 @@
 % paragraph you have established general context and importance. Here you
 % establish specific context and background.
 
-
+In order to generate a parser for a protocol, it's necessary to describe
+the format of protocol data units (PDUs).
+These can be described by a set of types that represent the objects to be
+parsed, along with constraints on the parsed values.
+If there are multiple ways of describing these types, it's necessary to
+have a common \emph{intermediate representation} into which all those input
+formats can be converted, and from which parsers can be generated.
 
 % Paragraph 3: "In this paper, we show that...". This is the key paragraph
 % in the introduction - you summarize, in one paragraph, what are the main
@@ -72,7 +75,10 @@
 % State your contributions: these drive the entire paper.  Contributions
 % should be refutable claims, not vague generic statements.
 
-
+We describe such an intermediate representation in this memo.
+It specifies a set of internal types used by the parsers, and constructors
+for representable types that describe the PDUs to be parsed.
+The execution model of the parsers is also described.
 
 % Paragraph 4: What are the differences between your work, and what others
 % have done? Keep this at a high level, as you can refer to future sections
@@ -134,6 +140,9 @@ they have the same value), and \code{BooleanOps}.
 The \code{Size} type is a positive integral value, denoting the size of an
 instance of a representable type. It implements the traits \code{Value},
 \code{Equality}, \code{Ordinal}, and \code{ArithmeticOps}.
+
+The \code{FieldName} type denotes the name of a field in a \code{NamedCollection}. 
+It implements the traits \code{Value} and \code{Equality}.
 
 The primitive types are built-in to the runtime, and are not explicitly
 defined in the JSON form of the intermediate representation.
@@ -294,7 +303,7 @@ definition in the JSON form of the intermediate representation:
 \normalsize
 
 The runtime defines the \code{NamedCollection} trait. This defines methods that can
-be used to get and set the values of elements of a map-like data structure, which has
+be used to get and set the values of fields of a map-like data structure, which has
 multiple, named indexed elements. Its definition is equivalent to the following
 definition in the JSON form of the intermediate representation:
 \footnotesize
@@ -307,7 +316,7 @@ definition in the JSON form of the intermediate representation:
         "name"        : "get",
         "parameters"  : [
           \{"name" : "self",  "type"   : null\},
-          \{"name" : "key", "type"   : "String"\}
+          \{"name" : "key",   "type"   : "FieldName"\}
         ],
         "return\_type" : null
       \},
@@ -315,7 +324,7 @@ definition in the JSON form of the intermediate representation:
         "name"        : "set",
         "parameters"  : [
           \{"name" : "self",  "type"   : null\},
-          \{"name" : "key", "type"   : "String"\},
+          \{"name" : "key",   "type"   : "FieldName"\},
           \{"name" : "value", "type"   : null\}
         ],
         "return\_type" : "Nothing"
@@ -1000,7 +1009,8 @@ intermediate representation as:
   \}
 \end{alltt}
 \normalsize
-The \code{This} expression evaluates to a reference to the current object.
+It evaluates to a reference to the current object (i.e., the object to
+which the expression is attached).
 
 A \code{Context} leaf expression is represented in the JSON form of the
 intermediate representation as:
@@ -1011,8 +1021,7 @@ intermediate representation as:
   \}
 \end{alltt}
 \normalsize
-The \code{Context} expression evaluates to a reference to the parsing
-context object.
+It expression evaluates to a reference to the parsing context object.
 
 A \code{Constant} leaf expression is represented in the JSON form of the
 intermediate representation as:
@@ -1025,11 +1034,11 @@ intermediate representation as:
   \}
 \end{alltt}
 \normalsize
-The \code{Constant} expression evaluates to the \code{value} member, with type \code{type}.
+The \code{Constant} expression evaluates to the specified \code{value},
+which has type specified by the \code{type} field.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\newpage
-\subsubsection{Examples}
+\subsubsection{Example}
 
 An expression comparing to the \code{version} field of the current
 structure object to the constant value 2 would be written:
@@ -1047,7 +1056,7 @@ structure object to the constant value 2 would be written:
          "name"  : "index",
          "value" : \{
            "expression" : "Constant",
-           "type"       : "String",
+           "type"       : "FieldName",
            "value"      : "version"
          \},
        \},
@@ -1073,7 +1082,7 @@ Council (grant EP/R04144X/1).
 
 %==================================================================================================
 \bibliographystyle{abbrvurl}
-\bibliography{ir.bib}
+\bibliography{ir}
 %==================================================================================================
 % The following information gets written into the PDF file information:
 \ifpdf
