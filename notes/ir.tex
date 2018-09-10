@@ -1052,24 +1052,28 @@ structure object to the constant value 2 would be written:
          "expression" : "This"
        \},
        "method"    : "get",
-       "arguments" : \{
-         "name"  : "index",
-         "value" : \{
-           "expression" : "Constant",
-           "type"       : "FieldName",
-           "value"      : "version"
-         \},
-       \},
+       "arguments" : [
+         \{
+           "name"  : "index",
+           "value" : \{
+             "expression" : "Constant",
+             "type"       : "FieldName",
+             "value"      : "version"
+           \}
+         \}
+       ]
      \},
      "method"     : "eq",
-     "arguments"  : \{
-       "name"  : "other",
-       "value" : \{
-         "expression" : "Constant",
-         "type"       : "Int16",
-         "value"      : "2"
+     "arguments"  : [
+       \{
+         "name"  : "other",
+         "value" : \{
+           "expression" : "Constant",
+           "type"       : "Int16",
+           "value"      : "2"
+         \}
        \}
-     \}
+     ]
   \}
 \end{alltt}
 \normalsize
