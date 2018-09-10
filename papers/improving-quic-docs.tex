@@ -366,12 +366,17 @@ in this way reduces complexity.
 \section{Formalising packet formats}
 \label{sec:formalising}
 
-Blurb that carries that briefly summarises the last section: need an abstract,
-intermediary protocol description language. 
+In this section, we describe the Glasgow Packet Language (GPL), an abstract, intermediary
+protocol description language that satisfies the requirements detailed in Section
+\ref{sec:motivation}. Specifically, the language supports both contexts and helper
+functions, and is designed to be constructed by an arbitrary description language, and be
+used to derive outputs in any format. We give an example that produces a C parser, from an
+abbreviated description of the QUIC protocol.
 
-\subsection{The Glasgow Packet Representation}
+\subsection{The Glasgow Packet Language}
 
-Description of the intermediary representation.
+The Glasgow Packet Language is a strong statically typed, object-oriented protocol 
+representation language.
 
 \subsection{Input \& output representations}
 
