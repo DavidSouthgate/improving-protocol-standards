@@ -385,12 +385,46 @@ language (input), and C parsing code (output). Descriptions need to be light: th
 the focus here. 
 
 %==================================================================================================
-\section{Example: QUIC's Short Header}
+\section{Example: Parsing QUIC}
 \label{sec:casestudy}
 
-Already introduced the short header as an example, so no big context switch. Show
-(snippets?) of how this would be represented using the input and intermediary formats, and
-what output is produced.
+\begin{figure}
+	\vspace{3mm}
+    \begin{BVerbatim}[fontsize=\scriptsize]
+LongHeader := {
+	header_form   : Bit;
+	packet_type   : LongHeaderType;
+	version       : Version;
+	dcil          : Bit4;
+	scil          : Bit4;
+	dcid          : ConnectionID;
+	scid          : ConnectionID;
+	length        : VarInt;
+	ppacket_num   : PPacketNum -> packet_num : PacketNum;
+	payload       : Payload;
+} where {
+	header_form == 1;
+	dcid.size == ((dcil == 0) ? 0 : dcil+3);
+	scid.size == ((scil == 0) ? 0 : scil+3);
+} onparse {
+	packet_num = lh_plaintext_packetnum(ppacket_num);
+};
+    \end{BVerbatim}
+    \caption{QUIC long header (from \cite{draft-ietf-quic-transport-latest})}
+    \label{fig:quic-long-hdr-desc}
+\end{figure}
+
+Figure~\ref{fig:quic-long-hdr-desc} gives the description language listing of QUIC's long
+header format. The \emph{where} block captures that the long header format is preceded by
+a single bit set to 1, and the relationship between \texttt{dcil}/\texttt{scil} and the
+widths of \texttt{dcid}/\texttt{scid}. While this already goes beyond the ASCII format of
+the same packet header, the \emph{onparse} block captures the method by which the
+protected packet number of the long header is transformed into its plaintext form.
+\texttt{lh\_plaintext\_packetnum} is a function that takes the protected packet number,
+and applies the algorithm specified by the QUIC TLS draft (Section 5.3, \cite{..}). At
+present, it is not possible to see this relationship by looking at the ASCII format alone:
+the prose description must be read, and the definition cross-referenced with another 
+document.
 
 %==================================================================================================
 \section{Related Work}
