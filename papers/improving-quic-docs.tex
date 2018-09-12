@@ -401,17 +401,46 @@ LongHeader := {
 	scid          : ConnectionID;
 	length        : VarInt;
 	ppacket_num   : PPacketNum -> packet_num : PacketNum;
-	payload       : Payload;
+	payload       : Frame[];
 } where {
 	header_form == 1;
 	dcid.size == ((dcil == 0) ? 0 : dcil+3);
 	scid.size == ((scil == 0) ? 0 : scil+3);
 } onparse {
-	packet_num = lh_plaintext_packetnum(ppacket_num);
+	packet_num = lh_packetnum_decrypt(ppacket_num);
+	Context.dcid = scid;
 };
     \end{BVerbatim}
     \caption{QUIC long header (from \cite{draft-ietf-quic-transport-latest})}
     \label{fig:quic-long-hdr-desc}
+\end{figure}
+
+\begin{figure}
+	\vspace{3mm}
+    \begin{BVerbatim}[fontsize=\scriptsize]
+ShortHeader := {
+	header_form   : Bit;
+	key_phase     : Bit;
+	third_bit     : Bit;
+	forth_bit     : Bit;
+	demux_bit     : Bit;
+	reserved      : Bit[3];
+	dcid          : ConnectionID;
+	ppacket_num   : PPacketNum -> packet_num : PacketNum;
+	ppayload      : Bits -> payload : Frame[];
+} where {
+	header_form == 0;
+	third_bit == 1;
+	forth_bit == 1;
+	demux_bit == 0;
+	dcid == Context.dcid;
+} onparse {
+	packet_num = sh_packetnum_decrypt(ppacket_num);
+	payload = decrypt(ppayload);
+};
+    \end{BVerbatim}
+    \caption{QUIC short header (from \cite{draft-ietf-quic-transport-latest})}
+    \label{fig:quic-short-hdr-desc}
 \end{figure}
 
 Figure~\ref{fig:quic-long-hdr-desc} gives the description language listing of QUIC's long
@@ -421,10 +450,10 @@ widths of \texttt{dcid}/\texttt{scid}. While this already goes beyond the ASCII 
 the same packet header, the \emph{onparse} block captures the method by which the
 protected packet number of the long header is transformed into its plaintext form.
 \texttt{lh\_plaintext\_packetnum} is a function that takes the protected packet number,
-and applies the algorithm specified by the QUIC TLS draft (Section 5.3, \cite{..}). At
-present, it is not possible to see this relationship by looking at the ASCII format alone:
-the prose description must be read, and the definition cross-referenced with another 
-document.
+and applies the algorithm specified by the QUIC TLS draft (Section 5.3,
+\cite{draft-ietf-quic-tls-14}). At present, it is not possible to see this relationship by
+looking at the ASCII format alone: the prose description must be read, and the definition
+cross-referenced with another document.
 
 %==================================================================================================
 \section{Related Work}
