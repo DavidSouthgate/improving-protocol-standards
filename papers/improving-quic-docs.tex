@@ -133,6 +133,7 @@
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 \usepackage{fancyvrb}
+\usepackage{alltt}
 
 \usepackage{color} % Add colour support:
 
@@ -552,28 +553,29 @@ ShortHeader := {
     \label{fig:quic-short-hdr-desc}
 \end{figure}
 
-In this section, we will demonstrate that the novel features of our abstract
-representation language -- context and helper functions -- are necessary. We begin by
-describing QUIC's long (Figure~\ref{fig:quic-long-hdr-desc}) and short
-(Figure~\ref{fig:quic-short-hdr-desc}) header formats using a simple protocol description
-language. As discussed in Section \ref{sec:formalising}, this language is used to generate
-the abstract protocol representation. The syntax of this language is largely unimportant -
-a key characteristic of the Glasgow Packet Language is that it can be generated from an
-arbitrary protocol description. We also note that this example is not exhaustive: our goal
-is demonstrate that the GPL \emph{can} be used to model the parsing of QUIC; we will give
-examples that can be expanded to other protocol features.
+In this section, we will demonstrate that the novel features of the Glasgow Packet
+Language -- functions and context -- are necessary in describing QUIC. We illustrate this
+using an example that formalises some of QUIC's PDUs using a protocol description
+language. As discussed in the previous section, this language is unimportant: the
+intermediate representation that the Glasgow Packet Language produces is agnostic to
+input and output formats. Additionally, the examples used in this section are not
+exhaustive: our goal is to demonstrate that the features of the GPL are necessary to
+fully model the parsing of QUIC.
 
-Figure~\ref{fig:quic-long-hdr-desc} gives the description language listing of QUIC's long
-header format. The \emph{where} block captures that the long header format is preceded by
-a single bit set to 1, and the relationship between \texttt{dcil}/\texttt{scil} and the
-widths of \texttt{dcid}/\texttt{scid}. While this already goes beyond the ASCII format of
-the same packet header, the \emph{onparse} block captures the method by which the
-protected packet number of the long header is transformed into its plaintext form.
-\texttt{lh\_plaintext\_packetnum} is a function that takes the protected packet number,
-and applies the decryption algorithm, as discussed the QUIC TLS draft (Section 5.3,
-\cite{draft-ietf-quic-tls-14}). At present, it is not possible to see this relationship by
-looking at the ASCII format alone: the prose description must be read, and the definition
-cross-referenced with another document.
+We begin, in Figure~\ref{fig:quic-long-hdr-desc}, by describing QUIC's long header
+format. This code generates a structure named \texttt{LongHeader}, with the fields
+(written as \texttt{name : type}) specified in the first block. The \texttt{Bit} and 
+\texttt{Bit4} types are intuitive, specifying bit strings of length 1 and 4 respectively.
+The \texttt{LongHeaderType} and examples of complex data types; they are themselves
+structures, arrays, or derived types. 
+
+Notably, this example contains a field transformation, described using the following
+syntax:
+\footnotesize
+\begin{alltt}
+    before_name : before_type -> after_name : after_type
+\end{alltt}
+\normalsize
  
 %==================================================================================================
 \section{Related Work}
