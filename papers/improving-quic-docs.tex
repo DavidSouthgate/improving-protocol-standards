@@ -141,7 +141,7 @@
 
 %==================================================================================================
 \begin{document}
-\title{Improving QUIC Protocol Documents}
+\title{Improving QUIC Protocol Documents with Formally Specified Parsing}
 
 \author{Stephen McQuistin}
 \affiliation{%
@@ -443,17 +443,55 @@ serialised. These are intuitive, and include booleans and integers.
 \subsection{Intermediate representation}
 \label{sec:gpl-ir}
 
-Constructors
+The runtime defines a constructor for each of the representable types described in the
+previous section. These constructors instantiate new types derived from the parameterised
+base type. For example, a constructor might be used to construct a 16-bit bit string, with
+the name \emph{Int16}. \emph{Int16} then becomes a type that can be used throughout the
+intermediate representation. Derived types can also be further defined by implementing
+additional traits. For example, \emph{Int16} could implement ordinal and boolean traits to
+make it an integer type.
 
-Limits on how many of each type can be instantiated
-
-How do the IR and runtime relate?
+The high-level object of the intermediary representation is a protocol object; exactly
+one protocol type must be constructed. The protocol object then contains a list of
+constructors for the other types instantiated. With the exception of the context type,
+any number of constructors may be defined; at most one context can be constructed, given
+its nature. Finally, the protocol type includes a list of the PDUs that comprise the
+protocol, based on the constructed types.
 
 %--------------------------------------------------------------------------------------------------
 \subsection{Input parsers \& output formatters}
 \label{sec:gpl-formats}
 
-Need to be clear that input and output formats are arbitrary.
+The intermediate representation is serialised using JSON. By using a widely adopted
+notation, the code used to both generate the representation, and use it, is not tied to a
+particular programming language. The role of the intermediate representation is to join
+together two arbitrary programs: one that generates it, and another that uses it to
+produce output, such as a parser.
+
+This means that the Glasgow Packet Language differs from previous work in this area:
+protocol designers do not formalise their specifications using the language itself, but
+rather, they use whichever formalism is appropriate, and develop tooling around that. For
+example, the QUIC protocol documents make use of ASCII packet diagrams and the TLS 1.3
+presentation language. Tooling can be developed to parse these existing formalisms from
+the documents, and to generate the intermediate representation. This approach fits better
+with the standardisation process used in bodies like the IETF: prior efforts to introduce
+formalisms have largely failed because of their expectation that protocol authors must
+change how they write specifications. The Glasgow Packet Language's intermediate
+representation can be generated from any formalism, but the level of detail captured
+varies with the expressiveness of that formalism.
+
+The same flexibility in how the intermediate representation is generated also applies to
+how it can be used to derive output formats: any program that can interpret the JSON
+format can read the intermediate representation can generate output from it. There are
+obvious use cases, such as generating ASCII packet diagrams or stubbing out parsers in C.
+But ultimately, the benefit of the approach here is that the output is not coupled to the
+input format: code that takes the intermediate representation and generates a C parser can
+be written once, and reused regardless of how the intermediate representation was
+generated.
+
+An additional benefit to having a common intermediate representation is that tooling can
+be developed around it, without duplicated effort. Such tooling could type check the
+intermediate representation, to ensure that it had been generated correctly.
 
 %==================================================================================================
 \section{Example: Parsing QUIC}
@@ -536,12 +574,7 @@ and applies the decryption algorithm, as discussed the QUIC TLS draft (Section 5
 \cite{draft-ietf-quic-tls-14}). At present, it is not possible to see this relationship by
 looking at the ASCII format alone: the prose description must be read, and the definition
 cross-referenced with another document.
-
-In addition, once a long header format PDU is parsed, the incoming Source Connection ID is stored.
-As seen in the description of the short header format
-(Figure~\ref{fig:quic-short-hdr-desc}), the Source Connection ID received in the long
-header becomes the source 
-
+ 
 %==================================================================================================
 \section{Related Work}
 \label{sec:related}
@@ -572,6 +605,9 @@ Also point to other formalisms in use in IETF docs. Some are a bit tangential, b
 discussing them here might be a good opportunity to nod at future work (capturing
 semantics for packet processing, for example).
 
+Also point to other formalisms in use in IETF docs. Some are a bit tangential, but
+discussing them here might be a good opportunity to nod at future work (capturing
+semantics for packet processing, for example).
 
 \cite{mccann2000packet}
 
@@ -589,8 +625,6 @@ Our approach differs from P4 in that we declaratively define the packet
 format, and derive the parser implementation from that declaration. P4,
 on the other hand, simply specifies the parser implementation. As such,
 P4 could be an appropriate output language for our system.
-
-
 
 %==================================================================================================
 \section{Conclusions}
