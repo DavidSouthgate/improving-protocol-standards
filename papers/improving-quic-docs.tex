@@ -61,14 +61,27 @@
 %  - Say what your solution achieves
 %  - Say what follows from your solution
 
-Standards documents have been slow to adopt formalisms that go beyond the limited syntax
-that can be captured by ASCII packet diagrams. As increasingly complex protocols,
-including QUIC, are standardised, this situation is likely to result in buggy,
-non-conforming implementations. In this paper, we develop the Network Packet Representation,
-an abstract, intermediate representation that fully captures the syntax of
-packet formats. By specifying an intermediate representation that can be generated from
-existing formalisms, we hope to encourage adoption, and incentivise the use of more
-expressive formalisms. Such formalisms reduce human error and increase the utility of standards documents.
+  Standards documents have been slow to adopt formalisms for specifying
+  packet formats that go beyond the limited syntax that can be captured
+  in ASCII packet diagrams. 
+  As increasingly complex protocols, including QUIC, are standardised,
+  this is becoming problematic, with descriptions of packet formats being
+  fragmented, incomplete, and difficult to follow.
+  Further, it is typically not possible to automatically extract parsing
+  code from the protocol specification.
+  The result is likely to be buggy implementations that do not conform
+  to the specification.
+  We develop the Network Packet Representation, an abstract, intermediate
+  representation that fully captures the syntax of packet formats, and
+  that can be generated from a range of packet description languages,
+  and can be used to generate packet parsers.
+  By specifying an intermediate representation that can be generated from
+  both existing and newly developed packet descriptions, we hope to
+  encourage the adoption and use of more expressive, machine readable,
+  packet descriptions in protocol standards.
+  We describe how the Network Packet Representation can be applied to
+  the definition of QUIC packets -- the eventual goal being to allow QUIC
+  parsers to be automatically generated from the specification.
 
 \end{abstract}
 \maketitle
