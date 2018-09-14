@@ -391,7 +391,7 @@ types to represent complex PDU formats, such as those used in QUIC.
 
 Finally, the overall
 \emph{Protocol Type} includes definitions for the other types, and gives
-the types of the PDUs used in the protocol.
+the types of the PDUs.
 
 The type system of the Network Packet Representation is supported by an
 \emph{intermediate representation}; a well-defined serialisation format
@@ -533,7 +533,7 @@ parser for the protocol that it describes. Again, the flexibility of having a co
 representation means that a parser can be generated for \emph{any} target language, such
 as C or Rust. Previous approaches would have required writing a parser generator for each
 protocol description language: decoupling these components means that only one parser
-generator needs to be written for each target language.
+generator is needed for each target language.
 
 Commonality in \emph{how} parser generators are created means that tooling can be used to
 support their development. For example, in many target languages, the order in which types
@@ -798,10 +798,10 @@ Some, such as PADS (Processing Ad Hoc Data Sources)
 \cite{fisher2005pads} and DataScript \cite{back2002datascript}, are C-like in their syntax
 and type systems. Others, like PacketTypes \cite{mccann2000packet} and the Meta Packet
 Language (MPL) \cite{madhavapeddy2007melange}, are declarative, with more expressive type
-systems. None of these approaches include support for contexts or helper functions: there
-is no way to model either the decryption primitives that are essential to the parsing of
+systems. These approaches don't support contexts or helper functions: they can't
+model the decryption primitives that are essential to the parsing of
 QUIC, or the out-of-band information needed to parse protocols like RTP.
-Ultimately, while these languages are well-motivated (i.e., parser quality
+While these languages are well-motivated (i.e., parser quality
 would be improved by formal specifications in standards documents), they
 misunderstand the needs of standards authors, and provide no way of
 transitioning from existing approaches, to those that they define.
@@ -814,23 +814,23 @@ format \cite{draft-ietf-tls-tls13-28}, see widespread adoption within certain IE
 working groups, but almost no adoption in most. This points to the problem noted above: a
 single input language is not suitable in all cases. The flexibility of our approach --
 defining a common intermediate representation and type system from which
-parsers can be derived, rather than define a single protocol description language
+parsers can be derived, rather than a single protocol description language
 that authors must write -- means that existing formalisms, e.g., ASCII
 diagrams and the TLS 1.3 presentation language, can be used as input
-formats, with other representations, such as that we outline in Section
-\ref{sec:casestudy}, being developed when they become useful. 
+formats, with other representations, such as that used in Section
+\ref{sec:casestudy}, being developed as they become useful. 
 
 The flexibility is also beneficial in terms of the output formats that can be derived.
 Beyond the traditional parser languages described in
 Section~\ref{sec:npr-output}, we also consider P4
 \cite{bosshart:2014:p4,p4consortium:2018:v16spec-20180531}, a language for
-programming the data plane of network devices. It is widely used in software defined
-networking applications. P4 describes how packets are parsed and serialised and what state
-tables exist in a network devices, and specifies a series of match-action rules that
-describe the packet processing and forwarding behaviour of the device. Parsers in P4 are
+programming the data plane of network devices. Widely used in software defined
+networking applications, P4 describes how packets are parsed and serialised and what state
+tables exist in a network devices, and the packet processing and forwarding behaviour of
+these devices. Parsers in P4 are
 implemented imperatively, and are built-up from a series of state machines. In terms of
 expressive power, parsers in P4 are comparable to the parsers we describe and can parse
-the same formats. Our approach differs from P4 in that we declaratively define the packet
+the same formats. In our approach, we declaratively define the packet
 format, and derive the parser implementation from that declaration. P4, on the other hand,
 simply specifies the parser implementation. As such, P4 could be an appropriate output
 language for our system.
@@ -843,11 +843,11 @@ We have described the Network Packet Representation, a type system that
 allows the format and parsing of protocol data units to be described.
 This builds on existing approaches in three important ways. First, in
 recognising that encryption primitives are a fundamental component of new protocols, we
-allow for out-of-band helper functions to be modelled. A related addition is the inclusion
-of a persistent (across the parsing process) context, to allow for data to be exchanged
+allow for helper functions to be modelled. A related addition is the inclusion
+of a parsing context, to allow for data to be exchanged
 between the parsing of different PDUs, or out-of-band logic. Finally, the representation
 defines an intermediate representation that can be generated from any input format, and
-can be similarly used to generate output in any format.
+that can be used to generate parsers.
 
 % Future work includes development of tooling that allows for the intermediate
 % representation to be type checked. This illustrate the benefit of a common intermediate
