@@ -175,10 +175,8 @@ including QUIC, are standardised, this situation is likely to result in buggy,
 non-conformant implementations. In this paper, we develop the Glasgow Packet
 Representation, an abstract, intermediate representation that fully captures the syntax of
 packet formats. By specifying an intermediate representation that can be generated from
-existing formalisms, we hope to increase adoption, and incentivise the use of more
-expressive formalisms. Formally specifying protocols reduces human error in the implementation
-of parsers, and
-increases the utility of standards documents.
+existing formalisms, we hope to encourage adoption, and incentivise the use of more
+expressive formalisms. Such formalisms reduce human error and increase the utility of standards documents.
 
 \end{abstract}
 
@@ -200,7 +198,7 @@ increases the utility of standards documents.
 % community?
 
 ASCII packet header diagrams are the most common formalism found in IETF standards
-documents. These diagrams allow for the visualisation packet formats, reducing human error
+documents. These diagrams allow for the visualisation of packet formats, reducing human error
 by aiding in the implementation of protocol parsers. However, while ASCII diagrams can
 capture much of the syntax of existing protocols, like TCP and UDP, the complexity
 introduced by newer protocols, such as QUIC \cite{draft-ietf-quic-transport-latest},
@@ -218,13 +216,13 @@ the syntax of protocols. Firstly, most are largely unsuitable for protocols like
 QUIC uses encryption primitives throughout, including protected payloads. This means that
 decryption must be modelled. Prior work, which has largely focussed on the parsing of
 individual unencrypted packets, is unable to model this. As a result, QUIC, and the broader
-shift towards pervasive encryption \cite{Rfc7258}, require a new formalism.
+shift towards pervasive encryption \cite{rfc7258}, require a new formalism.
 
 The second issue with existing approaches is that they generally define a new language
-that standards authors should specify their protocols in. Their lack of widespread
-adoption indicates that this approach is limited: standards documents require different
-formalisms depending on the area. As a result, any approach that is likely to be adopted
-must be flexible in the input formats that can be used.
+that standards authors must use to specify their protocols. This limits their adoption:
+different documents are suited to different formalisms. As a result,
+any approach that is likely to be adopted must be flexible in the input formats that can
+be used.
 
 % Paragraph 3: "In this paper, we show that...". This is the key paragraph
 % in the introduction - you summarize, in one paragraph, what are the main
@@ -238,11 +236,12 @@ must be flexible in the input formats that can be used.
 
 In this paper, we describe a framework for formalising the description of packet formats.
 Our framework is comprised of three components: an input parser, an intermediary
-representation (the Glasgow Packet Language), and an output formatter. This
-architecture allows packets to be described using a number of different languages, and for
-such descriptions to be parsed into a common intermediate form. Output formatters can then
+representation (the Glasgow Packet Representation), and an output formatter. This
+architecture allows packets to be described using a number of different formats, and for
+these descriptions to be parsed into a common intermediate form. Output formatters can then
 use this intermediate representation to generate various artefacts, including parser code.
-We provide an example of how this framework can be used to capture the complexity of QUIC.
+We provide an example of how this framework can be used to model the complexity of parsing
+QUIC.
 
 % Paragraph 4: What are the differences between your work, and what others
 % have done? Keep this at a high level, as you can refer to future sections
@@ -257,8 +256,8 @@ typically focus on the parsing of individual, unencrypted packets. Ad-hoc langua
 as the presentation language used in the TLS 1.3 specification
 \cite{draft-ietf-tls-tls13-28}, also see limited adoption. In contrast to these language
 definitions, in this paper we develop an abstract protocol representation that, with
-\emph{contexts} and \emph{functions} can describe the parsing of any protocol. We develop
-a language that generates this intermediate representation, and give examples using QUIC.
+\emph{contexts} and \emph{functions} can describe the parsing of any protocol, and can be
+generated from existing formalisms.
 
 % Paragraph 5: "We structure the remainder of this paper as follows." Give
 % the reader a road-map for the rest of the paper. Try to avoid redundant
@@ -268,7 +267,7 @@ We structure the remainder of this paper as follows. Section \ref{sec:motivation
 on our motivation, by assessing the utility provided by an ASCII diagram from the QUIC
 standards documents, and outlining the requirements of our formalism. Section
 \ref{sec:gpl} describes our proposed framework for describing packet formats,
-including our intermediary representation, the Glasgow Packet Language. Section
+including our intermediary representation, the Glasgow Packet Representation. Section
 \ref{sec:casestudy} provides an example of how our framework can be used to capture
 the parsing of QUIC's PDUs. Finally, Section \ref{sec:related} discusses
 related work, and Section \ref{sec:conclusion} concludes.
