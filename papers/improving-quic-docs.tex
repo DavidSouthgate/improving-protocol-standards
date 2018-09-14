@@ -61,26 +61,23 @@
 %  - Say what your solution achieves
 %  - Say what follows from your solution
 
-  Standards documents have been slow to adopt formalisms for specifying
-  packet formats that go beyond the limited syntax that can be captured
+  Standards documents have been slow to adopt packet description formalisms
+  that go beyond the limited syntax that can be captured
   in ASCII packet diagrams. 
   As increasingly complex protocols, including QUIC, are standardised,
-  this is becoming problematic, with descriptions of packet formats being
-  fragmented, incomplete, and difficult to follow.
-  Further, it is typically not possible to automatically extract parsing
-  code from the protocol specification.
-  The result is likely to be buggy implementations that do not conform
-  to the specification.
+  this is becoming problematic: descriptions of packet formats are
+  fragmented, incomplete, and difficult to follow, and buggy implementations,
+  that do not conform to the specification, are likely to result.
   We develop the Network Packet Representation, an abstract, intermediate
   representation that fully captures the syntax of packet formats, and
   that can be generated from a range of packet description languages,
   and can be used to generate packet parsers.
   By specifying an intermediate representation that can be generated from
-  both existing and newly developed packet descriptions, we hope to
-  encourage the adoption and use of more expressive, machine readable,
+  both existing and novel packet descriptions, we hope to
+  encourage the use of more expressive, machine readable,
   packet descriptions in protocol standards.
   We describe how the Network Packet Representation can be applied to
-  the definition of QUIC packets -- the eventual goal being to allow QUIC
+  the definition of QUIC packets -- with the eventual goal of allowing QUIC
   parsers to be automatically generated from the specification.
 
 \end{abstract}
