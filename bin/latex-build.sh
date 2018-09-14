@@ -121,7 +121,7 @@ build_pdf () {
     # BibTeX was last run; if so, request a new run of BibTeX
     for f in `grep '\\\\bibdata{' $DIR_NAME/$TEX_BASE.aux | sed 's/\\\bibdata{//' | sed 's/}//' | sed 's/,/ /' `
     do
-      if [ $f.bib -nt $TEX_BASE.bbl ]; then
+      if [ $DIR_NAME/$f.bib -nt $DIR_NAME/$TEX_BASE.bbl ]; then
         do_bib=1
       fi
     done
