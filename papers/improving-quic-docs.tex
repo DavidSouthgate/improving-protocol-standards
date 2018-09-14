@@ -25,8 +25,7 @@
 \title{Describing and Parsing QUIC Packets}
 
 \author{Stephen McQuistin}
-% FIXME: add Orcid for Stephen (see https://orcid.org/)
-\orcid{}
+\orcid{0000-0002-0616-2532}
 \affiliation{%
   \institution{University of Glasgow}
   \streetaddress{School of Computing Science}
@@ -476,9 +475,8 @@ LongHeader := {
     \label{fig:quic-long-hdr-desc}
 \end{figure}
 
-<<<<<<< HEAD
-In this section, we will demonstrate that the novel features of the Glasgow Packet
-Representation -- functions and context -- are necessary in describing QUIC. We illustrate
+In this section, we will demonstrate that the novel features of the Network Packet Representation
+ -- functions and context -- are necessary in describing QUIC. We illustrate
 this using an example that formalises some of QUIC's PDUs using a protocol description
 language. As discussed in the previous section, this language itself is not important: the
 Glasgow Packet Representation is agnostic to input and output formats. The syntax the
@@ -487,16 +485,6 @@ intermediate representation. Finally, the examples used in this section are not 
 for example, we look at the long and short header packet formats, and how their parsing
 can be modelled. We do not consider packet-level protection (e.g., 0-RTT protection for
 long header packets), but this does not limit the generality of our approach.
-=======
-In this section, we will demonstrate that the novel features of the Network Packet Representation
--- functions and context -- are necessary in describing QUIC. We illustrate this
-using an example that formalises some of QUIC's PDUs using a protocol description
-language. As discussed in the previous section, this language is unimportant: the
-intermediate representation that the Network Packet Representation produces is agnostic to
-input and output formats. Additionally, the examples used in this section are not
-exhaustive: our goal is to demonstrate that the features of the representation are necessary to
-fully model the parsing of QUIC.
->>>>>>> 4a170b2c827e8d40be25e3808c487a232a14217b
 
 We begin, in Figure~\ref{fig:quic-long-hdr-desc}, by describing QUIC's long header
 format. This code declares a \texttt{LongHeader} type, a structure with the fields as
