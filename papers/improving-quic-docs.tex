@@ -65,7 +65,7 @@
 Standards documents have been slow to adopt formalisms that go beyond the limited syntax
 that can be captured by ASCII packet diagrams. As increasingly complex protocols,
 including QUIC, are standardised, this situation is likely to result in buggy,
-non-conforming implementations. In this paper, we develop the Glasgow Packet Representation,
+non-conforming implementations. In this paper, we develop the Network Packet Representation,
 an abstract, intermediate representation that fully captures the syntax of
 packet formats. By specifying an intermediate representation that can be generated from
 existing formalisms, we hope to encourage adoption, and incentivise the use of more
@@ -127,7 +127,7 @@ be used.
 
 In this paper, we describe a framework for formalising the description of packet formats.
 Our framework is comprised of three components: an input parser, an intermediary
-representation (the Glasgow Packet Representation), and an output formatter. This
+representation (the Network Packet Representation), and an output formatter. This
 architecture allows packets to be described using a number of different formats, and for
 these descriptions to be parsed into a common intermediate form. Output formatters can then
 use this intermediate representation to generate various artefacts, including parser code.
@@ -158,7 +158,7 @@ We structure the remainder of this paper as follows. Section \ref{sec:motivation
 on our motivation, by assessing the utility provided by an ASCII diagram from the QUIC
 standards documents, and outlining the requirements of our formalism. Section
 \ref{sec:gpl} describes our proposed framework for describing packet formats,
-including our intermediary representation, the Glasgow Packet Representation. Section
+including our intermediary representation, the Network Packet Representation. Section
 \ref{sec:casestudy} provides an example of how our framework can be used to capture
 the parsing of QUIC's PDUs. Finally, Section \ref{sec:related} discusses
 related work, and Section \ref{sec:conclusion} concludes.
@@ -269,13 +269,13 @@ of the intermediate representation depends on the input format; this allows for 
 while incentivising more expressive formalisms.
 
 %==================================================================================================
-\section{The Glasgow Packet Representation}
+\section{The Network Packet Representation}
 \label{sec:gpl}
 
-In this section, we describe the Glasgow Packet Representation, an abstract protocol
+In this section, we describe the Network Packet Representation, an abstract protocol
 representation language. This is a strongly typed object-oriented language, that allows
 for the format of protocol data units to be specified, alongside information on how these
-PDUs should be parsed. The Glasgow Packet Representation is comprised of both a runtime -- a set
+PDUs should be parsed. The Network Packet Representation is comprised of both a runtime -- a set
 of primitive types and traits -- and an \emph{intermediate representation} -- a set of
 constructors that create or instantiate new types from the runtime's built-ins. We
 describe each of these components in turn in Sections \ref{sec:gpl-runtime} and
@@ -297,7 +297,7 @@ serialised JSON objects that describe the format of protocol data units, and how
 should be parsed. The objects that comprise the intermediate representation are
 \emph{constructors}, that create new, protocol-specific types, that are derived from, or
 instantiate, a set of built-in types. In this section, we describe the type system
-provided by \emph{runtime} of the Glasgow Packet Representation: that is, the interpreter for
+provided by \emph{runtime} of the Network Packet Representation: that is, the interpreter for
 the intermediate representation.
 
 The runtime defines a set of primitive types that can be parsed or serialised (that is,
@@ -374,7 +374,7 @@ particular programming language. The role of the intermediate representation is 
 together two arbitrary programs: one that generates it, and another that uses it to
 produce output, such as a parser.
 
-This means that the Glasgow Packet Representation differs from previous work in this area:
+This means that the Network Packet Representation differs from previous work in this area:
 protocol designers do not formalise their specifications using the language itself, but
 rather, they use whichever formalism is appropriate, and develop tooling around that. For
 example, the QUIC protocol documents make use of ASCII packet diagrams and the TLS 1.3
@@ -382,7 +382,7 @@ presentation language. Tooling can be developed to parse these existing formalis
 the documents, and to generate the intermediate representation. This approach fits better
 with the standardisation process used in bodies like the IETF: prior efforts to introduce
 formalisms have largely failed because of their expectation that protocol authors must
-change how they write specifications. The Glasgow Packet Representation's intermediate
+change how they write specifications. The Network Packet Representation's intermediate
 representation can be generated from any formalism, but the level of detail captured
 varies with the expressiveness of that formalism.
 
@@ -445,11 +445,11 @@ LongHeader := {
     \label{fig:quic-long-hdr-desc}
 \end{figure}
 
-In this section, we will demonstrate that the novel features of the Glasgow Packet Representation
+In this section, we will demonstrate that the novel features of the Network Packet Representation
 -- functions and context -- are necessary in describing QUIC. We illustrate this
 using an example that formalises some of QUIC's PDUs using a protocol description
 language. As discussed in the previous section, this language is unimportant: the
-intermediate representation that the Glasgow Packet Representation produces is agnostic to
+intermediate representation that the Network Packet Representation produces is agnostic to
 input and output formats. Additionally, the examples used in this section are not
 exhaustive: our goal is to demonstrate that the features of the representation are necessary to
 fully model the parsing of QUIC.
@@ -630,7 +630,7 @@ P4 could be an appropriate output language for our system.
 \section{Conclusions}
 \label{sec:conclusion}
 
-In this paper, we have described the Glasgow Packet Representation, a runtime and
+In this paper, we have described the Network Packet Representation, a runtime and
 intermediate representation that can be used to model the parsing of protocol PDUs.
 The representation
 builds on existing approaches in three important ways. First, in recognising that
@@ -641,7 +641,7 @@ the parsing of different PDUs, or out-of-band logic. Finally, the representation
 intermediate language that can be generated from any input format, and can be similarly
 used to generate output in any format.
 
-Future work begins with formally specifying the Glasgow Packet Representation, and providing
+Future work begins with formally specifying the Network Packet Representation, and providing
 example input and output formatters. In addition, tooling will be developed that allows
 for the intermediate representation to be type checked. In providing these examples, and
 developing this tooling, we will illustrate the benefit of a common intermediate
