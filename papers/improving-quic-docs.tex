@@ -501,6 +501,22 @@ intermediate representation, to ensure that it had been generated correctly.
 \begin{figure}
 	\vspace{3mm}
     \begin{BVerbatim}[fontsize=\scriptsize]
+VarInt := {
+	two_bit       : Bit2;
+	value         : Bits;
+} where {
+	value.length == (8*(2^two_bit))-2;
+};
+
+lh_packetnum_decrypt :: (ppacket_num : PPacketNum, 
+                         context : Context) 
+                     -> PacketNum;
+                     
+Context := {
+	highest_packet_num  : PacketNum;
+	last_scid           : ConnectionID;
+};
+
 LongHeader := {
 	header_form   : Bit;
 	packet_type   : LongHeaderType;
@@ -517,40 +533,11 @@ LongHeader := {
 	dcid.size == ((dcil == 0) ? 0 : dcil+3);
 	scid.size == ((scil == 0) ? 0 : scil+3);
 } onparse {
-	packet_num = lh_packetnum_decrypt(ppacket_num);
-	Context.dcid = scid;
+	packet_num = lh_packetnum_decrypt(ppacket_num, Context);
 };
     \end{BVerbatim}
     \caption{QUIC long header (from \cite{draft-ietf-quic-transport-latest})}
     \label{fig:quic-long-hdr-desc}
-\end{figure}
-
-\begin{figure}
-	\vspace{3mm}
-    \begin{BVerbatim}[fontsize=\scriptsize]
-ShortHeader := {
-	header_form   : Bit;
-	key_phase     : Bit;
-	third_bit     : Bit;
-	forth_bit     : Bit;
-	demux_bit     : Bit;
-	reserved      : Bit[3];
-	dcid          : ConnectionID;
-	ppacket_num   : PPacketNum -> packet_num : PacketNum;
-	ppayload      : Bits -> payload : Frame[];
-} where {
-	header_form == 0;
-	third_bit == 1;
-	forth_bit == 1;
-	demux_bit == 0;
-	dcid == Context.dcid;
-} onparse {
-	packet_num = sh_packetnum_decrypt(ppacket_num);
-	payload = decrypt(ppayload);
-};
-    \end{BVerbatim}
-    \caption{QUIC short header (from \cite{draft-ietf-quic-transport-latest})}
-    \label{fig:quic-short-hdr-desc}
 \end{figure}
 
 In this section, we will demonstrate that the novel features of the Glasgow Packet
@@ -566,17 +553,114 @@ We begin, in Figure~\ref{fig:quic-long-hdr-desc}, by describing QUIC's long head
 format. This code generates a structure named \texttt{LongHeader}, with the fields
 (written as \texttt{name : type}) specified in the first block. The \texttt{Bit} and 
 \texttt{Bit4} types are intuitive, specifying bit strings of length 1 and 4 respectively.
-The \texttt{LongHeaderType} and examples of complex data types; they are themselves
-structures, arrays, or derived types. 
+The \texttt{VarInt} type is also specified; this encodes QUIC's variable-length integer
+encoding format. We omit descriptions of the other complex data types used in the
+long header format.
 
-Notably, this example contains a field transformation, described using the following
-syntax:
+The \texttt{where} block contains expressions that form the structure's constraints. A PDU
+can only be parsed if \emph{all} of the constraints are true. Already, we can see an
+advantage of this simple programmatic description of the long header: the relationship
+between the \texttt{dcil}/\texttt{scil} and \texttt{dcid}/\texttt{scid} fields is made
+explicit. In the standards documents, where ASCII packet diagrams are used, the
+\texttt{dcid}/\texttt{scid} fields are shown as having variable lengths; the prose
+description accompanying the diagram is needed to fully describe the packet format.
+
+The \texttt{onparse} block contains actions that are to be performed once the PDU has been
+successfully parsed as a \texttt{LongHeader} structure (i.e., its layout matches that of
+the structure, and all of the constraints in the \texttt{where} block are true). The
+single expression in this section is matched with the following field of the structure:
 \footnotesize
 \begin{alltt}
-    before_name : before_type -> after_name : after_type
+    ppacket_num : PPacketNum -> packet_num : PacketNum
 \end{alltt}
 \normalsize
- 
+This is a field transformation: together, these lines indicate that the parsed block
+contains a protected packet number field (with type \texttt{PPacketNum}), which, to allow
+for further parsing, is then transformed (using the \texttt{lh\_packetnum\_decrypt} function)
+into a packet number field (with type \texttt{PacketNum}). The goal of the intermediate
+representation is to capture the signature of the functions required in the parsing of the
+protocol. At present, much of this behaviour is captured in prose descriptions of the
+protocol, limiting the usefulness of the ASCII packet diagrams the documents provide.
+This issue is exacerbated by the TLS-related functionality being described in a separate
+document (in this case, packet number protection is described in Section 5.3 of the
+QUIC-TLS draft \cite{draft-ietf-quic-tls-14}). Using explicit function names would provide
+a concrete way of linking these non-trivial components together. 
+
+Finally, Figure~\ref{fig:quic-long-hdr-desc} includes a definition of the context. As
+described in the previous section, the context is a key-value store that spans the duration
+of the parsing process. As PDUs are parsed, they can access the context. In addition,
+functions that are called can take the context as a parameter, and the context can be
+modified out-of-band. Here, we define the context to include a \texttt{highest\_packet\_num}
+field. As part of \texttt{lh\_packetnum\_decrypt}'s removal of packet number protection,
+the packet number is decoded. This requires the highest received packet number to be
+stored; the context is necessary for this.
+
+\begin{figure}
+	\vspace{3mm}
+    \begin{BVerbatim}[fontsize=\scriptsize]
+decrypt :: (ppayload : Bits, 
+            context : Context) 
+        -> Frame[];
+                     
+ShortHeader := {
+	header_form   : Bit;
+	key_phase     : Bit;
+	third_bit     : Bit;
+	forth_bit     : Bit;
+	demux_bit     : Bit;
+	reserved      : Bit[3];
+	dcid          : ConnectionID;
+	ppacket_num   : PPacketNum -> packet_num : PacketNum;
+	ppayload      : Bits -> payload : Frame[];
+} where {
+	header_form == 0;
+	third_bit == 1;
+	forth_bit == 1;
+	demux_bit == 0;
+	dcid == Context.scid;
+} onparse {
+	packet_num = sh_packetnum_decrypt(ppacket_num);
+	payload = decrypt(ppayload);
+};
+    \end{BVerbatim}
+    \caption{QUIC short header (from \cite{draft-ietf-quic-transport-latest})}
+    \label{fig:quic-short-hdr-desc}
+\end{figure}
+
+Next, we consider the short header, as shown in Figure~\ref{fig:quic-short-hdr-desc}.
+Beyond the features already discussed as part of the long header example, the short header
+also includes a reference to the context. The short header's \texttt{dcid} field must
+match the most recent source connection ID that has been sent. This demonstrates another
+way in which the context can be accessed: the sending process is essentially out-of-band,
+but information must be shared with the parsing process to allow it to progress.
+
+\begin{figure}
+	\vspace{3mm}
+    \begin{BVerbatim}[fontsize=\scriptsize]
+PaddingFrame := {
+	frame_type   : VarInt;
+} where {
+	frame_type == 0;
+};
+
+Frame := { PaddingFrame | RSTStreamFrame | ConnectionCloseFrame | .. };
+    \end{BVerbatim}
+    \caption{QUIC frames (from \cite{draft-ietf-quic-transport-latest})}
+    \label{fig:quic-frame-desc}
+\end{figure}
+
+This is the central argument for requiring helper functions and context: decryption (in
+the form of packet and payload protection, for example) are primitives of the QUIC
+protocol. If we are to design an intermediate language that can model the parsing of QUIC
+PDUs, it \emph{must} allow for the modelling of decryption. This is further illustrated
+by the link between the short header format's protected payload, and the QUIC frames (as
+shown in Figure~\ref{fig:quic-frame-desc}) that it ultimately contains. It is not sufficient
+to treat the protected payload as an encrypted blob: this does not fully model the parsing
+process. As shown, a short header PDU is parsed, and the payload is decrypted using the
+\texttt{decrypt} function, which takes both the protected payload and the context (for any
+information needed to decrypt the payload), and returns an array of frames. The frames are
+then parsed as the \texttt{Frame} type defined in Figure~\ref{fig:quic-frame-desc}.
+
 %==================================================================================================
 \section{Related Work}
 \label{sec:related}
@@ -631,6 +715,32 @@ P4 could be an appropriate output language for our system.
 %==================================================================================================
 \section{Conclusions}
 \label{sec:conclusion}
+
+In this paper, we have described the Glasgow Packet Language (GPL), a runtime and
+intermediate representation that can be used to model the parsing of protocol PDUs. GPL
+builds on existing approaches in three important ways. First, in recognising that
+encryption primitives are a fundamental component of new protocols, we allow for
+out-of-band helper functions to be modelled. A related addition is the inclusion of a
+persistent (across the parsing process) context, to allow for data to be exchanged between
+the parsing of different PDUs, or out-of-band logic. Finally, the GPL defines an
+intermediate language that can be generated from any input format, and can be similarly
+used to generate output in any format.
+
+Future work begins with formally specifying the Glasgow Packet Language, and providing
+example input and output formatters. In addition, tooling will be developed that allows
+for the intermediate representation to be type checked. In providing these examples, and
+developing this tooling, we will illustrate the benefit of a common intermediate
+representation: the effort required to support a new input or output format is not
+duplicated.
+
+Ultimately, a common representation enables the use of formal specifications without rapid
+change in the way that protocols are specified. The intermediate representation can be
+generated by parsing ASCII diagrams as they are written today. While this would lack the
+expressiveness of more formal description (such as the examples in Section
+\ref{sec:casestudy}), it would expose the benefits of the general approach, and
+incentivise authors to move beyond ASCII diagrams. We believe that this piecemeal approach
+fits better with the standardisation process: no single input format or output language is
+desirable.
 
 %==================================================================================================
 \section{Acknowledgements}
