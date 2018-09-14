@@ -348,7 +348,12 @@ for the packet to be valid when parsed.
 Constraint expressions can reference the values of fields of the enclosing
 structure, methods defined on those fields, fields in the parsing context,
 or helper functions. 
-For example... \todo{add constraint example}
+For example, in the QUIC short header (shown in Figure~\ref{fig:quic-short-hdr}), the
+first bit is defined as the \emph{header type} field, whose value is constrained to being
+equal to $0$.
+
+\emph{Enumerated Types} allow specification of alternatives: a PDU can
+be either s PDU of type \emph{X} or type \emph{Y}. 
 
 The \emph{Parsing Context} allows the parser to keep state between packets.
 It is essential to parsing complex protocols, and the ability to specify
@@ -385,11 +390,9 @@ language (see Section \ref{sec:npr-input}).
 Together, constraint expressions and transform functions allow structure
 types to represent complex PDU formats, such as those used in QUIC.
 
-\emph{Enumerated Types} allow specification of alternatives: a PDU can
-be either s PDU of type \emph{X} or type \emph{Y}. Finally, the overall
+Finally, the overall
 \emph{Protocol Type} includes definitions for the other types, and gives
 the types of the PDUs used in the protocol.
-
 
 The type system of the Network Packet Representation is supported by an
 \emph{intermediate representation}; a well-defined serialisation format
