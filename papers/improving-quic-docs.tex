@@ -307,33 +307,34 @@ a PDU: array types, structure types, and enumerated types.
 An \emph{Array Type} represents a sequence of values of some other type; 
 it may have fixed or unspecified length. If the length is unspecified in
 the definition of the array type, it must be possible to infer it based
-on the constraints of an enclosing structure type.
+on the constraints of an enclosing structure type, discussed below.
 
-A \emph{Structure Type} represents a heterogeneous collection of fields,
-and is the main type used to represent complex packet formats.
-In the main, a structure type definition resembles that in a programming
-language such as C: a sequence of fields with specified type, that are
-packed together in order. Unlike C, no padding can be present between
-fields, and the size of all types is well defined and built-up from the
-size of the underlying bit string types (there is no undefined or
-implementation defined behaviour).
+A \emph{Structure Type} represents a heterogeneous collection of fields.
+They are the main types used to represent complex packet formats.
+At a high-level, structure type definitions resemble those in programming
+languages such as C: they comprise a sequence of fields, each with its own
+type, that are packed together in the order specified. Unlike C, no padding
+can be present between fields, and the size of all types is well-defined
+and derived from the size of the underlying bit string types (there is no
+undefined or implementation defined behaviour).
 
-Structure types represent data that can be parsed. The format of a
-particular instance of a structure type, once it is parsed, is determined
-by a set of constraints on, and transforms of, the fields that structure. 
+Structure types represent data that can be parsed.
+The format of a particular instance of a structure type, as it is parsed,
+is determined by a set of constraints on the fields that structure, and
+transformations of those fields. 
 There are two types of \emph{Constraint Expression} that can affect parsing
-of a structure type instance:
-\emph{is\_present} constraints on fields, and structure-level constraints.
-The former are boolean expressions attached to optional fields that
-declaratively indicates whether those fields are present when the structure
-is parsed.
-The latter...
-
-These may reference the values of fields of the structure or methods of
-those fields, fields in the parsing context, or helper functions. 
-
-structure fields and methods
-
+of a structure instance: \emph{is\_present} constraints on specific fields,
+and structure-level constraints.
+The former are attached to optional fields, and are boolean expressions
+that declaratively indicates whether those fields are present when the
+structure is parsed.
+The latter are attached to the structure as a whole, and specify more
+complex constraints, potentially across multiple fields, that must hold
+for the packet to be valid when parsed. 
+Constraint expressions can reference the values of fields of the enclosing
+structure, methods defined on those fields, fields in the parsing context,
+or helper functions. 
+For example... \todo{add constraint example}
 
 
 The \emph{Parsing Context}...
