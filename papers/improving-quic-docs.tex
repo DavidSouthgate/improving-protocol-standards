@@ -283,17 +283,7 @@ implementations of parsers for those PDUs.
 These components are illustrated in Figure \ref{fig:stages}.
 
 \begin{figure}
-  % FIXME: re-draw as something other than ASCII art
-  \scriptsize
-  \begin{BVerbatim}
-  +-----------+
-  |Protocol   |-+     +--------------+     +----------+
-  |Description| |     |   Network    |     | Parser   |-+
-  |Languages  | | --> |   Packet     | --> | Generator| |
-  +-----------+ |     |Representation|     +----------+ |
-    +-----------+     +--------------+        +---------+
-  \end{BVerbatim}
-  \normalsize
+  \includegraphics[width=\linewidth]{figures/architecture-flow.pdf}
   \caption{Describing, representing, and parsing PDUs}
   \label{fig:stages}
 \end{figure}
