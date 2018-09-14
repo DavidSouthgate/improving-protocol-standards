@@ -331,12 +331,12 @@ To demonstrate the limitations of ASCII packet header diagrams in capturing all 
 information required to fully parse PDUs, we consider the diagram for QUIC's short header
 PDU, as shown in Figure \ref{fig:quic-short-hdr}. From this diagram, it is clear how the
 first octet should be parsed: the widths of each field are known, and, for some, the
-values specified. However, it is not clear from the diagram how the Destination Connection
-ID, Packet Number, and Protected Payload fields should be parsed. Determining the syntax
-of these fields requires the prose descriptions that accompany the diagram; already, it is
-clear that ASCII packet header diagrams are not sufficient.
+values specified. However, it is not clear how the Destination Connection ID, Packet
+Number, and Protected Payload fields should be parsed. Determining the syntax
+of these fields requires the prose descriptions that accompany the diagram: the
+expressivity of ASCII packet diagrams is limited.
 
-Some of the limitations of ASCII diagrams can be avoided by using an existing packet
+Some of these limitations can be overcome by using an existing packet
 description language. Such languages typically allow for intricate field encodings to be
 specified. For example, packet numbers use a variable-length integer encoding format,
 where the most significant bits of the first octet determine the length of the field.
@@ -344,8 +344,9 @@ While it is impractical to represent this behaviour in an ASCII diagram, most pa
 description languages enable this format to be captured.
 
 However, we have identified two broad features that are missing from existing packet
-description languages that mean that they cannot fully capture the behaviour of QUIC, or
-other protocols with encrypted PDUs.
+description languages that mean that they cannot capture the behaviour of all 
+protocols, including QUIC, where
+encryption is part of the parsing process, or RTP, where PDUs cannot be parsed discretely.
 
 Firstly, existing languages typically enable per-packet modelling, but decryption in QUIC
 requires information from packets earlier in the flow. We require flow-level
@@ -353,22 +354,28 @@ requires information from packets earlier in the flow. We require flow-level
 and modelled as part of the protocol specification. For example, the nonce for decrypting
 the protected payload field is derived from the packet number. However, the packet only
 contains the least significant bits of this number. Contextual information from other
-packets in the flow is required to generate the nonce.
+packets in the flow is required to generate the nonce. As an additional example where 
+contextual information is required for parsing, we consider RTP \cite{rfc3550}. RTP
+includes support for header extensions, whose format is signalled out-of-band using SDP;
+context is needed to share information between different parsing events, and out-of-band
+processes.
 
-Secondly, \emph{how} encrypted fields are parsed must be captured. Existing description
+The second feature needed to fully model the parsing of QUIC is the ability to capture
+\emph{how} encrypted fields are parsed. Existing description
 languages have been able to treat encrypted fields as unparsable blobs, enabled by the
 separation between protocols. For example, where TCP is used to carry an encrypted
 payload, the format of the payload is not specified as part of TCP: the parsing of TCP can
 end with the payload as an encrypted blob. However, in QUIC, parsing a short header packet
 requires that the protected payload by decrypted, and further parsed into frames. As a
-result, we must model \emph{helper functions}, providing the prototype for functions
-required in the parsing of the protocol.
+result, we must model the \emph{functions} required in the parsing of the protocol.
 
 To fulfil our second two requirements -- flexibility in both input and output formats --
-our formalism must be an abstract, intermediary representation language. Such a
+our formalism must be an abstract, intermediate representation language. Such a
 representation can be generated from an arbitrary set of input formats, and can itself be
-used to produce various outputs. Abstracting and decoupling the input and output formats
-in this way reduces complexity.
+used to produce various outputs. This allows for existing formalisms, including ASCII
+packet diagrams and the TLS 1.3 presentation language, to be used. The expressivity
+of the intermediate representation depends on the input format; this allows for adoption
+while incentivising more expressive formalisms.
 
 %==================================================================================================
 \section{The Glasgow Packet Language}
