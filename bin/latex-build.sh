@@ -31,7 +31,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # =================================================================================================
 
-REGEX_CITE="LaTeX Warning: Citation .* undefined"
+REGEX_CITE1=".*Warning: Citation.*undefined"
+REGEX_CITE2="There were undefined citations."
 REGEX_LABL=".*Warning: Label(s) may have changed. Rerun to get cross-references right."
 REGEX_BOOK="Package rerunfilecheck Warning: File .*out. has changed"
 
@@ -94,7 +95,18 @@ build_pdf () {
     fi
 
     # Check if there are undefined citations, request a run of BibTeX if necessary
-    undef_cite=`grep -c "$REGEX_CITE" $DIR_NAME/$TEX_BASE.log`
+    undef_cite=`grep -c "$REGEX_CITE1" $DIR_NAME/$TEX_BASE.log`
+    if [ $undef_cite != 0 ]; then
+      if [ $done_bib = 0 ]; then 
+        do_bib=1
+      fi
+      if [ $done_bib = 1 ]; then
+        done_bib=2
+        do_tex=1
+      fi
+    fi
+
+    undef_cite=`grep -c "$REGEX_CITE2" $DIR_NAME/$TEX_BASE.log`
     if [ $undef_cite != 0 ]; then
       if [ $done_bib = 0 ]; then 
         do_bib=1
@@ -119,7 +131,7 @@ build_pdf () {
       if [ $num_citations -gt 0 -a $done_bib = 0 ]; then
         # BibTeX has been requested and has not run already, and there are citations...
         blank_line
-        (cd $DIR_NAME && BSTINPUTS=.:../lib/tex/inputs: bibtex $TEX_BASE)
+        (cd $DIR_NAME && BSTINPUTS=.:../lib/tex/inputs bibtex $TEX_BASE)
         if [ $? = 1 ]; then
           exit 1
         fi
