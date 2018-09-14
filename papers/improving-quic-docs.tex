@@ -160,7 +160,7 @@ standards documents, and outlining the requirements of our formalism. Section
 \ref{sec:gpl} describes our proposed framework for describing packet formats,
 including our intermediary representation, the Network Packet Representation. Section
 \ref{sec:casestudy} provides an example of how our framework can be used to capture
-the parsing of QUIC's PDUs. Finally, Section \ref{sec:related} discusses
+the parsing of QUIC's protocol data units (PDUs). Finally, Section \ref{sec:related} discusses
 related work, and Section \ref{sec:conclusion} concludes.
 
 %==================================================================================================
@@ -208,8 +208,7 @@ related work, and Section \ref{sec:conclusion} concludes.
 
 Broadly, the requirements for our formalism are that it should:
 \begin{itemize}
-	\item be able to fully capture the information required for \emph{parsing} protocol
-		  data units (PDUs);
+	\item be able to fully capture the information required for \emph{parsing} PDUs;
 	\item accommodate various PDU specification languages, including ASCII
 		  packet header diagrams, ad-hoc languages
 		  such as the TLS 1.3 presentation formation, and more generic packet description
