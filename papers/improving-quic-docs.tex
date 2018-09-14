@@ -390,9 +390,8 @@ language (see Section \ref{sec:npr-input}).
 Together, constraint expressions and transform functions allow structure
 types to represent complex PDU formats, such as those used in QUIC.
 
-Finally, the overall
-\emph{Protocol Type} includes definitions for the other types, and gives
-the types of the PDUs.
+Finally, the \emph{Protocol Type} includes definitions for the other types,
+and gives the types of the PDUs used in the protocol.
 
 The type system of the Network Packet Representation is supported by an
 \emph{intermediate representation}; a well-defined serialisation format
@@ -547,7 +546,7 @@ parser generator has been written, parsers can be generated in novel, safe langu
 as Rust \cite{chifflier2017writing}, without additional effort.
 
 %==================================================================================================
-\section{Example: Parsing QUIC}
+\section{Case Study: Parsing QUIC}
 \label{sec:casestudy}
 
 \begin{figure}
@@ -626,10 +625,10 @@ LongHeader := {
 In this section, we will demonstrate that the novel features of the Network Packet Representation
  -- helper functions and context -- are necessary in describing QUIC. We illustrate
 this using an example that formalises some of QUIC's PDUs using a protocol description
-language. As discussed in Section~\ref{sec:npr-parse}, the description language itself is not important: the
+language. As discussed in Section~\ref{sec:npr}, the description language itself is not important: the
 Network Packet Representation is agnostic to input and output formats. The syntax of the
 language we use here has been designed to demonstrate the functionality provided by the
-intermediate representation. In addition, the examples used in this section are not exhaustive:
+type system. In addition, examples used in this section are not exhaustive:
 we look at the long and short header packet formats, and how their parsing
 can be modelled. We do not, for example, consider packet-level protection (e.g., 0-RTT protection for
 long header packets), but this does not limit the generality of our approach.
@@ -871,7 +870,6 @@ output language.
 
 %==================================================================================================
 \section*{Acknowledgements}
-\footnotesize
 
 This work is funded by the UK Engineering and Physical Sciences Research Council, under
 grant EP/R04144X/1.
