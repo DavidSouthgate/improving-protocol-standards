@@ -466,8 +466,23 @@ QUIC example in Section~\ref{sec:casestudy}.
 \subsection{Parser Generators}
 \label{sec:npr-output}
 
-\todo{Briefly describe parser generators, and how they can output code to
-parse the PDUs in C, Rust, etc.}
+Once the intermediate representation has been produced, it can be used to generate a
+parser for the protocol that it describes. Again, the flexibility of having a common
+representation means that a parser can be generated for \emph{any} target language, such
+as C or Rust. Previous approaches would have required writing a parser generator for each
+protocol description language: decoupling these components means that only one parser
+generator needs to be written for each target language.
+
+Commonality in \emph{how} parser generators are created means that tooling can be used to
+support their development. For example, in many target languages, the order in which types
+need to be defined is the same. Tooling could implement this logic once, easing the
+development of parser generators.
+
+There are two main benefits that are derived from generating parsers from a common
+intermediate representation. Firstly, the parsers that are generated will be compliant
+with the described protocol, and are less likely to introduce bugs. In addition, once a
+parser generator has been written, parsers can be generated in novel, safe languages, such
+as Rust \cite{chifflier2017writing}, without additional effort.
 
 %==================================================================================================
 \section{Example: Parsing QUIC}
