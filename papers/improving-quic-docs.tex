@@ -304,21 +304,40 @@ bits to represent an RTP sequence number.
 
 There are three classes of derived types that represent structured data in
 a PDU: array types, structure types, and enumerated types.
-An \emph{Array Type} is...
+An \emph{Array Type} represents a sequence of values of some other type; 
+it may have fixed or unspecified length. If the length is unspecified in
+the definition of the array type, it must be possible to infer it based
+on the constraints of an enclosing structure type.
 
-A \emph{Structure Type} is...
+A \emph{Structure Type} represents a heterogeneous collection of fields,
+and is the main type used to represent complex packet formats.
+In the main, a structure type definition resembles that in a programming
+language such as C: a sequence of fields with specified type, that are
+packed together in order. Unlike C, no padding can be present between
+fields, and the size of all types is well defined and built-up from the
+size of the underlying bit string types (there is no undefined or
+implementation defined behaviour).
 
-The format of a particular instance of a structure type is determined by a
-set of constraints on, and transforms of, the fields that structure. 
-
-A \emph{Constraint Expression} is...
+Structure types represent data that can be parsed. The format of a
+particular instance of a structure type, once it is parsed, is determined
+by a set of constraints on, and transforms of, the fields that structure. 
+There are two types of \emph{Constraint Expression} that can affect parsing
+of a structure type instance:
+\emph{is\_present} constraints on fields, and structure-level constraints.
+The former are boolean expressions attached to optional fields that
+declaratively indicates whether those fields are present when the structure
+is parsed.
+The latter...
 
 These may reference the values of fields of the structure or methods of
 those fields, fields in the parsing context, or helper functions. 
 
 structure fields and methods
 
+
+
 The \emph{Parsing Context}...
+and actions
 
 Finally, \emph{Helper Functions}... 
 
