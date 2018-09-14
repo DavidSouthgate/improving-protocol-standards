@@ -573,7 +573,7 @@ Context := {
 	last_scid           : ConnectionID;
 };
     \end{BVerbatim}
-    \caption{Complex data types for QUIC parsing}
+    \caption{Derived data types for QUIC parsing}
     \label{fig:quic-base}
 \end{figure}
 
@@ -609,24 +609,26 @@ LongHeader := {
 \end{figure}
 
 In this section, we will demonstrate that the novel features of the Network Packet Representation
- -- functions and context -- are necessary in describing QUIC. We illustrate
+ -- helper functions and context -- are necessary in describing QUIC. We illustrate
 this using an example that formalises some of QUIC's PDUs using a protocol description
-language. As discussed in the previous section, this language itself is not important: the
-Glasgow Packet Representation is agnostic to input and output formats. The syntax the
+language. As discussed in Section~\ref{sec:npr-parse}, the description language itself is not important: the
+Network Packet Representation is agnostic to input and output formats. The syntax of the
 language we use here has been designed to demonstrate the functionality provided by the
-intermediate representation. Finally, the examples used in this section are not exhaustive:
-for example, we look at the long and short header packet formats, and how their parsing
-can be modelled. We do not consider packet-level protection (e.g., 0-RTT protection for
+intermediate representation. In addition, the examples used in this section are not exhaustive:
+we look at the long and short header packet formats, and how their parsing
+can be modelled. We do not, for example, consider packet-level protection (e.g., 0-RTT protection for
 long header packets), but this does not limit the generality of our approach.
 
-We begin, in Figure~\ref{fig:quic-long-hdr-desc}, by describing QUIC's long header
-format. This code declares a \texttt{LongHeader} type, a structure with the fields as
-specified in the first block. The \texttt{Bit} and \texttt{Bit\emph{N}} types are instances
-of the bit string type, with sizes 1 and \emph{N} respectively. The complex data types 
+We begin by describing QUIC's long header
+format, as shown Figure~\ref{fig:quic-long-hdr-desc}. This code declares a structure type
+named \texttt{LongHeader} with the fields specified in the first block. The \texttt{Bit}
+and \texttt{Bit\emph{N}} types used in this definition are instances
+of the bit string type, with sizes 1 and \emph{N} respectively; the \texttt{Bits} type is a bit 
+string with an undefined length. The derived data types 
 used in the \texttt{LongHeader} structure are defined in Figure~\ref{fig:quic-base}. The
 \texttt{VarInt} type is a structure that encapsulates QUIC's variable-length integer
 encoding format. \texttt{PacketNum} encodes the similar variable-length packet number
-format as a variant type, where the variants depend on the first one or two bits of the
+format as an enumerated type, where the alternatives depend on the first one or two bits of the
 format to determine the width of the packet number.
 
 The \texttt{where} block further defines the \texttt{LongHeader} type, by constraining the
@@ -640,14 +642,10 @@ description accompanying the diagram is needed to fully describe the packet form
 
 The \texttt{onparse} block contains actions that are to be performed once the PDU has been
 successfully parsed as a \texttt{LongHeader} type (i.e., its layout matches that of
-the structure, and all of the constraints in the \texttt{where} block are true). The
-\texttt{onparse} block introduces an imperative element into an otherwise declarative type
-definition. The actions listed in the \texttt{onparse} block, and captured by the intermediate
-representation, are not intrinsic to the \texttt{LongHeader} type: they are expressions that
-allow the parsing process to progress.
+the structure, and all of the constraints in the \texttt{where} block are true).
 
-The
-single expression in this section is matched with the following field of the structure:
+The single expression in the \texttt{onparse} is matched with the following from the
+definition of the structure:
 \footnotesize
 \begin{alltt}
     ppacket_num : PPacketNum -> packet_num : PacketNum
@@ -667,9 +665,9 @@ a concrete way of linking these components together.
 
 Finally, Figure~\ref{fig:quic-long-hdr-desc} makes use of the \texttt{Context} type,
 defined in Figure~\ref{fig:quic-base}. As
-described in the previous section, the context is essentially a key-value store. Type
-declarations can access the context, to check against values that it contains, and actions,
-functions, and out-of-band processes can access and change values in the context. In
+described in the previous section, the parsing context is essentially a key-value store. Type
+declarations can access the context, to check against values that it contains, and methods,
+helper functions, and out-of-band processes can access and change values in the context. In
 this example, the context includes a \texttt{highest\_packet\_num} field. The field
 transformation captures that the
 \texttt{lh\_packetnum\_decrypt} function removes the packet
@@ -717,8 +715,9 @@ ShortHeader := {
     \label{fig:quic-short-hdr-desc}
 \end{figure}
 
-Next, we consider the short header, as shown in Figure~\ref{fig:quic-short-hdr-desc}.
-Beyond the features already discussed as part of the long header example, the short header
+Next, we consider the short header, as shown in Figure~\ref{fig:quic-short-hdr-desc}. We
+omit discussion of the features already discussed as part of the long header example.
+The short header
 also includes a reference to the context. The short header's \texttt{dcid} field must
 match the most recent source connection ID that has been sent. This demonstrates another
 way in which the context can be accessed: the sending process is essentially out-of-band,
@@ -739,7 +738,7 @@ Frame := { PaddingFrame | RSTStreamFrame | ConnectionCloseFrame | .. };
     \label{fig:quic-frame-desc}
 \end{figure}
 
-This is the central argument for requiring helper functions and context: decryption (in
+This is the central argument for requiring helper functions and parsing context: decryption (in
 the form of packet and payload protection, for example) are primitives of the QUIC
 protocol. If we are to design an intermediate language that can model the parsing of QUIC
 PDUs, it \emph{must} allow for the modelling of decryption. This is further illustrated
@@ -755,8 +754,8 @@ The example given here also hints at the boundary between modelling the parsing 
 protocol's PDUs, and validating that those PDUs make sense within the broader semantics 
 of the protocol. For example, we use enough logic to store the highest packet number seen,
 but do not otherwise validate incoming packet numbers. The intermediate representation is
-designed to capture only the information that is required to parse PDUs: ultimately, PDUs
-might parse successfully, only to be rendered invalid by the semantics of the protocol.
+captures only the information that is required to parse PDUs: ultimately, PDUs
+might parse successfully, only to be invalid, in terms of the semantics of the protocol.
 
 %==================================================================================================
 \section{Related Work}
