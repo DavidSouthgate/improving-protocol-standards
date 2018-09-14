@@ -682,21 +682,30 @@ then parsed as the \texttt{Frame} type defined in Figure~\ref{fig:quic-frame-des
 %  - Acknowledge weaknesses in your approach.
 %  - Ensure related work is accurate and up-to-date
 
-Tour of the various packet description languages. Summarise their limitations (no
-contexts, helper functions). Underline the inflexibility of coupling input and output
-formats: an intermediary layer makes sense if this is to be adopted (IETF decentralised
-structure doesn't lend itself to adopting a single input language).
+There have been many previous efforts to develop a description language for protocol
+parsing. Many approaches, such as PADS (Processing Ad Hoc Data Sources)
+\cite{fisher2005pads} and DataScript \cite{back2002datascript}, are C-like in their
+syntax and type systems. Others, like PacketTypes \cite{mccann2000packet} and the Meta
+Packet Language (MPL) \cite{madhavapeddy2007melange}, are declarative, with more expressive
+type systems. None of these approaches include support for contexts or helper functions:
+there is no way to model the decryption primitives that are essential to the parsing of
+QUIC. Ultimately, while these languages are well-motivated (i.e., parser quality would
+be improved by formal specifications in standards documents), they misunderstand the
+approach the needs of standards authors. 
 
-Also point to other formalisms in use in IETF docs. Some are a bit tangential, but
-discussing them here might be a good opportunity to nod at future work (capturing
-semantics for packet processing, for example).
+In terms of adoption, it is interesting to consider the approaches that see use in IETF
+documents. The most widespread formalism is the ASCII packet diagram. While this is
+limited in its expressiveness, its value in showing the layout of protocol PDUs should not
+be ignored. Other formalisms, such as ASN.1 \cite{x680} and the TLS 1.3 presentation
+format \cite{draft-ietf-tls-tls13-28}, see widespread adoption within certain IETF
+working groups, but almost no adoption in most. This points to the problem noted above: a
+single input language is not suitable in all cases. The flexibility of our approach --
+defining an intermediate representation, rather than a language that authors write -- means
+that existing formalisms, including ASCII diagrams and the TLS 1.3 presentation language,
+can be used as input formats. 
 
-Also point to other formalisms in use in IETF docs. Some are a bit tangential, but
-discussing them here might be a good opportunity to nod at future work (capturing
-semantics for packet processing, for example).
-
-\cite{mccann2000packet}
-
+The flexibility is also beneficial in terms of the output formats that can be derived from
+the intermediate representation.
 P4 \cite{bosshart:2014:p4,p4consortium:2018:v16spec-20180531} is a language
 for programming the data plane of network devices. It is widely used in
 software defined networking applications.
