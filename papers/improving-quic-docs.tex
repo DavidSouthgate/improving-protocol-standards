@@ -304,11 +304,16 @@ These components are illustrated in Figure \ref{fig:stages}.
 
 The Network Packet Representation type system describes the format of PDUs,
 along with the helper functions and context needed to parse them.
-%
-The base type used to describe PDUs is a \emph{Bit String}.
 
-There are three classes of derived types: arrays, structure types, and
-enumerated types.
+The base type class used to describe PDUs is a \emph{Bit String}.
+This is a sequence of $n$ consecutive bits of data that can be instantiated
+as a named type.
+For example, a type system to describe RTP \cite{RFC3550} might instantiate
+a new instance of the bit string type class, \texttt{SeqNum}, comprising 16
+bits to represent an RTP sequence number.
+
+There are three classes of derived types that represent structured data in
+a PDU: array types, structure types, and enumerated types.
 An \emph{Array Type} is...
 
 A \emph{Structure Type} is...
@@ -406,14 +411,6 @@ and used to instantiate the types describing the protocol data.
 % its nature. Finally, the protocol type includes a list of the PDUs that comprise the
 % protocol, based on the constructed types.
 
-%--------------------------------------------------------------------------------------------------
-\subsection{Protocol Description Languages}
-\label{sec:npr-input}
-
-%--------------------------------------------------------------------------------------------------
-\subsection{Parser Generators}
-\label{sec:npr-output}
-
 % The intermediate representation is serialised using JSON. By using a widely adopted
 % notation, the code used to both generate the representation, and use it, is not tied to a
 % particular programming language. The role of the intermediate representation is to join
@@ -444,6 +441,25 @@ and used to instantiate the types describing the protocol data.
 % An additional benefit to having a common intermediate representation is that tooling can
 % be developed around it, without duplicated effort. Such tooling could type check the
 % intermediate representation, to ensure that it had been generated correctly.
+
+%--------------------------------------------------------------------------------------------------
+\subsection{Protocol Description Languages}
+\label{sec:npr-input}
+
+\todo{Briefly discuss the protocol description languages that can be used as input.
+Key here is that there can be more than one.
+Examples including ASCII packet diagrams, the TLS presentation language.
+Forward reference to Section \ref{sec:casestudy} for the language we use to
+describe QUIC.
+}
+
+
+%--------------------------------------------------------------------------------------------------
+\subsection{Parser Generators}
+\label{sec:npr-output}
+
+\todo{Briefly describe parser generators, and how they can output code to
+parse the PDUs in C, Rust, etc.}
 
 %==================================================================================================
 \section{Example: Parsing QUIC}
