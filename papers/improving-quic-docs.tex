@@ -551,6 +551,10 @@ stored in the context, which the \texttt{lh\_packetnum\_decrypt} function can ac
 decrypt :: (ppayload : Bits, 
             context : Context) 
         -> Frame[];
+
+sh_packetnum_decrypt :: (ppacket_num : Bits, 
+                         context : Context) 
+                     -> PacketNum;
                      
 ShortHeader := {
 	header_form   : Bit;
