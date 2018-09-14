@@ -318,7 +318,8 @@ can be present between fields, and the size of all types is well-defined
 and derived from the size of the underlying bit string types (there is no
 undefined or implementation defined behaviour).
 
-Structure types represent data that can be parsed.
+Structure types represent protocol data that can be parsed.
+For example, a QUIC frame, or a TCP header.
 The format of a particular instance of a structure type, as it is parsed,
 is determined by a set of constraints on the fields that structure, and
 transformations of those fields. 
@@ -336,20 +337,46 @@ structure, methods defined on those fields, fields in the parsing context,
 or helper functions. 
 For example... \todo{add constraint example}
 
+The \emph{Parsing Context} allows the parser to keep state between packets.
+It is essential to parsing complex protocols, and the ability to specify
+data to be stored in the context is one of the key innovations of our
+Network Packet Representation.
+Typical uses of the parsing context include:
+1) recording the cryptographic keys and other information relating to the
+   security context;
+2) storing parameters set in early packets, to allow parsing of later 
+   packets; and
+3) storing parameters specified in out-of-band signalling, that are 
+   needed to parse packets (e.g., in the context of RTP, signalled
+   payload type values or the meanings of header extensions \cite{RFC5285}).
+Structure types can also be tagged with a series of \emph{Actions} that are
+performed when they are parsed.
+The actions are generally expressed in terms of calls to helper functions
+that update the parsing context.
 
-The \emph{Parsing Context}...
-and actions
-
-Finally, \emph{Helper Functions}... 
-
-A \emph{Transform Function} is...
-
+The Network Packet Representation allows the definitions of \emph{Function
+Prototypes}. These can be either \emph{Helper Functions} or \emph{Transform
+Functions}.
+The function prototypes specify the function name, parameter names and types,
+and the return type only; they do not specify the body -- the Network Packet
+Representation is a type system not a complete programming language.
+Helper functions specify constraints or actions; transform functions define
+how a field is processed after parsing to generate a replacement field.
+A common example of the latter might be a \texttt{decrypt()} function that
+takes a key previously stored in the parsing context (e.g., by a call to an
+action function specified on parsing of an initial handshake packet) to
+decrypt a protected payload field.  The intent is that the semantics of the
+function are specified in prose, in the protocol specification, while its
+arguments and return type are specified in the input protocol description
+language (see Section \ref{sec:npr-input}).
 Together, constraint expressions and transform functions allow structure
 types to represent complex PDU formats, such as those used in QUIC.
 
-An \emph{Enumerated Type} is...
+\emph{Enumerated Types} allow specification of alternatives: a PDU can
+be either s PDU of type \emph{X} or type \emph{Y}. Finally, the overall
+\emph{Protocol Type} includes definitions for the other types, and gives
+the types of the PDUs used in the protocol.
 
-An overall \emph{Protocol Type}...
 
 The type system of the Network Packet Representation is supported by an
 \emph{intermediate representation}; a well-defined serialisation format
