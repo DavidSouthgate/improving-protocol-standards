@@ -523,25 +523,55 @@ VarInt := {
 	value.length == (8*(2^two_bit))-2;
 };
 
-lh_packetnum_decrypt :: (ppacket_num : PPacketNum, 
-                         context : Context) 
-                     -> PacketNum;
+PacketNumber7 := {
+	first_bit     : Bit;
+	packet_number : Bit7;
+} where {
+	first_bit == 0;
+};
+
+PacketNumber14 := {
+	first_twobits : Bit2;
+	packet_number : Bit14;
+} where {
+	first_twobits == 1;
+};
+
+PacketNumber30 := {
+	first_twobits : Bit2;
+	packet_number : Bit30;
+} where {
+	first_twobits == 2;
+};
+
+PacketNumber := { PacketNumber8 | PacketNumber16 | PacketNumber32 };
                      
 Context := {
 	highest_packet_num  : PacketNum;
 	last_scid           : ConnectionID;
 };
+    \end{BVerbatim}
+    \caption{Complex data types for QUIC parsing}
+    \label{fig:quic-base}
+\end{figure}
+
+\begin{figure}
+	\vspace{3mm}
+    \begin{BVerbatim}[fontsize=\scriptsize]
+lh_packetnum_decrypt :: (ppacket_num : Bits, 
+                         context : Context) 
+                     -> PacketNum;
 
 LongHeader := {
 	header_form   : Bit;
-	packet_type   : LongHeaderType;
-	version       : Version;
+	packet_type   : Bit7;
+	version       : Bit32;
 	dcil          : Bit4;
 	scil          : Bit4;
-	dcid          : ConnectionID;
-	scid          : ConnectionID;
+	dcid          : Bits;
+	scid          : Bits;
 	length        : VarInt;
-	ppacket_num   : PPacketNum -> packet_num : PacketNum;
+	ppacket_num   : Bits -> packet_num : PacketNum;
 	payload       : Frame[];
 } where {
 	header_form == 1;
@@ -549,6 +579,7 @@ LongHeader := {
 	scid.size == ((scil == 0) ? 0 : scil+3);
 } onparse {
 	packet_num = lh_packetnum_decrypt(ppacket_num, Context);
+	Context.packet_num = packet_num;
 };
     \end{BVerbatim}
     \caption{QUIC long header (from \cite{draft-ietf-quic-transport-latest})}
@@ -556,59 +587,74 @@ LongHeader := {
 \end{figure}
 
 In this section, we will demonstrate that the novel features of the Glasgow Packet
-Language -- functions and context -- are necessary in describing QUIC. We illustrate this
-using an example that formalises some of QUIC's PDUs using a protocol description
-language. As discussed in the previous section, this language is unimportant: the
-intermediate representation that the Glasgow Packet Language produces is agnostic to
-input and output formats. Additionally, the examples used in this section are not
-exhaustive: our goal is to demonstrate that the features of the GPL are necessary to
-fully model the parsing of QUIC.
+Representation -- functions and context -- are necessary in describing QUIC. We illustrate
+this using an example that formalises some of QUIC's PDUs using a protocol description
+language. As discussed in the previous section, this language itself is not important: the
+Glasgow Packet Representation is agnostic to input and output formats. The syntax the
+language we use here has been designed to demonstrate the functionality provided by the
+intermediate representation. Finally, the examples used in this section are not exhaustive:
+for example, we look at the long and short header packet formats, and how their parsing
+can be modelled. We do not consider packet-level protection (e.g., 0-RTT protection for
+long header packets), but this does not limit the generality of our approach.
 
 We begin, in Figure~\ref{fig:quic-long-hdr-desc}, by describing QUIC's long header
-format. This code generates a structure named \texttt{LongHeader}, with the fields
-(written as \texttt{name : type}) specified in the first block. The \texttt{Bit} and 
-\texttt{Bit4} types are intuitive, specifying bit strings of length 1 and 4 respectively.
-The \texttt{VarInt} type is also specified; this encodes QUIC's variable-length integer
-encoding format. We omit descriptions of the other complex data types used in the
-long header format.
+format. This code declares a \texttt{LongHeader} type, a structure with the fields as
+specified in the first block. The \texttt{Bit} and \texttt{Bit\emph{N}} types are instances
+of the bit string type, with sizes 1 and \emph{N} respectively. The complex data types 
+used in the \texttt{LongHeader} structure are defined in Figure~\ref{fig:quic-base}. The
+\texttt{VarInt} type is a structure that encapsulates QUIC's variable-length integer
+encoding format. \texttt{PacketNum} encodes the similar variable-length packet number
+format as a variant type, where the variants depend on the first one or two bits of the
+format to determine the width of the packet number.
 
-The \texttt{where} block contains expressions that form the structure's constraints. A PDU
-can only be parsed if \emph{all} of the constraints are true. Already, we can see an
-advantage of this simple programmatic description of the long header: the relationship
+The \texttt{where} block further defines the \texttt{LongHeader} type, by constraining the
+values that the structure's fields can take. A PDU is a \texttt{LongHeader} type only if
+all of the constraints in the \texttt{where} block are true. This highlights the benefit
+of this programmatic description of the long header: the relationship
 between the \texttt{dcil}/\texttt{scil} and \texttt{dcid}/\texttt{scid} fields is made
 explicit. In the standards documents, where ASCII packet diagrams are used, the
 \texttt{dcid}/\texttt{scid} fields are shown as having variable lengths; the prose
 description accompanying the diagram is needed to fully describe the packet format.
 
 The \texttt{onparse} block contains actions that are to be performed once the PDU has been
-successfully parsed as a \texttt{LongHeader} structure (i.e., its layout matches that of
+successfully parsed as a \texttt{LongHeader} type (i.e., its layout matches that of
 the structure, and all of the constraints in the \texttt{where} block are true). The
+\texttt{onparse} block introduces an imperative element into an otherwise declarative type
+definition. The actions listed in the \texttt{onparse} block, and captured by the intermediate
+representation, are not intrinsic to the \texttt{LongHeader} type: they are expressions that
+allow the parsing process to progress.
+
+The
 single expression in this section is matched with the following field of the structure:
 \footnotesize
 \begin{alltt}
     ppacket_num : PPacketNum -> packet_num : PacketNum
 \end{alltt}
 \normalsize
-This is a field transformation: together, these lines indicate that the parsed block
-contains a protected packet number field (with type \texttt{PPacketNum}), which, to allow
+This is a field transformation: it indicates that the parsed block
+contains a protected packet number field (with type \texttt{Bits}), which, to allow
 for further parsing, is then transformed (using the \texttt{lh\_packetnum\_decrypt} function)
-into a packet number field (with type \texttt{PacketNum}). The goal of the intermediate
-representation is to capture the signature of the functions required in the parsing of the
+into a packet number field (with type \texttt{PacketNum}). The intermediate
+representation captures the signature of the functions required in the parsing of the
 protocol. At present, much of this behaviour is captured in prose descriptions of the
 protocol, limiting the usefulness of the ASCII packet diagrams the documents provide.
 This issue is exacerbated by the TLS-related functionality being described in a separate
-document (in this case, packet number protection is described in Section 5.3 of the
+document (e.g., packet number protection is described in Section 5.3 of the
 QUIC-TLS draft \cite{draft-ietf-quic-tls-14}). Using explicit function names would provide
-a concrete way of linking these non-trivial components together. 
+a concrete way of linking these components together. 
 
-Finally, Figure~\ref{fig:quic-long-hdr-desc} includes a definition of the context. As
-described in the previous section, the context is a key-value store that spans the duration
-of the parsing process. As PDUs are parsed, they can access the context. In addition,
-functions that are called can take the context as a parameter, and the context can be
-modified out-of-band. Here, we define the context to include a \texttt{highest\_packet\_num}
-field. As part of \texttt{lh\_packetnum\_decrypt}'s removal of packet number protection,
-the packet number is decoded. This requires the highest received packet number to be
-stored; the context is necessary for this.
+Finally, Figure~\ref{fig:quic-long-hdr-desc} makes use of the \texttt{Context} type,
+defined in Figure~\ref{fig:quic-base}. As
+described in the previous section, the context is essentially a key-value store. Type
+declarations can access the context, to check against values that it contains, and actions,
+functions, and out-of-band processes can access and change values in the context. In
+this example, the context includes a \texttt{highest\_packet\_num} field. The field
+transformation captures that the
+\texttt{lh\_packetnum\_decrypt} function removes the packet
+number protection, and decodes the truncated packet number into the full packet number.
+The decoding process requires not only the truncated packet number (i.e., the unprotected
+incoming packet number), but also the largest packet number seen so far. As shown, this is
+stored in the context, which the \texttt{lh\_packetnum\_decrypt} function can access.
 
 \begin{figure}
 	\vspace{3mm}
@@ -624,8 +670,8 @@ ShortHeader := {
 	forth_bit     : Bit;
 	demux_bit     : Bit;
 	reserved      : Bit[3];
-	dcid          : ConnectionID;
-	ppacket_num   : PPacketNum -> packet_num : PacketNum;
+	dcid          : Bits;
+	ppacket_num   : Bits -> packet_num : PacketNum;
 	ppayload      : Bits -> payload : Frame[];
 } where {
 	header_form == 0;
@@ -634,7 +680,10 @@ ShortHeader := {
 	demux_bit == 0;
 	dcid == Context.scid;
 } onparse {
-	packet_num = sh_packetnum_decrypt(ppacket_num);
+	packet_num = sh_packetnum_decrypt(ppacket_num, Context);
+	Context.packet_num = ((packet_num > Context.packet_num)
+	                        ? packet_num 
+	                        : Context.packet_num);
 	payload = decrypt(ppayload);
 };
     \end{BVerbatim}
@@ -675,6 +724,13 @@ process. As shown, a short header PDU is parsed, and the payload is decrypted us
 \texttt{decrypt} function, which takes both the protected payload and the context (for any
 information needed to decrypt the payload), and returns an array of frames. The frames are
 then parsed as the \texttt{Frame} type defined in Figure~\ref{fig:quic-frame-desc}.
+
+The example given here also hints at the boundary between modelling the parsing of a 
+protocol's PDUs, and validating that those PDUs make sense within the broader semantics 
+of the protocol. For example, we use enough logic to store the highest packet number seen,
+but do not otherwise validate incoming packet numbers. The intermediate representation is
+designed to capture only the information that is required to parse PDUs: ultimately, PDUs
+might parse successfully, only to be rendered invalid by the semantics of the protocol.
 
 %==================================================================================================
 \section{Related Work}
