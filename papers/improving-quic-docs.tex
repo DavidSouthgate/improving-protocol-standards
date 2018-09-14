@@ -165,14 +165,14 @@ generated from existing formalisms.
 
 % FIXME: we can add the following back if we have space:
 
-% We structure the remainder of this paper as follows. Section \ref{sec:motivation} expands
-% on our motivation, by assessing the utility provided by an ASCII diagram from the QUIC
-% standards documents, and outlining the requirements of our formalism. Section
-% \ref{sec:npr} describes our proposed framework for describing packet formats,
-% including our intermediary representation, the Network Packet Representation. Section
-% \ref{sec:casestudy} provides an example of how our framework can be used to capture
-% the parsing of QUIC's protocol data units (PDUs). Finally, Section \ref{sec:related} discusses
-% related work, and Section \ref{sec:conclusion} concludes.
+We structure the remainder of this paper as follows. Section \ref{sec:motivation} expands
+on our motivation, by assessing the utility provided by an ASCII diagram from the QUIC
+standards documents, and outlining the requirements of our formalism. Section
+\ref{sec:npr} describes our proposed framework for describing packet formats,
+including our intermediary representation, the Network Packet Representation. Section
+\ref{sec:casestudy} provides an example of how our framework can be used to capture
+the parsing of QUIC's protocol data units (PDUs). Finally, Section \ref{sec:related} discusses
+related work, and Section \ref{sec:conclusion} concludes.
 
 %==================================================================================================
 % Concentrate single-mindedly on a narrative that:
@@ -229,11 +229,11 @@ Broadly, the requirements for our formalism are that it should:
 
 To demonstrate the limitations of ASCII packet header diagrams in capturing all of the
 information required to fully parse PDUs, we consider the diagram for QUIC's short header
-PDU, as shown in Figure \ref{fig:quic-short-hdr}. From this diagram, it is clear how the
+PDU, as shown in Figure \ref{fig:quic-short-hdr}. It is clear how the
 first octet should be parsed: the widths of each field are known, and, for some, the
 values specified. However, it is not clear how the Destination Connection ID, Packet
 Number, and Protected Payload fields should be parsed. Determining the syntax
-of these fields requires the prose descriptions that accompany the diagram: the
+of these fields requires the accompanying prose descriptions: the
 expressiveness of ASCII packet diagrams is limited.
 
 Some of these limitations can be overcome by using an existing packet
@@ -288,17 +288,18 @@ on how those PDUs should be parsed.
 Key to this is the definition of a type system (\S\ref{sec:npr-types}) that
 describes the format of PDUs, helper functions, and the context needed for
 parsing.
-This is associated with one or more protocol description languages
-(\S\ref{sec:npr-input}) that describe the PDUs to be parsed; and one
-or more parser generators (\S\ref{sec:npr-output}) that can generate
-implementations of parsers for those PDUs.
-These components are illustrated in Figure \ref{fig:stages}.
 
 \begin{figure}
   \includegraphics[width=0.7\linewidth]{figures/architecture-flow.pdf}
   \caption{Describing, representing, and parsing PDUs}
   \label{fig:stages}
 \end{figure}
+
+This is associated with one or more protocol description languages
+(\S\ref{sec:npr-input}) that describe the PDUs to be parsed; and one
+or more parser generators (\S\ref{sec:npr-output}) that can generate
+implementations of parsers for those PDUs.
+These components are illustrated in Figure \ref{fig:stages}.
 
 %--------------------------------------------------------------------------------------------------
 \subsection{A Type System for Protocol Data}
@@ -322,8 +323,8 @@ the definition of the array type, it must be possible to infer it based
 on the constraints of an enclosing structure type, discussed below.
 
 A \emph{Structure Type} represents a heterogeneous collection of fields.
-They are the main types used to represent complex packet formats.
-At a high-level, structure type definitions resemble those in programming
+They are the main types used to represent packet formats.
+At a high-level, structure type definitions resemble those in
 languages such as C: they comprise a sequence of fields, each with its own
 type, that are packed together in the order specified. Unlike C, no padding
 can be present between fields, and the size of all types is well-defined
@@ -364,12 +365,11 @@ Typical uses of the parsing context include:
 2) storing parameters set in early packets, to allow parsing of later 
    packets; and
 3) storing parameters specified in out-of-band signalling, that are 
-   needed to parse packets (e.g., in the context of RTP, signalled
+   needed to parse packets (e.g., in RTP, signalled
    payload type values or the meanings of header extensions \cite{RFC5285}).
 Structure types can also be tagged with a series of \emph{Actions} that are
-performed when they are parsed.
-The actions are generally expressed in terms of calls to helper functions
-that update the parsing context.
+performed when they are parsed; these are generally expressed in terms of calls
+to helper functions that update the parsing context.
 
 The Network Packet Representation allows the definitions of \emph{Function
 Prototypes}. These can be either \emph{Helper Functions} or \emph{Transform
@@ -501,8 +501,7 @@ The intermediate representation that is used to construct the Network Packet
 Representation is generated by programs that parse a protocol description language, rather
 than by standards authors. This decoupling means that \emph{any} protocol description
 language can be used, including ad-hoc, domain-specific languages. This is in contrast to
-previous approaches, where all documents were expected to adopt a common description
-language.
+previous approaches that mandated a common description language.
 
 The flexibility of this approach means that the definition of a protocol description
 language can be broad, ranging from ASCII packet diagrams, to the TLS 1.3 presentation
@@ -674,8 +673,8 @@ protocol. At present, much of this behaviour is captured in prose descriptions o
 protocol, limiting the usefulness of the ASCII packet diagrams the documents provide.
 This issue is exacerbated by the TLS-related functionality being described in a separate
 document (e.g., packet number protection is described in Section 5.3 of the
-QUIC-TLS draft \cite{draft-ietf-quic-tls-14}). Using explicit function names would provide
-a concrete way of linking these components together. 
+QUIC-TLS draft \cite{draft-ietf-quic-tls-14}). Using function names would
+explicitly link these components together. 
 
 Finally, Figure~\ref{fig:quic-long-hdr-desc} makes use of the \texttt{Context} type,
 defined in Figure~\ref{fig:quic-base}. As
@@ -752,8 +751,8 @@ Frame := { PaddingFrame | RSTStreamFrame | ConnectionCloseFrame | .. };
     \label{fig:quic-frame-desc}
 \end{figure}
 
-This is the central argument for requiring helper functions and parsing context: decryption (in
-the form of packet and payload protection, for example) are primitives of the QUIC
+This is the rationale behind helper functions and parsing context: decryption primitives are
+core to the QUIC
 protocol. If we are to design an intermediate language that can model the parsing of QUIC
 PDUs, it \emph{must} allow for the modelling of decryption. This is further illustrated
 by the link between the short header format's protected payload, and the QUIC frames (as
@@ -764,8 +763,8 @@ process. As shown, a short header PDU is parsed, and the payload is decrypted us
 information needed to decrypt the payload), and returns an array of frames. The frames are
 then parsed as the \texttt{Frame} type defined in Figure~\ref{fig:quic-frame-desc}.
 
-The example given here also hints at the boundary between modelling the parsing of a 
-protocol's PDUs, and validating that those PDUs make sense within the broader semantics 
+The example given here also hints at the boundary between modelling the parsing of 
+PDUs, and validating that those PDUs make sense within the broader semantics 
 of the protocol. For example, we use enough logic to store the highest packet number seen,
 but do not otherwise validate incoming packet numbers. The intermediate representation is
 captures only the information that is required to parse PDUs: ultimately, PDUs
