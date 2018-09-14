@@ -792,33 +792,37 @@ might parse successfully, only to be rendered invalid by the semantics of the pr
 %  - Acknowledge weaknesses in your approach.
 %  - Ensure related work is accurate and up-to-date
 
-There have been many previous efforts to develop a description language for protocol
-parsing. Many languages, such as PADS (Processing Ad Hoc Data Sources)
+There have been many previous efforts to develop protocol description languages.
+Some, such as PADS (Processing Ad Hoc Data Sources)
 \cite{fisher2005pads} and DataScript \cite{back2002datascript}, are C-like in their syntax
 and type systems. Others, like PacketTypes \cite{mccann2000packet} and the Meta Packet
 Language (MPL) \cite{madhavapeddy2007melange}, are declarative, with more expressive type
 systems. None of these approaches include support for contexts or helper functions: there
-is no way to model the either decryption primitives that are essential to the parsing of
-QUIC, or the out-of-band information needed to parse RTP. Ultimately, while these
-languages are well-motivated (i.e., parser quality would be improved by formal
-specifications in standards documents), they misunderstand the needs of standards authors,
-and provide no way of transitioning from existing formalisms, to those that they define.
+is no way to model either the decryption primitives that are essential to the parsing of
+QUIC, or the out-of-band information needed to parse protocols like RTP.
+Ultimately, while these languages are well-motivated (i.e., parser quality
+would be improved by formal specifications in standards documents), they
+misunderstand the needs of standards authors, and provide no way of
+transitioning from existing approaches, to those that they define.
 
-In terms of adoption, it is interesting to consider the approaches that see use in IETF
-documents. The most widespread formalism is the ASCII packet diagram. While this is
+In terms of adoption, it's interesting to consider approaches that see use in IETF
+documents. Most widespread is the ASCII packet diagram. While this is
 limited in its expressiveness, its value in showing the layout of protocol PDUs should not
 be ignored. Other formalisms, such as ASN.1 \cite{x680} and the TLS 1.3 presentation
 format \cite{draft-ietf-tls-tls13-28}, see widespread adoption within certain IETF
 working groups, but almost no adoption in most. This points to the problem noted above: a
 single input language is not suitable in all cases. The flexibility of our approach --
-defining an intermediate representation, rather than a language that authors write -- means
-that existing formalisms, including ASCII diagrams and the TLS 1.3 presentation language,
-can be used as input formats. 
+defining a common intermediate representation and type system from which
+parsers can be derived, rather than define a single protocol description language
+that authors must write -- means that existing formalisms, e.g., ASCII
+diagrams and the TLS 1.3 presentation language, can be used as input
+formats, with other representations, such as that we outline in Section
+\ref{sec:casestudy}, being developed when they become useful. 
 
-The flexibility is also beneficial in terms of the output formats that can be derived from
-the intermediate representation. Beyond the traditional parser languages described in
+The flexibility is also beneficial in terms of the output formats that can be derived.
+Beyond the traditional parser languages described in
 Section~\ref{sec:npr-output}, we also consider P4
-\cite{bosshart:2014:p4,p4consortium:2018:v16spec-20180531}. P4 is a language for
+\cite{bosshart:2014:p4,p4consortium:2018:v16spec-20180531}, a language for
 programming the data plane of network devices. It is widely used in software defined
 networking applications. P4 describes how packets are parsed and serialised and what state
 tables exist in a network devices, and specifies a series of match-action rules that
