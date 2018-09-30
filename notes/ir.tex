@@ -927,7 +927,7 @@ accessed by their \code{name}.
 \label{sec:expressions}
 
 Expressions are split into two classes: 
-tree (\code{MethodInvocation}, \code{FunctionInvocation}, and \code{IfElse})
+tree (\code{MethodInvocation}, \code{FunctionInvocation}, \code{FieldAccess}, and \code{IfElse})
 and 
 leaf (\code{This}, \code{Context}, and \code{Constant}).
 
@@ -980,6 +980,22 @@ MUST evaluate to a value matching the type of the parameter as specified in
 the \code{Function} definition. The \code{FunctionInvocation} expression
 itself evaluates to the \code{return\_type} specified in the
 \code{Function} definition.
+
+A \code{FieldAccess} tree expression is represented in the JSON form of the
+intermediate representation as:
+\footnotesize
+\begin{alltt}
+  \{
+    "expression"  : "FieldAccess",
+    "field"       : \emph{field name},
+  \}
+\end{alltt}
+\normalsize
+When invoked on a structure type, returns a reference to the specified
+field of the structure. If invoked on the parsing context object, this
+returns a reference to the specified field in the parsing context. It
+an error to invoke \code{FieldAccess} on something other than a structure
+type or the parsing context.
 
 A \code{IfElse} tree expression is represented in the JSON form of the
 intermediate representation as:
