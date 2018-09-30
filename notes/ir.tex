@@ -141,9 +141,6 @@ The \code{Size} type is a positive integral value, denoting the size of an
 instance of a representable type. It implements the traits \code{Value},
 \code{Equality}, \code{Ordinal}, and \code{ArithmeticOps}.
 
-The \code{FieldName} type denotes the name of a field in a \code{NamedCollection}. 
-It implements the traits \code{Value} and \code{Equality}.
-
 The primitive types are built-in to the runtime, and are not explicitly
 defined in the JSON form of the intermediate representation.
 
@@ -286,45 +283,6 @@ definition in the JSON form of the intermediate representation:
         "parameters"  : [
           \{"name" : "self",  "type"   : null\},
           \{"name" : "index", "type"   : "Size"\}
-          \{"name" : "value", "type"   : null\}
-        ],
-        "return\_type" : "Nothing"
-      \},
-      \{
-        "name"        : "length",
-        "parameters"  : [
-          \{"name" : "self",  "type"   : null\}
-        ],
-        "return\_type" : "Size"
-      \}
-    ]
-  \}
-\end{alltt}
-\normalsize
-
-The runtime defines the \code{NamedCollection} trait. This defines methods that can
-be used to get and set the values of fields of a map-like data structure, which has
-multiple, named indexed elements. Its definition is equivalent to the following
-definition in the JSON form of the intermediate representation:
-\footnotesize
-\begin{alltt}
-  \{
-    "construct" : "Trait"
-    "name"      : "NamedCollection",
-    "methods"   : [
-      \{
-        "name"        : "get",
-        "parameters"  : [
-          \{"name" : "self",  "type"   : null\},
-          \{"name" : "key",   "type"   : "FieldName"\}
-        ],
-        "return\_type" : null
-      \},
-      \{
-        "name"        : "set",
-        "parameters"  : [
-          \{"name" : "self",  "type"   : null\},
-          \{"name" : "key",   "type"   : "FieldName"\},
           \{"name" : "value", "type"   : null\}
         ],
         "return\_type" : "Nothing"
@@ -671,10 +629,6 @@ of the field.
 A structure type implements the \code{Size} trait. The size of a structure is the
 sum of the sizes of its fields.
 
-A structure type implements the \code{NamedCollection} trait. Its elements,
-\code{fields}, are accessed by \code{name}. A structure's \code{length} is the number
-of fields that it contains.
-
 A structure type is parameterised by a set of constraints (i.e., boolean
 expressions that MUST evaluate to \code{True}) on the
 fields. The set of constraints MAY be empty. Expressions are described in
@@ -919,15 +873,12 @@ be a \code{BitString}, array, structure type, or enumerated type. The names
 of each field MUST be unique within a structure definition, but several
 fields can have the same type.
 
-Contexts implement the \code{NamedCollection} trait. Its \code{fields} are
-accessed by their \code{name}.
-
 %--------------------------------------------------------------------------------------------------
 \subsection{Expressions}
 \label{sec:expressions}
 
 Expressions are split into two classes: 
-tree (\code{MethodInvocation}, \code{FunctionInvocation}, and \code{IfElse})
+tree (\code{MethodInvocation}, \code{FunctionInvocation}, \code{FieldAccess}, and \code{IfElse})
 and 
 leaf (\code{This}, \code{Context}, and \code{Constant}).
 
@@ -980,6 +931,24 @@ MUST evaluate to a value matching the type of the parameter as specified in
 the \code{Function} definition. The \code{FunctionInvocation} expression
 itself evaluates to the \code{return\_type} specified in the
 \code{Function} definition.
+
+A \code{FieldAccess} tree expression is represented in the JSON form of the
+intermediate representation as:
+\footnotesize
+\begin{alltt}
+  \{
+    "expression"  : "FieldAccess",
+    "target"      : \emph{expression},
+    "field"       : \emph{field name},
+  \}
+\end{alltt}
+\normalsize
+When the target is a structure type, returns a reference to the specified
+field of the structure.
+When invoked on the parsing context object, returns a reference to the
+specified field in the parsing context.
+It is an error to invoke \code{FieldAccess} on a target that is not a
+structure type or the parsing context.
 
 A \code{IfElse} tree expression is represented in the JSON form of the
 intermediate representation as:
@@ -1047,21 +1016,11 @@ structure object to the constant value 2 would be written:
   \{
      "expression" : "MethodInvocation",
      "target"     : \{
-       "expression" : "MethodInvocation",
+       "expression" : "FieldAccess",
        "target" : \{
          "expression" : "This"
        \},
-       "method"    : "get",
-       "arguments" : [
-         \{
-           "name"  : "index",
-           "value" : \{
-             "expression" : "Constant",
-             "type"       : "FieldName",
-             "value"      : "version"
-           \}
-         \}
-       ]
+       "field"    : "version"
      \},
      "method"     : "eq",
      "arguments"  : [
