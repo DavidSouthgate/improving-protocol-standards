@@ -987,15 +987,17 @@ intermediate representation as:
 \begin{alltt}
   \{
     "expression"  : "FieldAccess",
+    "target"      : \emph{expression},
     "field"       : \emph{field name},
   \}
 \end{alltt}
 \normalsize
-When invoked on a structure type, returns a reference to the specified
-field of the structure. If invoked on the parsing context object, this
-returns a reference to the specified field in the parsing context. It
-an error to invoke \code{FieldAccess} on something other than a structure
-type or the parsing context.
+When the target is a structure type, returns a reference to the specified
+field of the structure.
+When invoked on the parsing context object, returns a reference to the
+specified field in the parsing context.
+It is an error to invoke \code{FieldAccess} on a target that is not a
+structure type or the parsing context.
 
 A \code{IfElse} tree expression is represented in the JSON form of the
 intermediate representation as:
@@ -1063,21 +1065,11 @@ structure object to the constant value 2 would be written:
   \{
      "expression" : "MethodInvocation",
      "target"     : \{
-       "expression" : "MethodInvocation",
+       "expression" : "FieldAccess",
        "target" : \{
          "expression" : "This"
        \},
-       "method"    : "get",
-       "arguments" : [
-         \{
-           "name"  : "index",
-           "value" : \{
-             "expression" : "Constant",
-             "type"       : "FieldName",
-             "value"      : "version"
-           \}
-         \}
-       ]
+       "field"    : "version"
      \},
      "method"     : "eq",
      "arguments"  : [
