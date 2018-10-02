@@ -117,7 +117,7 @@ Types can be \emph{internal} or \emph{representable}. A representable type
 describes something that can be parsed or serialised. An internal type is
 an artefact of the runtime, and cannot be parsed or serialised.
 
-Representable types MUST implement the \code{Size} trait.
+Representable types MUST implement the \code{Sized} trait.
 
 Each type has \emph{name}. It implements one or more \emph{traits} that
 define \emph{methods} that can operate on instances of that type.
@@ -238,7 +238,7 @@ form of the intermediate representation:
 \end{alltt}
 \normalsize
 
-The runtime defines the \code{Size} trait. This defines a method
+The runtime defines the \code{Sized} trait. This defines a method
 that can be used to get the size, in bits, of an instance of a type. 
 Its definition is equivalent to the following definition in the JSON
 form of the intermediate representation:
@@ -246,7 +246,7 @@ form of the intermediate representation:
 \begin{alltt}
   \{
     "construct" : "Trait"
-    "name"      : "Size",
+    "name"      : "Sized",
     "methods"   : [
       \{
         "name"        : "size",
@@ -478,7 +478,7 @@ created as needed to represent a protocol.
 The bit string type constructor allows construction of types representing
 multi-bit values that can be parsed or serialised.
 
-Instances of bit string types implement the \code{Size} trait. The size
+Instances of bit string types implement the \code{Sized} trait. The size
 MAY be unspecified.
 
 Instances of bit string types implement the \code{Value} and
@@ -519,7 +519,7 @@ The length MAY be unspecified.
 Arrays implement the \code{Equality} trait. Two arrays are equal if they
 have the same element type, \code{length}, \code{size}, and their elements are equal.
 
-Arrays implement the \code{Size} trait. The size of the array is \code{length}
+Arrays implement the \code{Sized} trait. The size of the array is \code{length}
 multiplied by the size of \code{element\_type}.
 
 Arrays implement the \code{IndexCollection} trait. Elements are numbered from $0$ to
@@ -626,7 +626,7 @@ The return type of the \code{using} function MUST match \code{into\_type},
 and \code{into\_type} MUST have the same size as the original \code{type}
 of the field.
 
-A structure type implements the \code{Size} trait. The size of a structure is the
+A structure type implements the \code{Sized} trait. The size of a structure is the
 sum of the sizes of its fields.
 
 A structure type is parameterised by a set of constraints (i.e., boolean
@@ -675,7 +675,7 @@ an enumerated type have their own types, but are otherwise unnamed.
 Variants can be of BitString, array, structure type, or enumerated type, or
 a type derived from such a type.
 
-An enumerated type implements the \code{Size} trait. The size of an enumerated type
+An enumerated type implements the \code{Sized} trait. The size of an enumerated type
 is equal to the size of the instantiated variant. Variants are not
 necessarily all the same size.
 
@@ -787,7 +787,7 @@ function type constructor is represented as in the following:
 \end{alltt}
 \normalsize
 
-A function type implements the \code{Size} trait. The size of the function is that of the
+A function type implements the \code{Sized} trait. The size of the function is that of the
 \code{return\_type}.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
