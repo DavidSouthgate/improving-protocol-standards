@@ -203,31 +203,30 @@ class IR:
         self._define_type("FieldName", "FieldName", {}, {})
 
         self._define_trait("Value",
-                         [("get",      [("self", None)                                         ],  None),
-                          ("set",      [("self", None), ("value",   None)                      ], "Nothing")])
+                         [("get",      [("self", None)                                    ],  None),
+                          ("set",      [("self", None), ("value",   None)                 ], "Nothing")])
+        self._define_trait("Sized",
+                         [("size",     [("self", None)                                    ], "Size")])
         self._define_trait("IndexCollection",
-                         [("get",      [("self", None), ("index", "Size")                      ],  None),
-                          ("set",      [("self", None), ("index", "Size"),      ("value", None)], "Nothing")])
-        self._define_trait("NamedCollection",
-                         [("get",      [("self", None), ("key",   "FieldName")                 ],  None),
-                          ("set",      [("self", None), ("key",   "FieldName"), ("value", None)], "Nothing")])
+                         [("get",      [("self", None), ("index", "Size")                 ],  None),
+                          ("set",      [("self", None), ("index", "Size"), ("value", None)], "Nothing")])
         self._define_trait("Equality",
-                         [("eq",       [("self", None), ("other",  None)                       ], "Boolean"),
-                          ("ne",       [("self", None), ("other",  None)                       ], "Boolean")])
+                         [("eq",       [("self", None), ("other",  None)                  ], "Boolean"),
+                          ("ne",       [("self", None), ("other",  None)                  ], "Boolean")])
         self._define_trait("Ordinal",
-                         [("lt",       [("self", None), ("other",  None)                       ], "Boolean"),
-                          ("le",       [("self", None), ("other",  None)                       ], "Boolean"),
-                          ("gt",       [("self", None), ("other",  None)                       ], "Boolean"),
-                          ("ge",       [("self", None), ("other",  None)                       ], "Boolean")])
+                         [("lt",       [("self", None), ("other",  None)                  ], "Boolean"),
+                          ("le",       [("self", None), ("other",  None)                  ], "Boolean"),
+                          ("gt",       [("self", None), ("other",  None)                  ], "Boolean"),
+                          ("ge",       [("self", None), ("other",  None)                  ], "Boolean")])
         self._define_trait("BooleanOps",
-                         [("and",      [("self", None), ("other",  None)                       ], "Boolean"),
-                          ("or",       [("self", None), ("other",  None)                       ], "Boolean"),
-                          ("not",      [("self", None)                                         ], "Boolean")])
+                         [("and",      [("self", None), ("other",  None)                  ], "Boolean"),
+                          ("or",       [("self", None), ("other",  None)                  ], "Boolean"),
+                          ("not",      [("self", None)                                    ], "Boolean")])
         self._define_trait("ArithmeticOps",
-                         [("plus",     [("self", None), ("other",  None)                       ],  None),
-                          ("minus",    [("self", None), ("other",  None)                       ],  None),
-                          ("multiply", [("self", None), ("other",  None)                       ],  None),
-                          ("divide",   [("self", None), ("other",  None)                       ],  None)])
+                         [("plus",     [("self", None), ("other",  None)                  ],  None),
+                          ("minus",    [("self", None), ("other",  None)                  ],  None),
+                          ("multiply", [("self", None), ("other",  None)                  ],  None),
+                          ("divide",   [("self", None), ("other",  None)                  ],  None)])
 
         self._implements(  "Boolean", ["Value", "Equality", "BooleanOps"])
         self._implements(     "Size", ["Value", "Equality", "Ordinal", "ArithmeticOps"])
@@ -269,36 +268,54 @@ class IR:
 
 
 
-    def _parse_expression(self, expression, this, depth):
+    def _parse_expression(self, expression, this_type):
         """
         Check that an expression is valid.
 
         Arguments:
           expression -- The expression to check
-          this       -- This type in which the expression is evaluated
+          this_type  -- This type in which the expression is evaluated
 
         Returns:
           The type of the expression
         """
         if   expression["expression"] == "MethodInvocation":
-            target_type = self._parse_expression(expression["target"], this, depth+1)
-            method_name = expression["method"]
-            return_type = self.types[target_type]["methods"][method_name]["return_type"]
-
-            print("[{}] MethodInvocation {}.{}->{}".format(depth, target_type, method_name, return_type))
-            return return_type
-
+            target_type_name   = self._parse_expression(expression["target"], this_type)
+            target_method_name = expression["method"]
+            if not target_method_name in self.types[target_type_name]["methods"]:
+                raise IRError("Unknown method {} call on type {}".format(target_method_name, target_type_name))
+            target_method = self.types[target_type_name]["methods"][target_method_name]
+            # Check that the arguments supplied to the method match its parameters:
+            for ((pn, pt), arg) in zip(target_method["params"][1:], expression["arguments"]):
+                an = arg["name"]
+                at = self._parse_expression(arg["value"], this_type)
+                if pn != an:
+                    raise IRError("Method argument name mismatch: {} != {}".format(pn, an))
+                if pt != at:
+                    raise IRError("Method argument type mismatch: {} != {}".format(pt, at))
+            return target_method["return_type"]
         elif expression["expression"] == "FunctionInvocation":
-            print("[{}] FunctionInvocation".format(depth))
+            raise IRError("unimplemented: FunctionInvocation")
+        elif expression["expression"] == "FieldAccess":
+            target_type_name = self._parse_expression(expression["target"], this_type)
+            target_type      = self.types[target_type_name]
+            if target_type["kind"] != "Struct":
+                raise IRError("FieldAccess expression called on non-struct")
+            for (field_name, field_type, field_xform) in target_type["components"]["fields"]:
+                if expression["field"] == field_name:
+                    return field_type
+            raise IRError("Unknown field {} in FieldAccess on type {}".format(expression["field"], target_type_name))
         elif expression["expression"] == "IfElse":
-            print("[{}] IfElse".format(depth))
+            raise IRError("unimplemented: IfElse")
         elif expression["expression"] == "This":
-            print("[{}] This type={}".format(depth, this))
-            return this
+            return this_type
         elif expression["expression"] == "Context":
-            print("[{}] Context")
+            raise IRError("unimplemented: Context")
         elif expression["expression"] == "Constant":
-            print("[{}] Constant type={} value={}".format(depth, expression["type"], expression["value"]))
+            if not expression["type"] in self.types:
+                raise IRError("Unknown type {} in Constant expression".format(expression["type"]))
+            # FIXME: this should check that expression["value"] is compatible with expression["type"]
+            return expression["type"]
         else:
             raise IRError("Unknown expression: {}".format(expression["expression"]))
 
@@ -327,11 +344,10 @@ class IR:
             attributes["size"] += self.types[field["type"]]["attributes"]["size"]
 
         self._define_type("Struct", defn["name"], attributes, components)
-        self._implements(defn["name"], ["NamedCollection"])
 
         components["constraints"] = []
         for constraint in defn["constraints"]:
-            self._parse_expression(constraint, defn["name"], 0)
+            self._parse_expression(constraint, defn["name"])
             components["constraints"].append(constraint)
 
 
@@ -561,6 +577,12 @@ class TestIR(unittest.TestCase):
         self.assertEqual(ir.traits["Value"]["methods"]["set"]["params"],      [("self", None), ("value", None)])
         self.assertEqual(ir.traits["Value"]["methods"]["set"]["return_type"], "Nothing")
         self.assertEqual(len(ir.traits["Value"]["methods"]), 2)
+        # Check the built-in Sized trait:
+        self.assertEqual(ir.traits["Sized"]["name"], "Sized")
+        self.assertEqual(ir.traits["Sized"]["methods"]["size"]["name"],        "size")
+        self.assertEqual(ir.traits["Sized"]["methods"]["size"]["params"],      [("self", None)])
+        self.assertEqual(ir.traits["Sized"]["methods"]["size"]["return_type"], "Size")
+        self.assertEqual(len(ir.traits["Value"]["methods"]), 2)
         # Check the built-in IndexCollection trait:
         self.assertEqual(ir.traits["IndexCollection"]["name"], "IndexCollection")
         self.assertEqual(ir.traits["IndexCollection"]["methods"]["get"]["name"],        "get")
@@ -570,15 +592,6 @@ class TestIR(unittest.TestCase):
         self.assertEqual(ir.traits["IndexCollection"]["methods"]["set"]["params"], [("self", None), ("index", "Size"), ("value", None)])
         self.assertEqual(ir.traits["IndexCollection"]["methods"]["set"]["return_type"], "Nothing")
         self.assertEqual(len(ir.traits["IndexCollection"]["methods"]), 2)
-        # Check the built-in NamedCollection trait:
-        self.assertEqual(ir.traits["NamedCollection"]["name"], "NamedCollection")
-        self.assertEqual(ir.traits["NamedCollection"]["methods"]["get"]["name"],        "get")
-        self.assertEqual(ir.traits["NamedCollection"]["methods"]["get"]["params"], [("self", None), ("key", "FieldName")])
-        self.assertEqual(ir.traits["NamedCollection"]["methods"]["get"]["return_type"], None)
-        self.assertEqual(ir.traits["NamedCollection"]["methods"]["set"]["name"],        "set")
-        self.assertEqual(ir.traits["NamedCollection"]["methods"]["set"]["params"], [("self", None), ("key", "FieldName"), ("value", None)])
-        self.assertEqual(ir.traits["NamedCollection"]["methods"]["set"]["return_type"], "Nothing")
-        self.assertEqual(len(ir.traits["NamedCollection"]["methods"]), 2)
 
 
 
@@ -761,21 +774,11 @@ class TestIR(unittest.TestCase):
                             {
                                 "expression" : "MethodInvocation",
                                 "target"     : {
-                                    "expression" : "MethodInvocation",
+                                    "expression" : "FieldAccess",
                                     "target"     : {
                                         "expression" : "This"
                                     },
-                                    "method"     : "get",
-                                    "arguments"  : [
-                                        {
-                                            "name"  : "key",
-                                            "value" : {
-                                                "expression" : "Constant",
-                                                "type"       : "FieldName",
-                                                "value"      : "seq"
-                                            }
-                                        }
-                                    ]
+                                    "field"     : "seq"
                                 },
                                 "method"     : "eq",
                                 "arguments"  : [
@@ -821,7 +824,6 @@ class TestIR(unittest.TestCase):
             "fields"      : [("seq", "SeqNum", ""), ("ts",  "Timestamp", "")],
             "constraints" : []
         })
-        self.assertEqual(ir.types["TestStruct"]["implements"], ["NamedCollection"])
         self.assertEqual(ir.pdus, ["TestStruct"])
 
 
@@ -1019,49 +1021,49 @@ class TestIR(unittest.TestCase):
 
 
 
-#    def test_constraints_parse_this(self):
-#        ir = IR()
-#        expr = {
-#                  "expression" : "This"
-#               }
-#        res = ir._parse_expression(expr, "Boolean")
-#        self.assertEqual(res, "Boolean")
+    def test_parse_expression_This(self):
+        ir = IR()
+        expr = {
+                  "expression" : "This"
+               }
+        res = ir._parse_expression(expr, "Boolean")
+        self.assertEqual(res, "Boolean")
 
 
 
-#    def test_constraints_parse_constant(self):
-#        ir = IR()
-#        expr = {
-#                  "expression" : "Constant",
-#                  "type"       : "Size",
-#                  "value"      : 2
-#               }
-#        res = ir._parse_expression(expr, "Boolean")
-#        self.assertEqual(res, "Size")
+    def test_parse_expression_Constant(self):
+        ir = IR()
+        expr = {
+                  "expression" : "Constant",
+                  "type"       : "Size",
+                  "value"      : 2
+               }
+        res = ir._parse_expression(expr, "Boolean")
+        self.assertEqual(res, "Size")
 
 
 
-#    def test_constraints_parse_method(self):
-#        ir = IR()
-#        expr = {
-#                  "expression" : "MethodInvocation",
-#                  "target"     : {
-#                      "expression" : "This"
-#                  },
-#                  "method"     : "eq",
-#                  "arguments"  : [
-#                      {
-#                          "name"  : "other",
-#                          "value" : {
-#                              "expression" : "Constant",
-#                              "type"       : "Boolean",
-#                              "value"      : "False"
-#                          }
-#                      }
-#                  ]
-#               }
-#        res = ir._parse_expression(expr, "Boolean")
-#        self.assertEqual(res, "Boolean")
+    def test_parse_expression_MethodInvocation(self):
+        ir = IR()
+        expr = {
+                  "expression" : "MethodInvocation",
+                  "target"     : {
+                      "expression" : "This"
+                  },
+                  "method"     : "eq",
+                  "arguments"  : [
+                      {
+                          "name"  : "other",
+                          "value" : {
+                              "expression" : "Constant",
+                              "type"       : "Boolean",
+                              "value"      : "False"
+                          }
+                      }
+                  ]
+               }
+        res = ir._parse_expression(expr, "Boolean")
+        self.assertEqual(res, "Boolean")
 
 
 
@@ -1069,4 +1071,4 @@ class TestIR(unittest.TestCase):
 if __name__ == "__main__":
     unittest.main()
 
-
+# vim: set tw=0 ai:

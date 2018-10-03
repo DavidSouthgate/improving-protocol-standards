@@ -48,6 +48,7 @@ MAKEFLAGS += --warn-undefined-variables --no-builtin-rules --no-builtin-variable
 PDF_FILES = notes/improving-protocol-standards.pdf \
             notes/quic-example.pdf \
             notes/ir.pdf \
+            notes/parser-generator-reqs.pdf \
             papers/improving-quic-docs.pdf
 
 # Tools to build before the PDF files. This is a list of executable files in
