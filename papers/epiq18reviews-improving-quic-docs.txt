@@ -1,0 +1,130 @@
+EPIQ'18 Paper #23 Reviews and Comments
+===========================================================================
+Paper #23 Describing and Parsing QUIC Packets
+
+
+Review #23A
+===========================================================================
+
+Overall merit
+-------------
+4. Accept
+
+Reviewer expertise
+------------------
+3. Knowledgeable
+
+Paper summary
+-------------
+The paper proposes a new method to represent protocol header format, beyond the traditional ASCII format and some others but not widely used, in order to avoid incompleteness and buggy protocol implementations. The proposed method leverages intermediate representation that is independent from individual protocol/header description languages, comes with information that describes how the protocol data units are parsed. The paper utilizes its concept on RTP and QUIC, demonstrating feasibility.
+
+Strengths
+---------
+Clear motivation and presentation
+
+Weaknesses
+----------
+The resulting complexity and usefulness of the representation format is not clear (yet).
+
+Detailed comments for author
+----------------------------
+I enjoyed reading this paper. The paper has clear motivation backed by limitation of ASCII-based header presentation or alike, and proposes a reasonable intermediate format between the human and machine. I also like the approach of being independent from header-description languages including ASCII and one used in TLS1.3.
+
+However, when I read the paper until the end, I felt that the paper is confusing because the authors claim independence from the protocol description format, but the case study in Section 4 appears to require a structured way to describe the protocol, as the authors claim limitation of ASCII format in Section 3.2.
+I think the paper is overly emphasising independence from the protocol description language, but I think what's really important is the intermediate representation that can automatically generate the parser. If it has been realized, I think everybody loves it. For me the protocol description language in Figure 3 is not complicated, or similar to P4.
+I think it is waste if the entire work stumbles just by creating the parser of existing protocol description language.
+
+One category of related work could include some stateful packet processing methods based on, for example, extended finite state machine:
+- https://arxiv.org/abs/1605.01977
+- https://www.sigcomm.org/sites/default/files/ccr/papers/2014/April/0000000-0000005.pdf
+
+Nevertheless, I am sure that this paper raises an interesting discussion in the workshop or IETF meetings, and looking forward to more work on this.
+
+
+
+Review #23B
+===========================================================================
+
+Overall merit
+-------------
+2. Weak reject
+
+Reviewer expertise
+------------------
+4. Expert
+
+Paper summary
+-------------
+The paper describes a packet representation format that can be used in standards docs and can be used to generate parsers.
+
+Strengths
+---------
+The format makes it easier to go from spec to code
+
+Weaknesses
+----------
+I don't think it belongs in this workshop
+
+Detailed comments for author
+----------------------------
+The idea is a nice one, but is quite general, and not specific to QUIC. I don't think this work is a good fit for this workshop.
+
+
+
+Review #23C
+===========================================================================
+
+Overall merit
+-------------
+2. Weak reject
+
+Reviewer expertise
+------------------
+3. Knowledgeable
+
+Paper summary
+-------------
+The paper describes a language to represent packet formats and which could lead to better parsers.
+
+Strengths
+---------
+- proposes to formalise a bit the representation of network packets
+
+Weaknesses
+----------
+- although the paper argues about a workflow with protocol description languages, network packet representation and parser generator, there is no discussion of any implementation
+
+Detailed comments for author
+----------------------------
+The discussion in the paper is interesting, but there is no mention of any implementation. An implementation could provide parsers that are faster, more secure or more complete than existing ones, but there is no discussion of that. Although there are a dozen of QUIC implementations that include parsers, there is no discussion on how these parsers have been written and their possible limitations that would justify the work.
+
+This idea could become a interesting proposal once implemented and compared with existing packet description languages. Without an implementation and knowing that multiple QUIC parsers already exist, including on in wireshark, that shares some of the concerns of the paper (e.g. keeping context for keys), the added value of the paper appears limited.
+
+
+
+Review #23D
+===========================================================================
+
+Overall merit
+-------------
+2. Weak reject
+
+Reviewer expertise
+------------------
+1. No familiarity
+
+Paper summary
+-------------
+The paper proposes a method to represent protocol header format with the goal of allowing QUIC parsers to be automatically generated from the specification.
+
+Strengths
+---------
+The paper stated its motivation well and informative on the topic.
+
+Weaknesses
+----------
+It is not clear how the method will be implemented.
+
+Detailed comments for author
+----------------------------
+A discussion on the complexity of the parser would be helpful to put the work in context as well as the limitations and challenges of the parser implementation.

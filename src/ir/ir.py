@@ -66,22 +66,22 @@ class IR:
         if name in self.traits:
             raise IRError("Type redefines trait " + name)
         self.types[name] = {
-                "kind" : kind,
-                "name" : name,
-                "attributes" : attributes,
-                "components" : components,
+                "kind"       : kind,
+                "name"       : name,
                 "implements" : [],
-                "methods"    : {}
+                "methods"    : {},
+                "attributes" : attributes,
+                "components" : components
             }
 
 
 
-    def _define_trait(self, t_name, methods):
+    def _define_trait(self, trait, methods):
         """
         Define a new trait.
 
         Arguments:
-          t_name  -- The name of the trait being defined
+          trait   -- The name of the trait being defined
           methods -- A list of methods implemented by the trait
 
         Returns:
@@ -98,92 +98,89 @@ class IR:
         method takes two parameters: "self" with unspecified type, and "value"
         with type Boolean, and returns Nothing.
         """
-
-        # Check validity of trait:
-        if re.search(TYPE_NAME_REGEX, t_name) == None:
-            raise IRError("Cannot define trait {}: invalid name".format(t_name))
-        if t_name in self.traits:
-            raise IRError("Cannot define trait {}: already defined".format(t_name))
-        if t_name in self.types:
-            raise IRError("Cannot define trait {}: already defined as type".format(t_name))
+        # Check that the trait name is valid and not already defined:
+        if re.search(TYPE_NAME_REGEX, trait) == None:
+            raise IRError("Cannot define trait " + trait + ": invalid name")
+        if trait in self.traits:
+            raise IRError("Cannot define trait " + trait + ": already defined")
+        if trait in self.types:
+            raise IRError("Cannot define trait " + trait + ": already defined as type")
 
         # Create the trait:
-        self.traits[t_name] = {
-            "name"    : t_name,
+        self.traits[trait] = {
+            "name"    : trait,
             "methods" : {}
         }
 
-        for (m_name, m_params, m_returns) in methods:
+        for (method, params, return_type) in methods:
             # Check validity of the method name:
-            if re.search(FUNC_NAME_REGEX, m_name) == None:
-                raise IRError("Method {} of trait {} has invalid name".format(m_name, t_name))
+            if re.search(FUNC_NAME_REGEX, method) == None:
+                raise IRError("Cannot define method " + method + " in trait " + trait + ": invalid name")
 
             # Check validity of the method parameters:
-            if m_params[0] != ("self", None):
-                raise IRError("Method {} of trait {} is missing self parameter".format(m_name, t_name))
-            for (p_name, p_type) in m_params:
-                if re.search(FUNC_NAME_REGEX, p_name) == None:
-                    raise IRError("Method {} of trait {} has invalid parameter name {}".format(m_name, t_name, p_name))
-                if p_type != None and not p_type in self.types:
-                    raise IRError("Method {} of trait {} references undefined type {}".format(m_name, t_name, p_type))
+            if params[0] != ("self", None):
+                raise IRError("Cannot define method " + method + " in trait " + trait + ": missing self parameter")
+            for (pname, ptype) in params:
+                if re.search(FUNC_NAME_REGEX, pname) == None:
+                    raise IRError("Cannot define method " + method + " in trait " + trait + ": invalid parameter name " + pname)
+                if ptype != None and not ptype in self.types:
+                    raise IRError("Cannot define method " + method + " in trait " + trait + ": invalid parameter type " + ptype)
 
             # Check validity of the method return type:
-            if m_returns != None and not m_returns in self.types:
-                raise IRError("Method {} of trait {} return unknown type {}".format(m_name, t_name, m_returns))
+            if return_type != None and not return_type in self.types:
+                raise IRError("Cannot define method " + method + " in trait " + trait + ": invalid return type " + return_type)
 
             # Record the method:
-            self.traits[t_name]["methods"][m_name] = {}
-            self.traits[t_name]["methods"][m_name]["name"]        = m_name
-            self.traits[t_name]["methods"][m_name]["params"]      = m_params
-            self.traits[t_name]["methods"][m_name]["return_type"] = m_returns
+            self.traits[trait]["methods"][method] = {}
+            self.traits[trait]["methods"][method]["name"]        = method
+            self.traits[trait]["methods"][method]["params"]      = params
+            self.traits[trait]["methods"][method]["return_type"] = return_type
 
 
 
-    def _implements(self, type_name, implements):
+    def _implements(self, type_, traits):
         """
         Record the traits implemented by a type, and add the definitions
         of the methods provided by that trait to the type.
 
         Arguments:
-          type_name  -- The type being extended
-          implements -- The traits to be implemented
+          type_  -- The type being extended
+          traits -- A list of traits to be implemented
 
         Returns:
           Nothing
         """
 
-        if not type_name in self.types:
-            raise IRError("Undefined type " + type_name)
+        if not type_ in self.types:
+            raise IRError("Undefined type " + type_)
 
-        type_ = self.types[type_name]
-
-        for trait in implements:
+        for trait in traits:
             if not trait in self.traits:
-                raise IRError("Type {} cannot implement undefined trait {}".format(type_name, trait))
-            if trait in type_["implements"]:
-                raise IRError("Type {} already implements trait {}".format(type_name, trait))
+                raise IRError("Cannot implement trait " + trait + " for type " + type_ + ": undefined trait")
+            if trait in self.types[type_]["implements"]:
+                raise IRError("Cannot implement trait " + trait + " for type " + type_ + ": already implemented")
 
-            type_["implements"].append(trait)
-            type_["implements"].sort()
+            self.types[type_]["implements"].append(trait)
+            self.types[type_]["implements"].sort()
 
-            for method_name in self.traits[trait]["methods"]:
-                if method_name in type_["methods"]:
-                    raise IRError("Type {} already implements method {}".format(type_name, method_name))
+            for method in self.traits[trait]["methods"]:
+                if method in self.types[type_]["methods"]:
+                    raise IRError("Cannot add method " + method + " to type " + type_ + ": already added")
 
-                type_["methods"][method_name] = {}
-                type_["methods"][method_name]["name"]   = method_name
-                type_["methods"][method_name]["params"] = []
+                self.types[type_]["methods"][method] = {}
+                self.types[type_]["methods"][method]["name"]   = method
+                self.types[type_]["methods"][method]["params"] = []
 
-                for (p_name, p_type) in self.traits[trait]["methods"][method_name]["params"]:
+                for (p_name, p_type) in self.traits[trait]["methods"][method]["params"]:
                     if p_type == None:
-                        p_type = type_name
-                    type_["methods"][method_name]["params"].append((p_name, p_type))
+                        p_type = type_
+                    self.types[type_]["methods"][method]["params"].append((p_name, p_type))
 
-                rt = self.traits[trait]["methods"][method_name]["return_type"]
+                rt = self.traits[trait]["methods"][method]["return_type"]
                 if rt == None:
-                    type_["methods"][method_name]["return_type"] = type_name
+                    self.types[type_]["methods"][method]["return_type"] = type_
                 else:
-                    type_["methods"][method_name]["return_type"] = rt
+                    self.types[type_]["methods"][method]["return_type"] = rt
 
 
 
@@ -234,94 +231,112 @@ class IR:
 
 
 
-    def _construct_bitstring(self, defn):
+    def _construct_bitstring(self, json):
         """
         The type constructor for a Bit String type.
         """
         attributes = {}
         components = {}
-        attributes["size"] = defn["size"]
-        self._define_type("BitString", defn["name"], attributes, components)
-        self._implements(defn["name"], ["Value", "Equality"])
+        attributes["size"] = json["size"]
+        self._define_type("BitString", json["name"], attributes, components)
+        self._implements(json["name"], ["Value", "Equality"])
 
 
 
-    def _construct_array(self, defn):
+    def _construct_array(self, json):
         """
         The type constructor for an array type.
         """
-        if not defn["element_type"] in self.types:
+        if not json["element_type"] in self.types:
             raise IRError("Unknown element type")
 
         components = {}
 
         attributes = {}
-        attributes["element_type"] = defn["element_type"]
-        attributes["length"] = defn["length"]
+        attributes["element_type"] = json["element_type"]
+        attributes["length"] = json["length"]
         if attributes["length"] != None:
             attributes["size"] = self.types[attributes["element_type"]]["attributes"]["size"] * attributes["length"]
         else:
             attributes["size"] = None
 
-        self._define_type("Array", defn["name"], attributes, components)
-        self._implements(defn["name"], ["Equality", "IndexCollection"])
+        self._define_type("Array", json["name"], attributes, components)
+        self._implements(json["name"], ["Equality", "IndexCollection"])
 
 
 
-    def _parse_expression(self, expression, this_type):
+    def _check_expression(self, expr, this):
         """
         Check that an expression is valid.
 
         Arguments:
-          expression -- The expression to check
-          this_type  -- This type in which the expression is evaluated
+          expr -- The expression to check
+          this  -- This type in which the expression is evaluated
 
         Returns:
           The type of the expression
         """
-        if   expression["expression"] == "MethodInvocation":
-            target_type_name   = self._parse_expression(expression["target"], this_type)
-            target_method_name = expression["method"]
-            if not target_method_name in self.types[target_type_name]["methods"]:
-                raise IRError("Unknown method {} call on type {}".format(target_method_name, target_type_name))
-            target_method = self.types[target_type_name]["methods"][target_method_name]
-            # Check that the arguments supplied to the method match its parameters:
-            for ((pn, pt), arg) in zip(target_method["params"][1:], expression["arguments"]):
+        if   expr["expression"] == "MethodInvocation":
+            target = self._check_expression(expr["target"], this)
+            method = expr["method"]
+            if not method in self.types[target]["methods"]:
+                raise IRError("Cannot invoke method " + method + " on " + target + ": method not implemented")
+
+            for ((pn, pt), arg) in zip(self.types[target]["methods"][method]["params"][1:], expr["arguments"]):
                 an = arg["name"]
-                at = self._parse_expression(arg["value"], this_type)
+                at = self._check_expression(arg["value"], this)
                 if pn != an:
-                    raise IRError("Method argument name mismatch: {} != {}".format(pn, an))
+                    raise IRError("Cannot invoke method " + method + " on " + target + ": name mismatch")
                 if pt != at:
-                    raise IRError("Method argument type mismatch: {} != {}".format(pt, at))
-            return target_method["return_type"]
-        elif expression["expression"] == "FunctionInvocation":
-            raise IRError("unimplemented: FunctionInvocation")
-        elif expression["expression"] == "FieldAccess":
-            target_type_name = self._parse_expression(expression["target"], this_type)
-            target_type      = self.types[target_type_name]
-            if target_type["kind"] != "Struct":
-                raise IRError("FieldAccess expression called on non-struct")
-            for (field_name, field_type, field_xform) in target_type["components"]["fields"]:
-                if expression["field"] == field_name:
+                    raise IRError("Cannot invoke method " + method + " on " + target + ": type mismatch")
+            return self.types[target]["methods"][method]["return_type"]
+
+        elif expr["expression"] == "FunctionInvocation":
+            if not expr["name"] in self.types:
+                raise IRError("Cannot invoke function: " + expr["name"] + " does not exist")
+            for ((an, at), p) in zip(self.types[expr["name"]]["attributes"]["parameters"], expr["arguments"]):
+                pn = p["name"]
+                pt = self._check_expression(p["value"], this)
+                if pn != an:
+                    raise IRError("Cannot invoke function " + method + ": name mismatch")
+                if pt != at:
+                    raise IRError("Cannot invoke function " + method + ": type mismatch")
+            return self.types[expr["name"]]["attributes"]["return_type"]
+
+        elif expr["expression"] == "FieldAccess":
+            target = self._check_expression(expr["target"], this)
+            if self.types[target]["kind"] != "Struct":
+                raise IRError("Cannot access field: " + target + " is not a struct")
+            for (field_name, field_type, field_xform) in self.types[target]["components"]["fields"]:
+                if expr["field"] == field_name:
                     return field_type
-            raise IRError("Unknown field {} in FieldAccess on type {}".format(expression["field"], target_type_name))
-        elif expression["expression"] == "IfElse":
-            raise IRError("unimplemented: IfElse")
-        elif expression["expression"] == "This":
-            return this_type
-        elif expression["expression"] == "Context":
-            raise IRError("unimplemented: Context")
-        elif expression["expression"] == "Constant":
-            if not expression["type"] in self.types:
-                raise IRError("Unknown type {} in Constant expression".format(expression["type"]))
+            raise IRError("Cannot access field: " + target + " has no field named " + expr["field"])
+
+        elif expr["expression"] == "IfElse":
+            raise NotImplementedError("unimplemented: IfElse")
+
+        elif expr["expression"] == "This":
+            return this
+
+        elif expr["expression"] == "Context":
+            raise NotImplementedError("unimplemented: Context")
+
+        elif expr["expression"] == "ContextAccess":
+            # FIXME: write spec for this - does it replace Context?
+            raise NotImplementedError("unimplemented: Context")
+
+        elif expr["expression"] == "Constant":
+            if not expr["type"] in self.types:
+                raise IRError("Unknown type {} in Constant expression".format(expr["type"]))
             # FIXME: this should check that expression["value"] is compatible with expression["type"]
-            return expression["type"]
+            return expr["type"]
+
         else:
-            raise IRError("Unknown expression: {}".format(expression["expression"]))
+            raise IRError("Cannot check expression " + expr["expression"] + ": unknown expression")
 
 
 
-    def _construct_struct(self, defn):
+    def _construct_struct(self, json):
         """
         The type constructor for a structure type.
         """
@@ -331,7 +346,7 @@ class IR:
         components = {}
         components["fields"] = []
         field_names = {}
-        for field in defn["fields"]:
+        for field in json["fields"]:
             # Check that the field name is valid and its type exists, then record the field:
             if re.search(FUNC_NAME_REGEX, field["name"]) == None:
                 raise IRError("Invalid field name: " + field["name"])
@@ -343,16 +358,16 @@ class IR:
             components["fields"].append((field["name"], field["type"], field["is_present"]))
             attributes["size"] += self.types[field["type"]]["attributes"]["size"]
 
-        self._define_type("Struct", defn["name"], attributes, components)
+        self._define_type("Struct", json["name"], attributes, components)
 
         components["constraints"] = []
-        for constraint in defn["constraints"]:
-            self._parse_expression(constraint, defn["name"])
+        for constraint in json["constraints"]:
+            self._check_expression(constraint, json["name"])
             components["constraints"].append(constraint)
 
 
 
-    def _construct_enum(self, defn):
+    def _construct_enum(self, json):
         """
         The type constructor for an enumerated type.
         """
@@ -363,21 +378,21 @@ class IR:
 
         components = {}
         components["variants"] = []
-        for v in defn["variants"]:
+        for v in json["variants"]:
             if not v["type"] in self.types:
                 raise IRError("Unknown variant: " + v["type"])
             components["variants"].append(v["type"])
             components["variants"].sort()
 
-        self._define_type("Enum", defn["name"], attributes, components)
+        self._define_type("Enum", json["name"], attributes, components)
 
 
 
-    def _construct_newtype(self, defn):
+    def _construct_newtype(self, json):
         """
         The type constructor for a derived type.
         """
-        base_type = defn["derived_from"]
+        base_type = json["derived_from"]
         if not base_type in self.types:
             raise IRError("Derived from unknown type: " + base_type)
 
@@ -386,12 +401,12 @@ class IR:
         base_comp = self.types[base_type]["components"]
         base_impl = self.types[base_type]["implements"]
 
-        self._define_type(base_kind, defn["name"], base_attr, base_comp)
-        self._implements(defn["name"], base_impl + defn["implements"])
+        self._define_type(base_kind, json["name"], base_attr, base_comp)
+        self._implements(json["name"], base_impl + json["implements"])
 
 
 
-    def _construct_function(self, defn):
+    def _construct_function(self, json):
         """
         The type constructor for a function type.
         """
@@ -400,7 +415,7 @@ class IR:
         attributes = {}
         attributes["parameters"] = []
         param_names = {}
-        for param in defn["parameters"]:
+        for param in json["parameters"]:
             # Check that the parameter name is valid and its type exists, then record the field:
             if re.search(FUNC_NAME_REGEX, param["name"]) == None:
                 raise IRError("Invalid parameter name: " + param["name"])
@@ -411,22 +426,22 @@ class IR:
                 raise IRError("Unknown parameter type: " + param["type"])
             attributes["parameters"].append((param["name"], param["type"]))
 
-        if re.search(TYPE_NAME_REGEX, defn["return_type"]) == None:
-            raise IRError("Unknown return type: " + defn["return_type"])
-        attributes["return_type"] = defn["return_type"]
+        if re.search(TYPE_NAME_REGEX, json["return_type"]) == None:
+            raise IRError("Unknown return type: " + json["return_type"])
+        attributes["return_type"] = json["return_type"]
 
-        self._define_type("Function", defn["name"], attributes, components)
+        self._define_type("Function", json["name"], attributes, components)
         
 
 
 
-    def _construct_context(self, defn):
+    def _construct_context(self, json):
         """
         The constructor for the protocol context.
         """
         field_names = {}
 
-        for field in defn["fields"]:
+        for field in json["fields"]:
             # Check that the field name is valid and its type exists, then record the field:
             if re.search(FUNC_NAME_REGEX, field["name"]) == None:
                 raise IRError("Invalid field name in context: " + field["name"])
@@ -461,27 +476,27 @@ class IR:
             raise IRError("Invalid protocol name: {}".format(name))
         self.protocol_name = protocol["name"]
 
-        for defn in protocol["definitions"]:
-            if   defn["construct"] == "BitString":
-                self._construct_bitstring(defn)
-            elif defn["construct"] == "Array":
-                self._construct_array(defn)
-            elif defn["construct"] == "Struct":
-                self._construct_struct(defn)
-            elif defn["construct"] == "Enum":
-                self._construct_enum(defn)
-            elif defn["construct"] == "NewType":
-                self._construct_newtype(defn)
-            elif defn["construct"] == "Function":
-                self._construct_function(defn)
-            elif defn["construct"] == "Context":
-                self._construct_context(defn)
+        for obj in protocol["definitions"]:
+            if   obj["construct"] == "BitString":
+                self._construct_bitstring(obj)
+            elif obj["construct"] == "Array":
+                self._construct_array(obj)
+            elif obj["construct"] == "Struct":
+                self._construct_struct(obj)
+            elif obj["construct"] == "Enum":
+                self._construct_enum(obj)
+            elif obj["construct"] == "NewType":
+                self._construct_newtype(obj)
+            elif obj["construct"] == "Function":
+                self._construct_function(obj)
+            elif obj["construct"] == "Context":
+                self._construct_context(obj)
             else:
-                raise IRError("Unknown type constructor in definition: {}".format(defn["construct"]))
+                raise IRError("Cannot load protocol: unknown type constructor " + obj["construct"])
 
         for pdu in protocol["pdus"]:
             if not pdu["type"] in self.types:
-                raise IRError("Unknown PDU type: {}".format(pdu["type"]))
+                raise IRError("Cannot load protocol: unknown PDU type " + pdu["type"])
             self.pdus.append(pdu["type"])
             self.pdus.sort()
 
@@ -822,7 +837,29 @@ class TestIR(unittest.TestCase):
         })
         self.assertEqual(ir.types["TestStruct"]["components"], {
             "fields"      : [("seq", "SeqNum", ""), ("ts",  "Timestamp", "")],
-            "constraints" : []
+            "constraints" : [
+                {
+                    "expression" : "MethodInvocation",
+                    "target"     : {
+                        "expression" : "FieldAccess",
+                        "target"     : {
+                            "expression" : "This"
+                        },
+                        "field"     : "seq"
+                    },
+                    "method"     : "eq",
+                    "arguments"  : [
+                        {
+                            "name"  : "other",
+                            "value" : {
+                                "expression" : "Constant",
+                                "type"       : "SeqNum",
+                                "value"      : 47
+                            }
+                        }
+                    ]
+                }
+            ]
         })
         self.assertEqual(ir.pdus, ["TestStruct"])
 
@@ -1021,29 +1058,29 @@ class TestIR(unittest.TestCase):
 
 
 
-    def test_parse_expression_This(self):
+    def test_check_expression_This(self):
         ir = IR()
         expr = {
                   "expression" : "This"
                }
-        res = ir._parse_expression(expr, "Boolean")
+        res = ir._check_expression(expr, "Boolean")
         self.assertEqual(res, "Boolean")
 
 
 
-    def test_parse_expression_Constant(self):
+    def test_check_expression_Constant(self):
         ir = IR()
         expr = {
                   "expression" : "Constant",
                   "type"       : "Size",
                   "value"      : 2
                }
-        res = ir._parse_expression(expr, "Boolean")
+        res = ir._check_expression(expr, "Boolean")
         self.assertEqual(res, "Size")
 
 
 
-    def test_parse_expression_MethodInvocation(self):
+    def test_check_expression_MethodInvocation(self):
         ir = IR()
         expr = {
                   "expression" : "MethodInvocation",
@@ -1062,9 +1099,65 @@ class TestIR(unittest.TestCase):
                       }
                   ]
                }
-        res = ir._parse_expression(expr, "Boolean")
+        res = ir._check_expression(expr, "Boolean")
         self.assertEqual(res, "Boolean")
 
+
+
+    def test_check_expression_FunctionInvocation(self):
+        ir = IR()
+        protocol = """
+            {
+                "construct"   : "Protocol",
+                "name"        : "LoadFunction",
+                "definitions" : [
+                {
+                    "construct" : "BitString",
+                    "name"      : "Bits16",
+                    "size"      : 16
+                },
+                {
+                    "construct"   : "Function",
+                    "name"        : "TestFunction",
+                    "parameters"  : [
+                    {
+                        "name" : "foo",
+                        "type" : "Bits16"
+                    },
+                    {
+                        "name" : "bar",
+                        "type" : "Boolean"
+                    }],
+                    "return_type" : "Boolean"
+                }],
+                "pdus"        : []
+            }
+        """
+        ir.load(protocol)
+        expr = {
+                  "expression" : "FunctionInvocation",
+                  "name"       : "TestFunction",
+                  "arguments"  : [
+                      {
+                          "name"  : "foo",
+                          "value" : {
+                              "expression" : "Constant",
+                              "type"       : "Bits16",
+                              "value"      : 12
+                          }
+                      },
+                      {
+                          "name"  : "bar",
+                          "value" : {
+                              "expression" : "Constant",
+                              "type"       : "Boolean",
+                              "value"      : "False"
+                          }
+                      }
+                  ]
+               }
+        res = ir._check_expression(expr, "Boolean")
+        self.assertEqual(res, "Boolean")
 
 
 # =============================================================================
