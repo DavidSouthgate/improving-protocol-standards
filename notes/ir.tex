@@ -885,9 +885,10 @@ fields can have the same type.
 \label{sec:expressions}
 
 Expressions are split into two classes: 
-tree (\code{MethodInvocation}, \code{FunctionInvocation}, \code{FieldAccess}, and \code{IfElse})
+tree (\code{MethodInvocation}, \code{FunctionInvocation}, \code{FieldAccess}, 
+      \code{ContextAccess}, and \code{IfElse})
 and 
-leaf (\code{This}, \code{Context}, and \code{Constant}).
+leaf (\code{This}, and \code{Constant}).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Tree Expressions}
@@ -952,10 +953,21 @@ intermediate representation as:
 \normalsize
 When the target is a structure type, returns a reference to the specified
 field of the structure.
-When invoked on the parsing context object, returns a reference to the
-specified field in the parsing context.
 It is an error to invoke \code{FieldAccess} on a target that is not a
-structure type or the parsing context.
+structure type.
+
+A \code{ContextAccess} tree expression is represented in the JSON form
+of the intermediate representation as:
+\footnotesize
+\begin{alltt}
+  \{
+    "expression"  : "ContextAccess",
+    "field"       : \emph{field name}
+  \}
+\end{alltt}
+\normalsize
+A \code{ContextAccess} expression returns a reference to the specified
+field in the parsing context.
 
 A \code{IfElse} tree expression is represented in the JSON form of the
 intermediate representation as:
