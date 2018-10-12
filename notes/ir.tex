@@ -573,6 +573,7 @@ constructor for a structure type is represented as in the following:
       \{
         "name"       : "\emph{field name}",
         "type"       : "\emph{field type}",
+        "is\_present" : \emph{expression},
         "transform"  : \emph{transform expression}
       \},
       ...
@@ -605,6 +606,12 @@ Each field has a type. The field type MUST have been previously defined.
 Fields can be of \code{BitString}, array, structure type, or enumerated type,
 or a type derived from such a type. The names of each field MUST be unique
 within a structure definition, but several fields can have the same type.
+
+Each field has an \code{is\_present} expression that indicates
+whether that field is present in a particular instantiation of the
+structure type. This is used to model data formats that contain optional
+fields. Expressions are described in Section \ref{sec:expressions}. The
+\code{is\_present} expression MUST evaluate to a \code{Boolean} value.
 
 Each field has a \code{transform} member.
 The \code{transform} member MAY be \code{null}, indicating that no
