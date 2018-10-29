@@ -49,6 +49,7 @@ PDF_FILES = notes/improving-protocol-standards.pdf \
             notes/quic-example.pdf \
             notes/ir.pdf \
             notes/parser-generator-reqs.pdf \
+            notes/discussion-questions.pdf \
             papers/improving-quic-docs.pdf
 
 # Tools to build before the PDF files. This is a list of executable files in

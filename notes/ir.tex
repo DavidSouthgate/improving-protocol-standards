@@ -457,6 +457,14 @@ form of the intermediate representation:
           \{"name" : "other", "type"   : null\}
         ],
         "return\_type" : null
+      \},
+      \{
+        "name"        : "modulo",
+        "parameters"  : [
+          \{"name" : "self",  "type"   : null\},
+          \{"name" : "other", "type"   : null\}
+        ],
+        "return\_type" : null
       \}
     ]
   \}
@@ -573,6 +581,7 @@ constructor for a structure type is represented as in the following:
       \{
         "name"       : "\emph{field name}",
         "type"       : "\emph{field type}",
+        "is\_present" : \emph{expression},
         "transform"  : \emph{transform expression}
       \},
       ...
@@ -606,6 +615,12 @@ Fields can be of \code{BitString}, array, structure type, or enumerated type,
 or a type derived from such a type. The names of each field MUST be unique
 within a structure definition, but several fields can have the same type.
 
+Each field has an \code{is\_present} expression that indicates
+whether that field is present in a particular instantiation of the
+structure type. This is used to model data formats that contain optional
+fields. Expressions are described in Section \ref{sec:expressions}. The
+\code{is\_present} expression MUST evaluate to a \code{Boolean} value.
+
 Each field has a \code{transform} member.
 The \code{transform} member MAY be \code{null}, indicating that no
 transform is performed.
@@ -615,15 +630,17 @@ Alternatively, it is represented as a JSON object as follows:
   \{
     "into\_name" : "\emph{transformed name}",
     "into\_type" : "\emph{transformed type}",
-    "using"      : \emph{FunctionInvocation}
+    "using"      : \emph{function name}
   \}
 \end{alltt}
 \normalsize
 If the transform member is specified, it indicates that the original
 field is parsed, then the \code{using} function is invoked, then the field
 is replaced by a new field called \code{into\_name} with type \code{into\_type}.
-The return type of the \code{using} function MUST match \code{into\_type},
-and \code{into\_type} MUST have the same size as the original \code{type}
+The \code{using} function MUST take a single argument of the same type as
+the original field, and the return type of the \code{using} function MUST
+match \code{into\_type}.
+The \code{into\_type} MUST have the same size as the original \code{type}
 of the field.
 
 A structure type implements the \code{Sized} trait. The size of a structure is the
@@ -878,9 +895,10 @@ fields can have the same type.
 \label{sec:expressions}
 
 Expressions are split into two classes: 
-tree (\code{MethodInvocation}, \code{FunctionInvocation}, \code{FieldAccess}, and \code{IfElse})
+tree (\code{MethodInvocation}, \code{FunctionInvocation}, \code{FieldAccess}, 
+      \code{ContextAccess}, and \code{IfElse})
 and 
-leaf (\code{This}, \code{Context}, and \code{Constant}).
+leaf (\code{This}, and \code{Constant}).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Tree Expressions}
@@ -945,10 +963,21 @@ intermediate representation as:
 \normalsize
 When the target is a structure type, returns a reference to the specified
 field of the structure.
-When invoked on the parsing context object, returns a reference to the
-specified field in the parsing context.
 It is an error to invoke \code{FieldAccess} on a target that is not a
-structure type or the parsing context.
+structure type.
+
+A \code{ContextAccess} tree expression is represented in the JSON form
+of the intermediate representation as:
+\footnotesize
+\begin{alltt}
+  \{
+    "expression"  : "ContextAccess",
+    "field"       : \emph{field name}
+  \}
+\end{alltt}
+\normalsize
+A \code{ContextAccess} expression returns a reference to the specified
+field in the parsing context.
 
 A \code{IfElse} tree expression is represented in the JSON form of the
 intermediate representation as:
@@ -980,17 +1009,6 @@ intermediate representation as:
 \normalsize
 It evaluates to a reference to the current object (i.e., the object to
 which the expression is attached).
-
-A \code{Context} leaf expression is represented in the JSON form of the
-intermediate representation as:
-\footnotesize
-\begin{alltt}
-  \{
-    "expression"   : "Context"
-  \}
-\end{alltt}
-\normalsize
-It expression evaluates to a reference to the parsing context object.
 
 A \code{Constant} leaf expression is represented in the JSON form of the
 intermediate representation as:

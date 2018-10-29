@@ -90,7 +90,7 @@ def new_field(name, type_name, transform, type_namespace):
 	check_typename(type_name, type_namespace, True)
 	
 	# process transform
-	if transform is not None:
+	if transform is not None and transform is tuple:
 		to_typename = transform[1][0]
 		to_length = transform[1][1]
 
@@ -104,7 +104,12 @@ def new_field(name, type_name, transform, type_namespace):
 		check_typename(to_typename, type_namespace, True)
 		transform = {"into_name": transform[0], "into_type": to_typename, "using": None}
 	
-	field = {"name": name, "type": type_name, "transform": transform}
+	is_present = True
+	if transform is not None:
+		is_present = transform
+		transform = None
+		
+	field = {"name": name, "type": type_name, "is_present": is_present, "transform": transform}
 	return field
 	
 def new_struct(name, fields, where_block, type_namespace, context, actions):
@@ -221,7 +226,7 @@ def build_accessor_chain(type, refs):
 			    "field_name": refs[-1]}
 
 def build_tree(start, pairs, expression_type):
-	ops = {"+": ("plus", "arith") , "-": ("minus", "arith"), "*": ("multiply", "arith"), "/": ("divide", "arith"),
+	ops = {"+": ("plus", "arith") , "-": ("minus", "arith"), "*": ("multiply", "arith"), "/": ("divide", "arith"), "%": ("modulo", "arith"),
 	       ">=": ("ge", "ord"), ">": ("gt","ord"), "<": ("lt", "ord"), "<=": ("le","ord"),
 	       "&&": ("and", "bool"), "||": ("or", "bool"), "!": ("not", "bool"),
 	       "==": ("eq", "equality"), "!=": ("ne", "equality")}
@@ -248,11 +253,9 @@ def parse_file(filename):
 				field_name = <lowercase_letter>:x <(letter|'_')+>:xs -> x + "".join(xs)
 				
 				type_def = (('Bits':t -> t)|('Bit':t number?:n -> (t, n))|type_name:t -> t):type (('[' number?:length ']') -> length if length is not None else -1)?:length -> (type, length)
-				
-				field_def = field_name:name ':' type_def:type ('->' field_name:to_name ':' type_def:to_type -> (to_name, to_type))?:transform -> new_field(name, type, transform, type_namespace)
-				
-				field_accessor = field_name:x (('.' ('value' | 'length' | 'is_present' | 'width'):attribute -> attribute)|('[' (number|'"' field_name:n '"' -> n):key ']' -> key))*:xs -> build_accessor_chain({"expression": "This"}, [x]+xs)
-					           | 'Context.' field_name:x (('.' ('value' | 'length' | 'is_present'):attribute -> attribute)|('[' (number|'"' field_name:n '"' -> n):key ']' -> key))*:xs -> build_accessor_chain({"expression": "Context"}, [x]+xs)
+								
+				field_accessor = field_name:x (('.' ('value' | 'length' | 'width'):attribute -> attribute)|('[' (number|'"' field_name:n '"' -> n):key ']' -> key))*:xs -> build_accessor_chain({"expression": "This"}, [x]+xs)
+					           | 'Context.' field_name:x (('.' ('value' | 'length'):attribute -> attribute)|('[' (number|'"' field_name:n '"' -> n):key ']' -> key))*:xs -> build_accessor_chain({"expression": "Context"}, [x]+xs)
 				# expression grammar
 				primary_expr = number:n -> build_integer_expression(n, type_namespace)
 							 | ('True'|'False'):bool -> {"expression": "Constant", "type": "Boolean", "value": bool}
@@ -260,7 +263,7 @@ def parse_file(filename):
 							 | field_accessor
 							 | '(' cond_expr:expr ')' -> expr
 				
-				multiplicative_expr = primary_expr:left (('*'|'/'):operator primary_expr:operand -> (operator, operand))*:rights -> build_tree(left, rights, "")
+				multiplicative_expr = primary_expr:left (('*'|'/'|'%'):operator primary_expr:operand -> (operator, operand))*:rights -> build_tree(left, rights, "")
 				additive_expr = multiplicative_expr:left (('+'|'-'):operator multiplicative_expr:operand -> (operator, operand))*:rights -> build_tree(left, rights, "")
 			
 				ordinal_expr = additive_expr:left (('<='|'<'|'>='|'>'):operator additive_expr:operand -> (operator, operand))*:rights -> build_tree(left, rights, "")
@@ -268,6 +271,8 @@ def parse_file(filename):
 				equality_expr = boolean_expr:left (('=='|'!='):operator boolean_expr:operand -> (operator, operand))*:rights -> build_tree(left, rights, "")
 				cond_expr = equality_expr:left ('?' cond_expr:operand1 ':' equality_expr:operand2 -> ('?:', operand1, operand2))*:rights -> build_tree(left, rights, "IfElse")
 				assign_expr = field_accessor:left '=' cond_expr:expr -> {"expression": "MethodInvocation", "method": "set", "self": left, "arguments": {"value": expr}}
+
+				field_def = field_name:name ':' type_def:type (('?' cond_expr:exp -> exp)|('->' field_name:to_name ':' type_def:to_type -> (to_name, to_type)))?:transform -> new_field(name, type, transform, type_namespace)
 
 				onparse_block = '}onparse{' (assign_expr:expression ';' -> expression)+:constraints -> constraints
 				where_block = '}where{' (cond_expr:expression ';' -> expression)+:constraints -> constraints
