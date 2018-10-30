@@ -4,7 +4,7 @@
 \usepackage{array}
 \usepackage{color}
 
-\title{Formalisms in Standards Documents: Discussion Questions}
+\title{Structured Representations in Standards Documents: Discussion Questions}
 \date{\today}
 
 \newcommand{\todo}[1]{\textbf{\textcolor{red}{To do -- #1}}}
@@ -13,7 +13,7 @@
 \begin{document}
 \maketitle
 
-\section{Existing Formalisms in IETF Documents}
+\section{Existing Structured Representations in IETF Documents}
 
 \subsection{Examples}
 
@@ -23,20 +23,42 @@
 \subsubsection*{C code}
 \subsubsection*{JSON}
 \subsubsection*{CBOR}
+\subsubsection*{TLS 1.3 Presentation Language}
+
+\todo{Add example snippets}
 
 \subsection{Questions}
 
-\question{Have you encountered any of the above formalisms in IETF documents?}
+\question{Have you encountered any of the above structured description formats in IETF documents?}
 
 \question{If so, did they improve the utility of the document? In what way?}
 
-\question{Have you authored documents that include any of the above formalisms?}
+\question{Have you authored documents that include any of the above?}
 
 \question{If not, why not?}
 
-\question{Do you think that the current level of formalism use in standards documents is sufficient?}
+\question{Do you think that the current level of adoption of these formats in standards documents is sufficient?}
 
 \question{If not, what do you see as the barriers to adoption?}
+
+\section{Parsable Protocol Standards}
+
+In most standards documents, the syntax of the protocol is specified using an ASCII art
+packet header diagram, showing the alignment and order of the fields, followed by a prose
+description of each field.
+
+One of the key limitations of the existing approach is that it limits the use of tooling,
+where the parsing of English prose is non-trivial. Tooling would be viable with the use of
+a more formal, structured approach to syntax specification. The benefits of tooling vary
+with the amount of information that can be captured, but at its simplest, would allow for
+a parser to be generated for the specified protocol. 
+
+\question{What are the benefits of the existing approach?}
+
+\question{What are the limitations (beyond parsability)?}
+
+\todo{Get at the balance between formal specification and usability/adoption: need something
+people can/will use, but that allows for at least some tooling to be developed}
 
 \bibliographystyle{abbrv}
 \bibliography{discussion-questions}
