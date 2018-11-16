@@ -1,0 +1,64 @@
+\documentclass[10pt]{article}
+\usepackage[a4paper, total={6.5in, 11in}, includefoot, heightrounded]{geometry}
+\usepackage{adjustbox}
+\usepackage{array}
+\usepackage{color}
+
+\title{Structured Representations in IETF Documents:\\Notes from IETF 103}
+\date{\today}
+
+\newcommand{\todo}[1]{\textbf{\textcolor{red}{To do -- #1}}}
+\newcommand{\question}[1]{\vspace{4mm}\noindent\textbf{Q:} \textit{#1}}
+
+\begin{document}
+\maketitle
+
+These notes are from informal discussions and surveys carried out at IETF 103 in Bangkok,
+Thailand, in November 2018. 
+
+\section{Adoption of current representation formats}
+
+Survey participants were given a list of the structured representation formats commonly
+found in IETF documents\footnote{ABNF, XML, ASN.1, C code, JSON, CBOR, TLS presentation
+language, YANG, MIB, state transition diagrams, ASCII packet header diagrams, protocol
+sequence (ladder) diagrams}. While the sample size for the survey was too small to draw
+conclusions about broad trends, none of the participants indicated that they had seen
+CBOR in IETF documents. All of the other formats had been seen by at least one participant,
+with the all participants having seen C code, YANG models, and ASCII packet header diagrams.
+
+When asked if these structured representations improved the utility of the documents they
+were included in, the broad consensus was that they did -- but not significantly. The
+representations were good to have, but they do not replace the body of the document
+(i.e., the English prose). Further, there was concern that structured representations
+-- especially code and pseudocode -- were actually detrimental to readers understanding of
+the document. There were two reasons given for this: (i) the (pseudo)code can be overly
+complicated, and more difficult to understand than the English prose version; and (ii)
+because one is not typically generated from the other, differences can arise between the
+pseudo(code) and the English prose. On the positive side, participants noted that some
+representations -- particularly diagrams, such as packet header and sequence diagrams --
+were useful for clearly defining the syntax of the protocol, and giving structure and
+context to the English prose that accompanied them.
+
+Participants were split on whether or not the current level of adoption of structured
+representations ws sufficient. The learning curve involved in understanding these
+languages -- or at least having sufficient knowledge to make good use of them in
+documents -- limits their adoption. In addition, adding a structured representation
+requires repeating yourself: if some protocol feature has already been described in
+English, you don't want to encode the same in code.
+
+Other miscellaneous feedback:
+\begin{itemize}
+	\item A lack of tooling makes adopting structured representations more challenging in
+	      a lot of respects: correctness, repetition, lack of grammar for ad-hoc
+	      pseudocode languages
+	\item Text-based protocols typically use ABNF, there isn't a similarly widely adopted
+	      format for binary protocols
+	\item Would be good to write one (in English or a structured language), and then
+	      generate the other. This would avoid duplication and inconsistency.
+\end{itemize}
+
+\section{Generating parsers from standards documents}
+
+\section{Other application domains}
+
+\end{document}
