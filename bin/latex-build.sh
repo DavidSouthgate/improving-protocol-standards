@@ -179,7 +179,7 @@ else
           BSTINPUTS=$BSTINPUTS:`pwd`/lib/tex/inputs
         fi
 
-        (cd $DIR_NAME && BSTINPUTS=$BSTINPUTS bibtex $TEX_BASE)
+        (cd $DIR_NAME && BSTINPUTS=$BSTINPUTS: bibtex $TEX_BASE)
         if [ $? = 1 ]; then
           exit 1
         fi
