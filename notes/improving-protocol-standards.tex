@@ -1,11 +1,28 @@
-\documentclass[10pt]{article}
-\usepackage[a4paper, total={6.5in, 11in}, includefoot, heightrounded]{geometry}
+\documentclass[10pt,a4paper]{article}
+\usepackage[cm]{fullpage}
+\usepackage[l2tabu,orthodox]{nag}
+\usepackage[utf8x]{inputenc}
+\usepackage[british]{babel}
+\usepackage{ifpdf}
+\ifpdf
+  \usepackage{microtype}
+\fi
+\usepackage{newtxtext}
+\usepackage{newtxmath}
+\usepackage[caption=false]{subfig}
+\usepackage{booktabs}
+\usepackage{upquote}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{bytefield}
 \usepackage{adjustbox}
+\usepackage{listings}
 \usepackage{array}
 \usepackage{color}
 
-\title{Literature Survey: Improving Protocol Standards for a more Trustworthy Internet}
-\date{\today}
+\frenchspacing
+
+\uchyph=0
 
 \newcommand{\todo}[1]{\textbf{\textcolor{red}{To do -- #1}}}
 \newcommand{\paper}[3]{\vspace{4mm}\noindent\textbf{Paper:} ``\textit{#1}'' -- #2 \cite{#3}\vspace{3mm}}
@@ -17,14 +34,19 @@
 }
 \newcommand*\rot{\multicolumn{1}{R{45}{1em}}}
 
+%==================================================================================================
 \begin{document}
+\title{Literature Survey: Improving Protocol Standards for a more Trustworthy Internet}
+\author{Stephen McQuistin \and Colin Perkins}
+\date{\today}
 \maketitle
+\begin{abstract}
 
 This document contains notes on the papers read as part of a literature survey for the
 ``\textit{Improving Protocol Standards for a more Trustworthy Internet}'' project.
 
-%==============================================================================================
-
+\end{abstract}
+%==================================================================================================
 \section{Packet format definition languages}
 
 One of the objectives of the project is to introduce (relatively simple) formalisms into
@@ -48,8 +70,10 @@ header definitions, but data format specification languages more generally. In a
 architectural papers (i.e., those that don't define a language, but provide guidance) are
 also in scope.
 
+%--------------------------------------------------------------------------------------------------
 \subsection{Languages}
 
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paper{Packet Types: Abstract Specification of Network Protocol Messages}{McCann \& Chandra}{mccann2000packet}
 
 McCann and Chandra propose PacketTypes, a packet specification language. Their motivation
@@ -223,6 +247,7 @@ specify the size of variable-sized fields must only reference attributes that ha
 been specified. The authors allow particular implementations to further limit
 constraints.
 
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paper{Melange: Creating a ``Functional'' Internet}{Madhavapeddy et al.}{madhavapeddy2007melange}
 
 The motivation for Melange is centres on the widespread use of type-unsafe languages (like
@@ -310,6 +335,7 @@ packet ipv4 {
 }
 \end{verbatim}
 
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paper{PADS: A Domain-Specific Language for Processing Ad Hoc Data}{Fisher and Gruber}{fisher2005pads}
 
 Processing Ad hoc Data Sources (PADS) is a declarative data description language for
@@ -341,6 +367,7 @@ syntax. Further constraints can be added to existing types using \texttt{Ptypede
 types may be parameterised by values. For example, \texttt{Pstring(:' ':)} defines a
 string terminated by a space. 
 
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paper{DataScript: A Specification and Scripting Language for Binary Data}{Back}{back2002datascript}
 
 Back describes DataScript, a language for the specification and manipulation of binary
@@ -385,6 +412,7 @@ arrays can grow until their constraints are violated. Predicates are boolean exp
 with DataScript adopting the operators, associativity, and precedence rules from Java and
 C. 
 
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paper{P4: Programming protocol-independent packet processors}{Bosshart et al.}{bosshart2014p4}
 
 P4 is a high-level language, designed for programming packet processors (e.g., switches).
@@ -420,6 +448,7 @@ specified as:
 [Note: the P4 paper doesn't focus on the header specification language; the P4 manual is
 a better resource. The language has also changed considerably since this paper]
 
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paper{Abstract Syntax Notation One (ASN.1): Specification of basic notation}{ITU-T (Information technology)}{x680}
 
 ASN.1 is a language for defining the structure of data. It includes a number of simple
@@ -484,6 +513,7 @@ Additionally, definitions can be reused and extended:
 The ``..'' is part of the language: it says that the TypeIdentifierExtension specification
 might contain additional fields in later versions.
 
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paper{A language-based approach to protocol construction}{Basu et al.}{basu1997language}
 
 Basu et al. describe Promela++, an extension to the Promela protocol validation language.
@@ -512,6 +542,7 @@ Message headers are expressed as:
   };
 \end{verbatim}
 
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paper{CSN. 1 Specification, Version 2.0}{Mouly}{mouly1998csn}
 
 The Concrete Syntax Notation, CSN.1, is a language that was introduced by 3GPP, to aid in
@@ -540,7 +571,10 @@ In this example, \texttt{TEST\_OR} can take on two possible (8-bit) values: 0 or
 However, there is no notation to define when \texttt{TEST\_OR} should take on either of
 those values: that is entirely application dependent, and cannot be modelled here.
 
+%--------------------------------------------------------------------------------------------------
 \subsection{Packet parser design principles}
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paper{Design principles for packet parsers}{Gibb et al.}{gibb2013design}
 
 In this paper, the authors discuss the design tradeoffs present in packet parsers, and
@@ -581,6 +615,7 @@ definition of length derived from field values.
 
 \todo{Expand}
 
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paper{Writing parsers like it is 2017}{Chifflier and Couprie}{chifflier2017writing}
 
 In this paper, the authors present a Rust-based combinator approach to parser design. This
@@ -591,16 +626,20 @@ safe language, such as Rust, to solve many of these.
 
 \todo{Expand}
 
+%--------------------------------------------------------------------------------------------------
 \subsection{Network protocol DSLs \& motivation}
 
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paper{Domain specific languages (DSLs) for network protocols}{Bhatti et al.}{bhatti2009domain}
 
 \todo{Write up notes}
 
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paper{The Bugs We Have to Kill}{Bratus et al.}{bratus2015bugs}
 
 \todo{Read and write up}
 
+%--------------------------------------------------------------------------------------------------
 \subsection{Summary}
 
 \begin{tabular}{ l | r r r r r }
@@ -616,8 +655,7 @@ safe language, such as Rust, to solve many of these.
   \hline  
 \end{tabular}
 
-%==============================================================================================
-
+%==================================================================================================
 \section{Parsing IETF protocols}
 
 In this section, we look at the features required of a packet format definition language,
@@ -644,6 +682,7 @@ based on data from contexts, should only be used for parsing -- that is, to dete
 a packet's format is valid, rather than determining if the contexts of each field are
 valid.
 
+%--------------------------------------------------------------------------------------------------
 \subsection{IP}
 
 The IP header is comprised of a 4 bit \texttt{version} field. The rest of the header's
@@ -726,6 +765,7 @@ Header value). While extensions to the IPv6 protocol, for parsing, it makes sens
 them as a separate upper-layer protocol.
 \end{itemize}
 
+%--------------------------------------------------------------------------------------------------
 \subsection{UDP}
 
 A UDP header has the following fields:
@@ -742,6 +782,7 @@ Notes:
 \item The UDP header is straightforward; no constraints based on other fields or earlier packets.
 \end{itemize}
 
+%--------------------------------------------------------------------------------------------------
 \subsection{TCP}
 
 A TCP header has the following fields:
@@ -776,6 +817,7 @@ of each Option. The Options field needs to pad to a 32 bit boundary. Further, th
 can be at most 60 bytes; leaving a maximum of 40 bytes for the Options field.
 \end{itemize}
 
+%--------------------------------------------------------------------------------------------------
 \subsection{DCCP}
 
 A DCCP header has the following fields:
@@ -801,6 +843,7 @@ is an 8 bit Reserved field, followed by an extended, 48 bit, sequence number. If
 there is no Reserved field, and the sequence number is 24 bits.
 \end{itemize}
 
+%--------------------------------------------------------------------------------------------------
 \subsection{SCTP}
 
 An SCTP header has the following fields:
@@ -827,6 +870,7 @@ support this type of extensibility.
 is not known before they are parsed.
 \end{itemize}
 
+%--------------------------------------------------------------------------------------------------
 \subsection{QUIC}
 
 QUIC has two header types: long (for packets sent before version negotiation) and short
@@ -912,6 +956,7 @@ bit. Therefore, this bit alone is not sufficient to determine how the packet sho
 parsed: the Version field must be set to 0.
 \end{itemize}
 
+%--------------------------------------------------------------------------------------------------
 \subsection{RTP}
 
 \footnotesize
@@ -1001,6 +1046,7 @@ where \verb|appbits| are 4 bits that ``are application dependent and MAY be
 defined to be any value or meaning; this topic is outside the scope of this
 specification''.
 
+%--------------------------------------------------------------------------------------------------
 \subsection{RTCP}
 
 \footnotesize
@@ -1085,8 +1131,10 @@ null octets) is valid but useless.
 RTCP XR has many sub-packet formats. There doesn't look to be anything
 unusual in the formatting beyond standard RTCP packets, however.
 
+%--------------------------------------------------------------------------------------------------
 \subsection{RTSP}
 
+%--------------------------------------------------------------------------------------------------
 \subsection{NTP}
 
 The NTP (v4) packet format is:
@@ -1122,6 +1170,7 @@ fields. More specifically, the padding field is included in the length -- this m
 parsing more challenging.
 \end{itemize}
 
+%--------------------------------------------------------------------------------------------------
 \subsection{HTTP/2}
 
 HTTP/2 uses frames, with the following format:
@@ -1134,10 +1183,10 @@ HTTP/2 uses frames, with the following format:
 \item \texttt{Payload}: variable length
 \end{itemize}
 
-%==============================================================================================
-
+%==================================================================================================
 \section{Proposed packet format description language}
 
+%--------------------------------------------------------------------------------------------------
 \subsection{What constraints need to be modelled carefully?}
 
 \begin{description}
@@ -1175,6 +1224,7 @@ HTTP/2 uses frames, with the following format:
 	packet number, for decrypting the payload field.
 \end{description}
 
+%--------------------------------------------------------------------------------------------------
 \subsection{What concepts do we need to introduce?}
 
 \begin{description}
@@ -1202,6 +1252,7 @@ HTTP/2 uses frames, with the following format:
 	      decrypt() -- packet numbers suggests something more general is needed}
 \end{description}
 
+%--------------------------------------------------------------------------------------------------
 \subsection{Describing QUIC}
 
 \begin{verbatim}
