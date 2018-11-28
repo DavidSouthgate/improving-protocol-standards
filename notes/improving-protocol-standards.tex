@@ -452,10 +452,41 @@ a better resource. The language has also changed considerably since this paper]
 \paper{OpenState: Programming Platform-independent Stateful OpenFlow Applications
        Inside the Switch}{Bianchi et al.}{bianchi:2014:openstate}
 
-\todo{write up discussion of OpenState}
+\emph{Review 23A from our EPIQ workshop submission suggested that this is relevant.}
 
-Review 23A from our EPIQ workshop submission suggested that this is relevant.
+The software defined networking (SDN) architecture is comprised, conceptually, of smart,
+centralised controllers for forwarding behaviour dumb, commodity switches. In the event
+that complex, stateful forwarding actions need to be taken, packets are re-routed through
+controllers that can apply (relatively) complex logic. The motivation for OpenState is
+that there are scenarios where this architecture isn't sensible: sometimes, the forwarding
+behaviour only depends on local (i.e., at the switch level) state, and not on the global
+state that can be accessed by controllers. By allowing more logic to be performed at each
+switch, the costs associated with re-routing packets are removed, allowing packets to be
+processed at line-rate. The authors give \emph{port knocking} as an example of the type
+of forwarding behaviour they would like to implement within a switch, rather than have
+handled at a central controller. Essentially, port knocking works by having a client send
+packets to a pre-determined sequence of ports, after which connections to a firewalled
+port will be permitted. This logic is relatively straightforward: each incoming packet
+changes the flow's state, either resetting it to the starting state, or moving it to the
+next state, if the incoming packet matched the specified port. At present, each packet
+would be rerouted to a controller for this logic to be applied: with the modifications
+proposed in OpenState, this would be performed at the switch.
 
+The central contribution of the OpenState paper is an abstraction
+that allows for the stateful processing of flows to be described. This abstraction is
+based on a simplified eXtended Finite State Machine (XFSM) (a Mealy machine). A Mealy
+machine is comprised of a 4-tuple, $(S, I, O, T)$, where $S$ is a finite set of states,
+$I$ is a finite set of events (input), $O$ is a finite set of actions (output), and
+$T$ is a transition function that maps $<state, event>$ pairs into $<state, action>$
+pairs. The paper specifies how the Mealy machine abstraction can be implemented, using the
+abstractions that already exist in OpenFlow. 
+
+The authors conclude by explaining that the existing abstractions in OpenFlow are
+constraints on the abstraction they picked. In particular, they highlight that at present,
+all events are driven by the arrival of packets: there is no support for timers, or other
+events, that might change a flow's state. Finally, they highlight that the lack of
+persistent memory (``registers'') means that it is not possible to support some 
+applications. This is a restriction of the Mealy machine abstraction that they chose. 
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paper{Open Packet Processor: a programmable architecture for wire speed platform-independent
