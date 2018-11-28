@@ -492,9 +492,18 @@ applications. This is a restriction of the Mealy machine abstraction that they c
 \paper{Open Packet Processor: a programmable architecture for wire speed platform-independent
        stateful in-network processing}{Bianchi et al.}{bianchi:2016:open-packet}
 
-\todo{write up discussion of Open Packet Processor}
+\emph{Review 23A from our EPIQ workshop submission suggested that this is relevant.}
 
-Review 23A from our EPIQ workshop submission suggested that this is relevant.
+Building on the OpenState paper, the authors (a superset of those of the OpenState paper)
+highlight applications (e.g., port scan detection) where a Mealy machine is an unsuitable
+abstraction, owing to its lack of memory registers. To support these applications, the
+authors describe the Open Packet Processor, which is based on a full eXtended Finite State
+Machine abstract. Essentially, where the Mealy machine abstraction is a 4-tuple (as
+above), the full abstraction is a 7-tuple: $(I, O, S, D, F, U, T)$, where S, I, O, and T,
+remain the same, and where $D$ is a set of registers, $F$ is a set boolean predicates on
+registers, and $U$ is a set of functions that update registers. The authors demonstrate
+the feasibility of implementing their abstraction, and give programming examples, showing
+how relatively complex applications can be implemented.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paper{Automatic function test generation using the extended finite state machine model}
