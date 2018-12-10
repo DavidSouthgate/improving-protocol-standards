@@ -650,7 +650,35 @@ those values: that is entirely application dependent, and cannot be modelled her
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paper{Concise Binary Object Representation (CBOR)}{Bormann and Hoffman}{rfc7049}
 
-\todo{write up discussion of RFC 7049}
+The Concise Binary Object Representation (CBOR) has the following design goals:
+\begin{itemize}
+	\item It must be able to unambiguously encode most of the data formats used in Internet
+	      standards;
+	\item CBOR encoders/decoders must be supported by resource-constrained hosts;
+	\item Data must be independently decodable (i.e., without a schema);
+	\item The serialisation format must be reasonably compact;
+	\item The format must be converted to and from JSON;
+	\item The format must be extensible, with the extended representation decodable by
+	      earlier decoders.
+\end{itemize}
+    
+The focus on supporting encoding/decoding by resource-constrained hosts, the compactness 
+of the format, and on extensibility with backwards compatibility with existing decoders
+make it distinct from other formats, such as ASN.1.
+
+In CBOR, encodings are split into \emph{data items}, where the initial byte of each data
+item specifies its type: unsigned integer, negative integer, byte string, unicode string,
+array, map, tag, or floating-point number. Most of these types adopt their conventional
+definition. 
+
+Tags are optional data items that precede another data item, giving it additional semantic
+meaning. Decoders do not need to interpret tags, and so their primary purpose is to define
+common data types, and provide optional hints to generic CBOR decoders. 
+
+The CBOR specification provides a mapping to and from JSON.
+
+TO support extensibility, CBOR provides three codepoint spaces that are underutilised, and
+so can be used in future revisions.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paper{Protocol Buffers}{Google}{protocol-buffers}
