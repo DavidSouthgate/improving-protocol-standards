@@ -1,11 +1,11 @@
-#! /bin/sh
+#!/bin/sh
 # =================================================================================================
 # Script to build a LaTeX document
 # 
-# Colin Perkins
+# Written by Colin Perkins
 # https://csperkins.org/
 #
-# Copyright (C) 2003-2017 University of Glasgow
+# Copyright (C) 2003-2018 University of Glasgow
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions 
@@ -31,115 +31,165 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # =================================================================================================
 
-REGEX_CITE1=".*Warning: Citation.*undefined"
-REGEX_CITE2="There were undefined citations."
-REGEX_LABL=".*Warning: Label(s) may have changed. Rerun to get cross-references right."
-REGEX_BOOK="Package rerunfilecheck Warning: File .*out. has changed"
+log () {
+  tput setaf 2 || true
+  echo $1
+  tput sgr0    || true
+}
 
-# Function to display a separator:
-blank_line () {
+separator () {
   COLS=`tput cols`
   BLANK_LINE=""
 
   i=0
   while [ $i -lt $COLS ]; 
   do
-    BLANK_LINE="$BLANK_LINE="
+    BLANK_LINE="$BLANK_LINE#"
     i=`expr $i + 1`
   done
 
-  tput setaf 2 || true
-  echo $BLANK_LINE
-  tput sgr0    || true
+  log $BLANK_LINE
 }
 
-# Function to display the usage message:
-usage() {
-  echo "Usage: latex-build.sh <mode> <basename> <directory>"
-  echo "where <mode> is either \"pdf\" to build a PDF"
-  echo "                    or \"clean\" to clean up"
-}
+# =================================================================================================
 
-# Function to build a PDF:
-build_pdf () {
-  blank_line
+if [ $# != 1 -a $# != 2 ]; then
+  echo "Usage: $0 [--clean] filename.tex"
+  exit 1
+fi
 
-  tput setaf 2 || true
-  echo "== Building LaTeX document: $DIR_NAME/$TEX_BASE.tex"
-  tput sgr0    || true
+if [ $1 = "--clean" ]; then
+  MODE=clean
+  shift
+else
+  MODE=build
+fi
 
-  done_bib=0
-  do_bib=0
-  do_tex=1
+TEX_BASE=`basename $1 .tex`
+DIR_NAME=`dirname  $1`
 
-  while [ $do_tex = 1 ]; do
-    blank_line
+if [ $MODE = "clean" ]; then
+  log "## Cleaning LaTeX document: $DIR_NAME/$TEX_BASE.tex"
 
-    TEXINPUTS=$DIR_NAME:lib/tex/inputs: pdflatex -output-directory $DIR_NAME -recorder -interaction=nonstopmode -halt-on-error -file-line-error $TEX_BASE.tex
+  OUTPUTS=""
+  if [ -f $DIR_NAME/$TEX_BASE.fls ]; then
+    for output in `cat $DIR_NAME/$TEX_BASE.fls | sort | uniq | awk '/^OUTPUT/ {print $2}'`
+    do
+      OUTPUTS="$OUTPUTS $output"
+    done
+  fi
+
+  for f in $OUTPUTS \
+           $DIR_NAME/$TEX_BASE.bbl \
+           $DIR_NAME/$TEX_BASE.blg \
+           $DIR_NAME/$TEX_BASE.dep \
+           $DIR_NAME/$TEX_BASE.fls \
+           $DIR_NAME/$TEX_BASE.fonts
+  do
+    if [ -f $f ]; then
+      echo "rm $f" && rm -f $f
+    fi
+  done
+else
+  separator
+  log "## Building LaTeX document: $DIR_NAME/$TEX_BASE.tex"
+  log "## "
+
+  DID_RUN_BIBTEX=0
+  SHOULD_RUN_TEX=1
+
+  while [ $SHOULD_RUN_TEX = 1 ]; do
+    SHOULD_RUN_BIB=0
+    SHOULD_RUN_TEX=0
+
+    TEXINPUTS=$DIR_NAME:
+    if [ -d `pwd`/lib/tex/inputs ]; then
+      TEXINPUTS=$TEXINPUTS:`pwd`/lib/tex/inputs
+    fi
+    TEXINPUTS=$TEXINPUTS: pdflatex -output-directory $DIR_NAME -recorder -interaction=nonstopmode -halt-on-error -file-line-error $TEX_BASE.tex
     if [ $? = 1 ]; then
       exit 1
     fi
-    do_bib=0
-    do_tex=0
 
-    # Rerun LaTeX if the labels have changed
-    labl_changed=`grep -c "$REGEX_LABL" $DIR_NAME/$TEX_BASE.log`
-    if [ $labl_changed != 0 ]; then
-      do_tex=1
+    # Check if we need to re-run LaTeX:
+    rerun_biblatex=`grep -c 'Package biblatex Warning: Please rerun LaTeX.' $DIR_NAME/$TEX_BASE.log`
+    if [ $rerun_biblatex != 0 ]; then
+      log "## Need to re-run LaTeX to correct citations (biblatex)"
+      SHOULD_RUN_TEX=1
     fi
 
-    # Rerun LaTeX if PDF bookmarks have changed
-    book_changed=`grep -c "$REGEX_BOOK" $DIR_NAME/$TEX_BASE.log`
-    if [ $book_changed != 0 ]; then
-      do_tex=1
+    rerun_natbib=`grep -c '(natbib)                Rerun to get citations correct.' $DIR_NAME/$TEX_BASE.log`
+    if [ $rerun_natbib != 0 ]; then
+      log "## Need to re-run LaTeX to correct citations (natbib)"
+      SHOULD_RUN_TEX=1
     fi
 
-    # Check if there are undefined citations, request a run of BibTeX if necessary
-    undef_cite=`grep -c "$REGEX_CITE1" $DIR_NAME/$TEX_BASE.log`
-    if [ $undef_cite != 0 ]; then
-      if [ $done_bib = 0 ]; then 
-        do_bib=1
-      fi
-      if [ $done_bib = 1 ]; then
-        done_bib=2
-        do_tex=1
-      fi
+    rerun_labels=`grep -c 'LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.' $DIR_NAME/$TEX_BASE.log`
+    if [ $rerun_labels != 0 ]; then
+      log "## Need to re-run LaTeX to correct cross-references"
+      SHOULD_RUN_TEX=1
     fi
 
-    undef_cite=`grep -c "$REGEX_CITE2" $DIR_NAME/$TEX_BASE.log`
-    if [ $undef_cite != 0 ]; then
-      if [ $done_bib = 0 ]; then 
-        do_bib=1
-      fi
-      if [ $done_bib = 1 ]; then
-        done_bib=2
-        do_tex=1
-      fi
+    rerun_outlines=`grep -c 'Package rerunfilecheck Warning: File .*out. has changed' $DIR_NAME/$TEX_BASE.log`
+    if [ $rerun_outlines != 0 ]; then
+      log "## Need to re-run LaTeX to correct outlines"
+      SHOULD_RUN_TEX=1
     fi
 
-    # Check if any of the *.bib files includes have been modified since
-    # BibTeX was last run; if so, request a new run of BibTeX
+    # Check for undefined references:
+    undef_ref_count=`grep -c '.* Warning: Reference .* undefined' $DIR_NAME/$TEX_BASE.log`
+    if [ $undef_ref_count != 0 ]; then
+      log "## There are $undef_ref_count undefined references"
+    fi
+
+    # Check if there are undefined citations:
+    undef_cite_count=`grep -c '.* Warning: Citation .* undefined' $DIR_NAME/$TEX_BASE.log`
+    if [ $undef_cite_count != 0 ]; then
+      log "## There are $undef_cite_count undefined citations"
+      SHOULD_RUN_BIB=1
+    fi
+
+    # Check if any of the *.bib files includes have been modified since the
+    # bibliography was last generated; if so, request a new run of BibTeX/Biber
     for f in `grep '\\\\bibdata{' $DIR_NAME/$TEX_BASE.aux | sed 's/\\\bibdata{//' | sed 's/}//' | sed 's/,/ /' `
     do
       if [ $DIR_NAME/$f.bib -nt $DIR_NAME/$TEX_BASE.bbl ]; then
-        do_bib=1
+        SHOULD_RUN_BIB=1
+        log "## Need to generate bibliography: $DIR_NAME/$f.bib is newer than $DIR_NAME/$TEX_BASE.bbl"
       fi
     done
 
-    if [ $do_bib = 1 ]; then 
-      num_citations=`grep -c \\\\citation $DIR_NAME/$TEX_BASE.aux`
-      if [ $num_citations -gt 0 -a $done_bib = 0 ]; then
-        # BibTeX has been requested and has not run already, and there are citations...
-        blank_line
-        (cd $DIR_NAME && BSTINPUTS=.:../lib/tex/inputs bibtex $TEX_BASE)
+    if [ $SHOULD_RUN_BIB != 0 ]; then
+      need_biber=`grep -c 'Package biblatex Warning: Please (re)run Biber' $DIR_NAME/$TEX_BASE.log`
+      if [ $need_biber != 0 ]; then
+        # Run Biber to generate bibliography
+        separator
+        (cd $DIR_NAME && biber $TEX_BASE)
         if [ $? = 1 ]; then
           exit 1
         fi
-        do_tex=1;
-        do_bib=0;
-        done_bib=1;
+        SHOULD_RUN_TEX=1
+        log "## Need to re-run LaTeX correct citations (biber)"
+      elif [ $DID_RUN_BIBTEX = 0 ]; then
+        # Run BibTeX to generate bibliography
+        separator
+
+        BSTINPUTS=.
+        if [ -d `pwd`/lib/tex/inputs ]; then
+          BSTINPUTS=$BSTINPUTS:`pwd`/lib/tex/inputs
+        fi
+
+        (cd $DIR_NAME && BSTINPUTS=$BSTINPUTS: bibtex $TEX_BASE)
+        if [ $? = 1 ]; then
+          exit 1
+        fi
+        DID_RUN_BIBTEX=1
+        SHOULD_RUN_TEX=1
+        log "## Need to re-run LaTeX to correct citations (bibtex)"
       fi
     fi
+
+    separator
   done
 
   # Generate dependencies file for make:
@@ -149,104 +199,35 @@ build_pdf () {
     DEPENDS="$DEPENDS $dep"
   done
 
-  # FIXME: this assumes the name of the .bib file. It should really parse
-  # the .tex files, to find the \bibliography{} lines
-  if [ -f $DIR_NAME/$TEX_BASE.bib ]; then
-    DEPENDS="$DEPENDS $DIR_NAME/$TEX_BASE.bib"
-  fi
+  for f in `grep '\\\\bibdata{' $DIR_NAME/$TEX_BASE.aux | sed 's/\\\bibdata{//' | sed 's/}//' | sed 's/,/ /' `
+  do
+    DEPENDS="$DEPENDS $DIR_NAME/$f.bib"
+  done
 
   echo "$DIR_NAME/$TEX_BASE.pdf: $DEPENDS" > $DIR_NAME/$TEX_BASE.dep
 
-  # # Call gs to embed all fonts. 
-  # blank_line
-  # tput setaf 2
-  # echo "Post-processing PDF file..."
-  # tput sgr0
-  # 
-  # gs -q -dSAFER -dNOPAUSE -dBATCH -dCompatibilityLevel=1.4 -dDetectDuplicateImages=true \
-  #    -dPDFSETTINGS=/prepress -dEmbedAllFonts=true -dSubsetFonts=false \
-  #    -sDEVICE=pdfwrite -sOutputFile=$TEX_BASE.tmp.pdf \
-  #    -f $TEX_BASE.pdf
-  # 
-  # cat $TEX_BASE.tmp.pdf > $TEX_BASE.pdf
-  # rm  -f $TEX_BASE.tmp.pdf 
-
-  blank_line
-
-  # The pdfinfo tool is part of Xpdf (http://www.foolabs.com/xpdf/).
+  # Check the PDF metadata:
   pdfinfo  $DIR_NAME/$TEX_BASE.pdf
-
   echo ""
-  echo "PDF Fonts:"
+
+  # Check the PDF fonts:
   pdffonts $DIR_NAME/$TEX_BASE.pdf > $DIR_NAME/$TEX_BASE.fonts
+  echo "Fonts:"
   cat $DIR_NAME/$TEX_BASE.fonts
 
   nmf=`cat $DIR_NAME/$TEX_BASE.fonts | tail -n +3 | awk '{if ($(NF-4) != "yes") print $0}' | wc -l`
 
   if [ $nmf -gt 0 ]; then \
-    tput setaf 1 || true
-    tput bold    || true
     echo ""
-    echo "WARNING: Some fonts are not embedded"
-    echo "Try running \"updmap --edit\" and setting \"pdftexDownloadBase14 true\""
-    tput sgr0    || true
+    log "## WARNING: some fonts are not embedded"
   fi
 
+  # Print checksums:
   echo ""
   shasum -a   1 $DIR_NAME/$TEX_BASE.pdf | awk '{print "SHA1  ", $2, $1}'
   shasum -a 256 $DIR_NAME/$TEX_BASE.pdf | awk '{print "SHA256", $2, $1}'
   echo ""
 
-  blank_line
-}
-
-# Function to cleanup after a LaTex run:
-clean_tex() {
-  for f in $DIR_NAME/$TEX_BASE.aux \
-           $DIR_NAME/$TEX_BASE.bbl \
-           $DIR_NAME/$TEX_BASE.blg \
-           $DIR_NAME/$TEX_BASE.dep \
-           $DIR_NAME/$TEX_BASE.dvi \
-           $DIR_NAME/$TEX_BASE.fls \
-           $DIR_NAME/$TEX_BASE.fonts \
-           $DIR_NAME/$TEX_BASE.log \
-           $DIR_NAME/$TEX_BASE.out \
-           $DIR_NAME/$TEX_BASE.pdf
-  do
-    if [ -f $f ]; then
-      echo "  remove $f" && rm -f $f
-    fi
-  done
-}
-
-# =================================================================================================
-# Check and parse command line arguments:
-
-if [ $# != 3 ]; then
-  usage
-  exit 1
 fi
-
-TEX_MODE=$1
-TEX_BASE=$2
-DIR_NAME=`echo $3 | sed 's/\/$//'`
-
-# Build or clean the LaTeX file:
-case $TEX_MODE in
-  pdf )
-    build_pdf
-    ;;
-  dvi )
-    echo "support for building DVI file not yet implemented"
-    exit 1
-    ;;
-  clean )
-    clean_tex
-    ;;
-  * )
-    usage
-    exit 1
-    ;;
-esac
 
 # =================================================================================================

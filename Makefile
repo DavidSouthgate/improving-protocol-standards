@@ -2,7 +2,7 @@
 # Generic Makefile for a research paper
 # Colin Perkins <csp@csperkins.org>
 #
-# Copyright (C) 2016-2017 University of Glasgow
+# Copyright (C) 2016-2018 University of Glasgow
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -31,7 +31,7 @@
 # Configuration for make itself:
 
 # Warn if the Makefile references undefined variables and remove built-in rules:
-MAKEFLAGS += --warn-undefined-variables --no-builtin-rules --no-builtin-variables
+MAKEFLAGS += --output-sync --warn-undefined-variables --no-builtin-rules --no-builtin-variables
 
 # Remove output of failed commands, to avoid confusing later runs of make:
 .DELETE_ON_ERROR:
@@ -50,6 +50,7 @@ PDF_FILES = notes/improving-protocol-standards.pdf \
             notes/ir.pdf \
             notes/parser-generator-reqs.pdf \
             notes/discussion-questions.pdf \
+            notes/ietf103-notes.pdf \
             papers/improving-quic-docs.pdf
 
 # Tools to build before the PDF files. This is a list of executable files in
@@ -62,7 +63,7 @@ all: $(TOOLS) $(PDF_FILES)
 # Pattern rules to build a PDF file. The assumption is that each PDF file 
 # is built from the corresponding .tex file.
 %.pdf: %.tex bin/latex-build.sh
-	@bin/latex-build.sh pdf $(notdir $(basename $<)) $(dir $<)
+	@bin/latex-build.sh $<
 	@bin/check-for-duplicate-words.perl $<
 	@bin/check-for-todo.sh              $<
 
@@ -82,12 +83,18 @@ figures/%.pdf: figures/%.gnuplot-pdf figures/%.gnuplot figures/%.dat
 figures/%.svg: figures/%.gnuplot-svg figures/%.gnuplot figures/%.dat
 	gnuplot figures/$*.gnuplot-svg figures/$*.gnuplot
 
+# =================================================================================================
+# Rules to build code.
+
 # Pattern rules to build C programs comprising a single file:
 CC     = clang
 CFLAGS = -W -Wall -Wextra -O2 -g -std=c99
 
 bin/%: src/%.c
 	$(CC) $(CFLAGS) -o $@ $^
+
+# =================================================================================================
+# Rules to clean-up.
 
 define xargs
 $(if $(2),$(1) $(wordlist 1,1000,$(2)))
@@ -103,7 +110,7 @@ $(call xargs,rm -fr ,$(1))
 endef
 
 define pdfclean
-	bin/latex-build.sh clean $(notdir $(basename $(firstword $(1)))) $(dir $(firstword $(1)))
+	@bin/latex-build.sh --clean $(basename $(firstword $(1)))
 	$(if $(wordlist 2,$(words $(1)),$(1)),$(call pdfclean,$(wordlist 2,$(words $(1)),$(1))))
 endef
 
