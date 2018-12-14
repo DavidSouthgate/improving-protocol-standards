@@ -488,6 +488,12 @@ events, that might change a flow's state. Finally, they highlight that the lack 
 persistent memory (``registers'') means that it is not possible to support some 
 applications. This is a restriction of the Mealy machine abstraction that they chose. 
 
+The essential relevance of this, and \cite{bianchi:2016:open-packet}, would
+seem to be in the extensible finite state machine abstraction. A similar
+abstraction could also apply to managing parsing state or other contextual
+information between packets, and directing the operation of a protocol parser. 
+Or, of course, in representing the state of a protocol handshake.
+
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paper{Open Packet Processor: a programmable architecture for wire speed platform-independent
        stateful in-network processing}{Bianchi et al.}{bianchi:2016:open-packet}
