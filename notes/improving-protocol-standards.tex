@@ -19,7 +19,7 @@
 \usepackage{listings}
 \usepackage{array}
 \usepackage{color}
-
+\usepackage{hyperref}
 \frenchspacing
 
 \uchyph=0
@@ -510,6 +510,15 @@ remain the same, and where $D$ is a set of registers, $F$ is a set boolean predi
 registers, and $U$ is a set of functions that update registers. The authors demonstrate
 the feasibility of implementing their abstraction, and give programming examples, showing
 how relatively complex applications can be implemented.
+
+As with \cite{bianchi:2014:open-state}, this is building hardware
+independent in-switch packet processing abstractions to extend OpenFlow,
+using finite state machines and stored state tables as the underlying
+programming abstraction. A similar abatraction can likely be used as the to
+our work.
+
+P4 looks to be a more general-purpose approach to the same problem, and has
+much broader traction in the community.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paper{Automatic function test generation using the extended finite state machine model}
