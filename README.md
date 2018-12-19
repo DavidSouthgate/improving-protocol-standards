@@ -1,7 +1,7 @@
 Improving Protocol Standards for a more Trustworthy Internet
 ============================================================
 
-Colin Perkins
+Colin Perkins  
 Stephen McQuistin
 
 
