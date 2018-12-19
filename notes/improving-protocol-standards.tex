@@ -19,7 +19,7 @@
 \usepackage{listings}
 \usepackage{array}
 \usepackage{color}
-
+\usepackage{hyperref}
 \frenchspacing
 
 \uchyph=0
@@ -488,6 +488,12 @@ events, that might change a flow's state. Finally, they highlight that the lack 
 persistent memory (``registers'') means that it is not possible to support some 
 applications. This is a restriction of the Mealy machine abstraction that they chose. 
 
+The essential relevance of this, and \cite{bianchi:2016:open-packet}, would
+seem to be in the extensible finite state machine abstraction. A similar
+abstraction could also apply to managing parsing state or other contextual
+information between packets, and directing the operation of a protocol parser. 
+Or, of course, in representing the state of a protocol handshake.
+
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paper{Open Packet Processor: a programmable architecture for wire speed platform-independent
        stateful in-network processing}{Bianchi et al.}{bianchi:2016:open-packet}
@@ -505,11 +511,24 @@ registers, and $U$ is a set of functions that update registers. The authors demo
 the feasibility of implementing their abstraction, and give programming examples, showing
 how relatively complex applications can be implemented.
 
+As with \cite{bianchi:2014:openstate}, this is building hardware
+independent in-switch packet processing abstractions to extend OpenFlow,
+using finite state machines and stored state tables as the underlying
+programming abstraction. A similar abatraction can likely be used as the to
+our work.
+
+P4 looks to be a more general-purpose approach to the same problem, and has
+much broader traction in the community.
+
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paper{Automatic function test generation using the extended finite state machine model}
       {Cheng et al.}{cheng1993automatic}
 
-\todo{Write up discussion of XFSM}
+The underlying formalism used by \cite{bianchi:2014:openstate} and
+\cite{bianchi:2016:open-packet}. The concept of using finite state 
+machines to model the behaviour of a protocol is clearly important
+and relevant. Whether this specific formalism is appropriate is an
+open question.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paper{The IVy language}{Microsoft}{ivyspec}
