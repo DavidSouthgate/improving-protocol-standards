@@ -77,5 +77,4 @@ developed.
 This work is funded by the UK Engineering and Physical Sciences Research
 Council, under grant EP/R04144X/1.
 
-                                   - + -
 
