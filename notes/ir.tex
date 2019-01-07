@@ -489,7 +489,7 @@ multi-bit values that can be parsed or serialised.
 Instances of bit string types implement the \code{Sized} trait. The size
 MAY be unspecified.
 
-Instances of bit string types implement the \code{Value} and
+Instances of bit string types also implement the \code{Value} and
 \code{Equality} traits. The former allows the value of the \code{BitString}
 instantiation to be retrieved and set. The latter allows two instantiations
 of \code{BitString} to be compared for equality; they are equal if they
@@ -527,10 +527,10 @@ The length MAY be unspecified.
 Arrays implement the \code{Equality} trait. Two arrays are equal if they
 have the same element type, \code{length}, \code{size}, and their elements are equal.
 
-Arrays implement the \code{Sized} trait. The size of the array is \code{length}
+Arrays also implement the \code{Sized} trait. The size of the array is \code{length}
 multiplied by the size of \code{element\_type}.
 
-Arrays implement the \code{IndexCollection} trait. Elements are numbered from $0$ to
+Arrays also implement the \code{IndexCollection} trait. Elements are numbered from $0$ to
 $\code{length}-1$. The \code{length} of an array is the number of elements that it
 contains.
 
@@ -645,6 +645,12 @@ of the field.
 
 A structure type implements the \code{Sized} trait. The size of a structure is the
 sum of the sizes of its fields.
+
+A structure type also implements the \code{Equality} trait. Two structures
+are equal if they contain the same fields, in the same order, and the
+corresponding fields are equal. Two fields are equal if they have the same
+\code{name}, the same \code{type}, the same \code{is\_present} expression
+that evaluates to the same value, and the same \code{transform} expression.
 
 A structure type is parameterised by a set of constraints (i.e., boolean
 expressions that MUST evaluate to \code{True}) on the
