@@ -18,7 +18,7 @@ jobs:
           name: run tests
           command: |
             pipenv run pytest --junitxml=test-results/protocol-tests.xml src/protocol.py
-	    mypy src/protocol.py --junit-xml test-results/protocol-typecheck.xml
+            mypy src/protocol.py --junit-xml test-results/protocol-typecheck.xml
 
       - store_artifacts:
           path: test-results
