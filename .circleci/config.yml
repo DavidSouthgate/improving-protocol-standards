@@ -11,13 +11,14 @@ jobs:
 
       - run:
           command: |
-            sudo pip install pipenv pytest
+            sudo pip install pipenv pytest mypy
             pipenv install
 
       - run:
           name: run tests
           command: |
-            pipenv run pytest --junitxml=test-results/junit.xml src/protocol.py
+            pipenv run pytest --junitxml=test-results/protocol-tests.xml src/protocol.py
+	    mypy src/protocol.py --junit-xml test-results/protocol-typecheck.xml
 
       - store_artifacts:
           path: test-results
