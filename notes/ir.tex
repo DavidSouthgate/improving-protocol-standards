@@ -17,7 +17,7 @@
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 \usepackage{color}
-\usepackage{fullpage}
+\usepackage[cm]{fullpage}
 \usepackage{no-par-indent}
 \usepackage{alltt}
 \frenchspacing
@@ -25,7 +25,7 @@
 \newcommand{\code}[1]{\texttt{#1}}
 %==================================================================================================
 \begin{document}
-\title{The Glasgow Packet Language: Intermediate Representation and Execution Model}
+\title{The Glasgow Packet Language: Type System and Execution Model}
 \author{
   Stephen McQuistin\\University of Glasgow
 \and 
@@ -102,14 +102,6 @@ NOT'', ``SHOULD'', ``SHOULD NOT'', ``RECOMMENDED'', ``NOT RECOMMENDED'',
 described in \cite{RFC2119,RFC8174} when, and only when, they appear
 in all capitals, as shown here.
 
-
-
-The intermediate representation is specified in terms of serialised JSON
-\cite{RFC7159} objects that describe the packet formats to be specified.
-An interpreter for the intermediate representation will read a sequence of
-such objects and perform the operations described, in the order that they
-objects are read.
-
 %==================================================================================================
 \section{Type System}
 
@@ -119,357 +111,134 @@ an artefact of the runtime, and cannot be parsed or serialised.
 
 Representable types MUST implement the \code{Sized} trait.
 
-Each type has \emph{name}. It implements one or more \emph{traits} that
-define \emph{methods} that can operate on instances of that type.
+Each type has a \emph{kind} and a \emph{name}. It implements one or more
+\emph{traits} that define \emph{methods} that can operate on instances of
+that type.
+
+A type name is formed of upper- and lower-case ASCII letters, digits, and
+dollar signs (\code{A-Za-z0-9\$}). It must begin with an upper case letter
+(\code{A-Z}). It is an error to define two types with the same name.
 
 %--------------------------------------------------------------------------------------------------
 \subsection{Internal Types}
 
+There are three kinds of internal type: 
+\begin{itemize}
+  \item The \code{Nothing} type is the empty type. 
+    It implements no traits and has no methods.
 
+  \item The \code{Boolean} type is a boolean value, either \code{true} or
+    \code{false}.  It implements the traits \code{Value}, \code{Equality}
+    (two \code{Boolean}s are equal if they have the same value), and
+    \code{BooleanOps}.
 
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{Primitive Types}
-\label{sec:primitives}
+  \item The \code{Size} type is a positive integral value, denoting the
+    size of an instance of a representable type. It implements the traits
+    \code{Value}, \code{Equality}, \code{Ordinal}, and
+    \code{ArithmeticOps}.
 
-The \code{Nothing} type is the empty type. It implements no traits.
+\end{itemize}
+The primitive types are built-in to the runtime and do not need to be
+explicitly instantiated.
 
-The \code{Boolean} type is a boolean value, either \code{true} or \code{false}.
-It implements the traits \code{Value}, \code{Equality} (two \code{Boolean}s are equal if
-they have the same value), and \code{BooleanOps}.
-
-The \code{Size} type is a positive integral value, denoting the size of an
-instance of a representable type. It implements the traits \code{Value},
-\code{Equality}, \code{Ordinal}, and \code{ArithmeticOps}.
-
-The primitive types are built-in to the runtime, and are not explicitly
-defined in the JSON form of the intermediate representation.
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{Traits}
+%--------------------------------------------------------------------------------------------------
+\subsection{Traits}
 \label{sec:traits}
 
-Traits define the methods that can operate on instances of types that
-implement the trait.
+A \emph{trait} defines a named collection of methods. A type may implement
+one or more traits. A type that implements a trait gains an implementation
+of each of the trait's methods.
 
-A trait definition includes the name of the trait, and the definitions
-of the methods. It defines a new type that has the specified name.
+A trait definition specifies the name of the trait and defines the methods
+it provides.
 
-The name of a trait is formed of upper and lower case ASCII letters,
-digits, or dollar signs (\code{A-Za-z0-9\$}); it MUST begin with an
-upper case letter (\code{A-Z}). Trait names are defined in the global type
-namespace.  It is an error to define a trait that has the same name as an
-existing type.
+A trait name is comprised of upper and lower case ASCII letters, digits, or
+dollar signs (\code{A-Za-z0-9\$}).  It MUST begin with an upper case letter
+(\code{A-Z}). Trait names occupy a different namespace to type names.
 
-Each method definition include the method name, return type, parameters.
+A method definition specifies its name, parameters, and return type.
 Methods take one or more parameters.
-The first parameter of a method MUST have the name \code{self} and MUST
+Each parameter has a name and a type.
+The first parameter of a method must have the name \code{self} and must
 have an unspecified type.
-Other parameters, if any, MUST have names that are unique within that
-method definition, and can have specified or unspecified types.
-The return type of a method can be specified or unspecified.  
-It is an error to define two methods that have the same name.
+Other parameters, if any, must have names that are unique within the method
+definition, and can have either specified or unspecified types.
+The return type of a method can be specified or unspecified.
 
 Method names and parameter names are formed of upper and lower case ASCII
-letters, digits, dollar signs, or underscores (\code{A-Za-z0-9\$\_});
-they MUST begin with a lower case letter (\code{a-z}).
+letters, digits, dollar signs, or underscores (\code{A-Za-z0-9\$\_}). They
+MUST begin with a lower case letter (\code{a-z}).
+It is an error to define two methods that have the same name within a given
+trait.
 
-When a type implements a trait, any unspecified types are set to the
-implementing type.
+When a type implements a trait that includes methods with unspecified
+types, the corresponding types are set to the implementing type. That is,
+unspecified types are reified when a trait it implemented by a type.
 
 When a method is called on an instance of a type that implements a trait,
 that instance will be passed as the first parameter of the method.
 
-In the JSON form of the intermediate representation, a trait definition is
-represented as in the following:
-\footnotesize
-\begin{alltt}
-  {
-    "construct"   : "Trait"
-    "name"        : "\emph{name}",
-    "methods"     : [
-      \{
-        "name"       : "\emph{method name}",
-        "parameters" : [
-          \{
-            "name" : "\emph{parameter name}",
-            "type" : "\emph{parameter type}"
-          \},
-          ...
-        ],
-        "return\_type" : "\emph{return type}"
-      \},
-      ...
-    ]
-  }
-\end{alltt}
-\normalsize
-Unspecified types are indicated by \code{null} values in the JSON definition
-(this is distinct from a return value of \code{Nothing} that needs to be
-explicitly stated).
+The runtime defines the following traits:
+\begin{itemize}
+  \item The \code{Value} trait defines the following two methods that can
+    be used to get and set the value of an instance of a type:
+    \begin{itemize}
+      \item \texttt{get(self: \_) -> \_}
+      \item \texttt{set(self: \_, value: \_) -> Nothing}
+    \end{itemize}
+    The syntax \emph{name(parameters) -> return\_type} is used to
+    describe a method. The parameters are a  list of \emph{name: type}
+    pairs. A type of \texttt{\_} is unspecified.
 
-The runtime defines the \code{Value} trait. This defines methods
-that can be used to get and set the value of an instance of a type. 
-Its definition is equivalent to the following definition in the JSON
-form of the intermediate representation:
-\footnotesize
-\begin{alltt}
-  \{
-    "construct" : "Trait"
-    "name"      : "Value",
-    "methods"   : [
-      \{
-        "name"        : "get",
-        "parameters"  : [
-          \{"name" : "self",  "type"   : null\}
-        ],
-        "return\_type" : null
-      \},
-      \{
-        "name"        : "set",
-        "parameters"  : [
-          \{"name" : "self",  "type"   : null\},
-          \{"name" : "value", "type"   : null\}
-        ],
-        "return\_type" : "Nothing"
-      \},
-      
-    ]
-  \}
-\end{alltt}
-\normalsize
+  \item The \code{Sized} trait defines a method that can be used to get the
+    size, in bits, of an instance of a type:
+    \begin{itemize}
+      \item \texttt{size(self: \_) -> Size}
+    \end{itemize}
 
-The runtime defines the \code{Sized} trait. This defines a method
-that can be used to get the size, in bits, of an instance of a type. 
-Its definition is equivalent to the following definition in the JSON
-form of the intermediate representation:
-\footnotesize
-\begin{alltt}
-  \{
-    "construct" : "Trait"
-    "name"      : "Sized",
-    "methods"   : [
-      \{
-        "name"        : "size",
-        "parameters"  : [
-          \{"name" : "self",  "type"   : null\}
-        ],
-        "return\_type" : "Size"
-      \}
-    ]
-  \}
-\end{alltt}
-\normalsize
+  \item The \code{IndexCollection} trait defines methods that can be used
+    to get and set the values of elements of an array-like data structure,
+    which has multiple, numerically indexed elements:
+    \begin{itemize}
+      \item \texttt{get(self: \_, index: Size) -> \_}
+      \item \texttt{set(self, \_, index: Size, value: \_) -> Nothing}
+    \end{itemize}
 
-The runtime defines the \code{IndexCollection} trait. This defines methods that can
-be used to get and set the values of elements of an array-like data structure, which has
-multiple, numerically indexed elements. Its definition is equivalent to the following
-definition in the JSON form of the intermediate representation:
-\footnotesize
-\begin{alltt}
-  \{
-    "construct" : "Trait"
-    "name"      : "IndexCollection",
-    "methods"   : [
-      \{
-        "name"        : "get",
-        "parameters"  : [
-          \{"name" : "self",  "type"   : null\},
-          \{"name" : "index", "type"   : "Size"\}
-        ],
-        "return\_type" : null
-      \},
-      \{
-        "name"        : "set",
-        "parameters"  : [
-          \{"name" : "self",  "type"   : null\},
-          \{"name" : "index", "type"   : "Size"\}
-          \{"name" : "value", "type"   : null\}
-        ],
-        "return\_type" : "Nothing"
-      \},
-      \{
-        "name"        : "length",
-        "parameters"  : [
-          \{"name" : "self",  "type"   : null\}
-        ],
-        "return\_type" : "Size"
-      \}
-    ]
-  \}
-\end{alltt}
-\normalsize
+  \item The \code{Equality} trait defines methods that can be used to
+    compare to instances of a type for equality:
+    \begin{itemize}
+      \item \texttt{eq(self: \_, other: \_) -> Boolean}
+      \item \texttt{ne(self: \_, other: \_) -> Boolean}
+    \end{itemize}
 
-The runtime defines the \code{Equality} trait. This defines methods that
-can be used to compare to instances of a type for equality.
-Its definition is equivalent to the following definition in the JSON
-form of the intermediate representation:
-\footnotesize
-\begin{alltt}
-  \{
-    "construct" : "Trait"
-    "name"      : "Equality",
-    "methods"   : [
-      \{
-        "name"        : "eq",
-        "parameters"  : [
-          \{"name" : "self",  "type"   : null\},
-          \{"name" : "other", "type"   : null\}
-        ],
-        "return\_type" : "Boolean"
-      \},
-      \{
-        "name"        : "ne",
-        "parameters"  : [
-          \{"name" : "self",  "type"   : null\},
-          \{"name" : "other", "type"   : null\}
-        ],
-        "return\_type" : "Boolean"
-      \}
-    ]
-  \}
-\end{alltt}
-\normalsize
+  \item The \code{Ordinal} trait defines methods that can be used to
+    compare the values of instances of a type:
+    \begin{itemize}
+      \item \texttt{lt(self: \_, other: \_) -> Boolean}
+      \item \texttt{le(self: \_, other: \_) -> Boolean}
+      \item \texttt{gt(self: \_, other: \_) -> Boolean}
+      \item \texttt{ge(self: \_, other: \_) -> Boolean}
+    \end{itemize}
 
-The runtime defines the \code{Ordinal} trait. This defines methods that
-can be used to compare the values of instances of a type. 
-Its definition is equivalent to the following definition in the JSON
-form of the intermediate representation:
-\footnotesize
-\begin{alltt}
-  \{
-    "construct" : "Trait"
-    "name"      : "Ordinal",
-    "methods"   : [
-      \{
-        "name"        : "lt",
-        "parameters"  : [
-          \{"name" : "self",  "type"   : null\},
-          \{"name" : "other", "type"   : null\}
-        ],
-        "return\_type" : "Boolean"
-      \},
-      \{
-        "name"        : "le",
-        "parameters"  : [
-          \{"name" : "self",  "type"   : null\},
-          \{"name" : "other", "type"   : null\}
-        ],
-        "return\_type" : "Boolean"
-      \},
-      \{
-        "name"        : "gt",
-        "parameters"  : [
-          \{"name" : "self",  "type"   : null\},
-          \{"name" : "other", "type"   : null\}
-        ],
-        "return\_type" : "Boolean"
-      \},
-      \{
-        "name"        : "ge",
-        "parameters"  : [
-          \{"name" : "self",  "type"   : null\},
-          \{"name" : "other", "type"   : null\}
-        ],
-        "return\_type" : "Boolean"
-      \}
-    ]
-  \}
-\end{alltt}
-\normalsize
+  \item The \code{BooleanOps} trait defines methods that can be used to
+    perform boolean operations on, and between, instances of a type:
+    \begin{itemize}
+      \item \texttt{and(self: \_, other: \_) -> Boolean}
+      \item \texttt{ or(self: \_, other: \_) -> Boolean}
+      \item \texttt{not(self: \_) -> Boolean}
+    \end{itemize}
 
-The runtime defines the \code{BooleanOps} trait. This defines methods
-that can be used to perform boolean operations on, and between, instances
-of a type.
-Its definition is equivalent to the following definition in the JSON
-form of the intermediate representation:
-\footnotesize
-\begin{alltt}
-  \{
-    "construct" : "Trait"
-    "name"      : "BooleanOps",
-    "methods"   : [
-      \{
-        "name"        : "and",
-        "parameters"  : [
-          \{"name" : "self",  "type"   : null\},
-          \{"name" : "other", "type"   : null\}
-        ],
-        "return\_type" : "Boolean"
-      \},
-      \{
-        "name"        : "or",
-        "parameters"  : [
-          \{"name" : "self",  "type"   : null\},
-          \{"name" : "other", "type"   : null\}
-        ],
-        "return\_type" : "Boolean"
-      \},
-      \{
-        "name"        : "not",
-        "parameters"  : [
-          \{"name" : "self",  "type"   : null\}
-        ],
-        "return\_type" : "Boolean"
-      \}
-    ]
-  \}
-\end{alltt}
-\normalsize
+  \item The \code{ArithmeticOps} trait defines methods that can be used to
+    perform arithmetic operations on instances of a type:
+    \begin{itemize}
+      \item \texttt{plus(self: \_, other: \_) -> \_}
+      \item \texttt{minus(self: \_, other: \_) -> \_}
+      \item \texttt{multiply(self: \_, other: \_) -> \_}
+      \item \texttt{divide(self: \_, other: \_) -> \_}
+      \item \texttt{modulo(self: \_, other: \_) -> \_}
+    \end{itemize}
 
-The runtime defines the \code{ArithmeticOps} trait. This defines methods
-that can be used to perform arithmetic operations on instances of a type.
-Its definition is equivalent to the following definition in the JSON
-form of the intermediate representation:
-\footnotesize
-\begin{alltt}
-  \{
-    "construct" : "Trait"
-    "name"      : "ArithmeticOps",
-    "methods"   : [
-      \{
-        "name"        : "plus",
-        "parameters"  : [
-          \{"name" : "self",  "type"   : null\},
-          \{"name" : "other", "type"   : null\}
-        ],
-        "return\_type" : null
-      \},
-      \{
-        "name"        : "minus",
-        "parameters"  : [
-          \{"name" : "self",  "type"   : null\},
-          \{"name" : "other", "type"   : null\}
-        ],
-        "return\_type" : null
-      \},
-      \{
-        "name"        : "multiply",
-        "parameters"  : [
-          \{"name" : "self",  "type"   : null\},
-          \{"name" : "other", "type"   : null\}
-        ],
-        "return\_type" : null
-      \},
-      \{
-        "name"        : "divide",
-        "parameters"  : [
-          \{"name" : "self",  "type"   : null\},
-          \{"name" : "other", "type"   : null\}
-        ],
-        "return\_type" : null
-      \},
-      \{
-        "name"        : "modulo",
-        "parameters"  : [
-          \{"name" : "self",  "type"   : null\},
-          \{"name" : "other", "type"   : null\}
-        ],
-        "return\_type" : null
-      \}
-    ]
-  \}
-\end{alltt}
-\normalsize
+\end{itemize}
 
 %--------------------------------------------------------------------------------------------------
 \subsection{Representable Types}
@@ -480,86 +249,38 @@ a number of \emph{type constructors} that allow appropriate types to be
 created as needed to represent a protocol.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{Bit String Types}
+\subsubsection{Bit Strings}
 \label{sec:bit-string}
 
-The bit string type constructor allows construction of types representing
-multi-bit values that can be parsed or serialised.
+Representable types of kind \code{BitString} can be constructed to
+represent multi-bit values that can be parsed or serialised.
 
-Instances of bit string types implement the \code{Sized} trait. The size
-MAY be unspecified.
+The \code{BitString} type constructor takes as parameters the \emph{name}
+of the new bit string type and a \emph{size} in bits. The size may be
+unspecified. 
 
-Instances of bit string types also implement the \code{Value} and
-\code{Equality} traits. The former allows the value of the \code{BitString}
-instantiation to be retrieved and set. The latter allows two instantiations
-of \code{BitString} to be compared for equality; they are equal if they
-have the same name, value, and \code{size}.
-
-In the JSON form of the intermediate representation, an invocation of the
-bit string type constructor is represented as in the following:
-\footnotesize
-\begin{alltt}
-  \{
-    "construct" : "BitString"
-    "name"      : "\emph{type name}",
-    "size"      : \emph{number of bits}
-  \}
-\end{alltt}
-\normalsize
-The \code{name} field specifies the name of the newly defined type. The
-name is formed of upper- and lower-case ASCII letters, digits, and dollar
-signs (\code{A-Za-z0-9\$}).  It MUST begin with an upper case letter
-(\code{A-Z}). Type names are defined in the global type namespace. 
-It is an error to define the same type more than once.
-
-The \code{size} field MAY be \code{null} in the JSON, to indicate that the
-size is unspecified.
+Instances of \code{BitString} types implement the \code{Sized}, \code{Value}
+and \code{Equality} traits. 
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Arrays}
 
-The array type constructor allows creation of types that represent a
-sequence of elements of some other type that can be parsed or serialised.
-The array type constructor is parameterised by the name of the new array
-type, type of the elements it contains, and the length of the new array.
-The length MAY be unspecified. 
+Representable types of kind \code{Array} can be constructed to represent
+a sequence of elements that can be parsed or serialised.
 
-Arrays implement the \code{Equality} trait. Two arrays are equal if they
-have the same element type, \code{length}, \code{size}, and their elements are equal.
+The \code{Array} type constructor takes as parameters the \emph{name} of
+the new array type, the \emph{element type}, and the \emph{length} of the
+new array.
+The element type must be a previously defined representable type.
+The length is the number of elements contained in the array.
+The length may be unspecified. 
 
-Arrays also implement the \code{Sized} trait. The size of the array is \code{length}
-multiplied by the size of \code{element\_type}.
-
-Arrays also implement the \code{IndexCollection} trait. Elements are numbered from $0$ to
-$\code{length}-1$. The \code{length} of an array is the number of elements that it
-contains.
-
-In the JSON form of the intermediate representation, an invocation of the
-array type constructor is represented as in the following:
-\footnotesize
-\begin{alltt}
-  \{
-    "construct"    : "Array",
-    "name"         : "\emph{type name}",
-    "element\_type" : "\emph{element type}"
-    "length"       : \emph{number of elements}
-  \}
-\end{alltt}
-\normalsize
-The \code{name} field specifies the name of the newly defined type. The
-name is formed of upper- and lower-case ASCII letters, digits, and dollar
-signs (\code{A-Za-z0-9\$}).  It MUST begin with an upper case letter
-(\code{A-Z}). Type names are defined in the global type namespace.
-It is an error to define the same type more than once.
-
-The \code{element\_type} field specifies the type of the array elements.
-The element type MUST have been previously defined, and can be a BitString,
-array, structure type, or enumerated type, or a type derived from such a
-type. The \code{element\_type} MUST be specified.
-An array cannot contain elements of its own type.
-
-The \code{length} field MAY be \code{null} in the JSON, to indicate that
-the length is unspecified.
+Instances of \code{Array} types implement the \code{Equality}, \code{Sized},
+and \code{IndexCollection} traits.
+Two arrays are equal if they have the same element type and length, and
+their elements are equal.
+The size of the array is equal to the length of the array multiplied by the
+size of element type.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Structure Types}
