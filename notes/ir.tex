@@ -122,7 +122,7 @@ dollar signs (\code{A-Za-z0-9\$}). It must begin with an upper case letter
 %--------------------------------------------------------------------------------------------------
 \subsection{Internal Types}
 
-There are three kinds of internal type: 
+There are four internal types: 
 \begin{itemize}
   \item The \code{Nothing} type is the empty type. 
     It implements no traits and has no methods.
@@ -132,12 +132,16 @@ There are three kinds of internal type:
     (two \code{Boolean}s are equal if they have the same value), and
     \code{BooleanOps}.
 
-  \item The \code{Size} type is a positive integral value, denoting the
-    size of an instance of a representable type. It implements the traits
-    \code{Value}, \code{Equality}, \code{Ordinal}, and
+  \item The \code{Integer} type is an integral value. It implements the
+    traits \code{Value}, \code{Equality}, \code{Ordinal}, and
     \code{ArithmeticOps}.
 
+  \item The \code{Size} type is a subtype of the \code{Integer} type, for
+    positive integral values denoting the size of an instance of a
+    representable type. It implements no additional traits beyond those
+    of its \code{Integer} parent type.
 \end{itemize}
+
 The primitive types are built-in to the runtime and do not need to be
 explicitly instantiated.
 
@@ -238,6 +242,11 @@ The runtime defines the following traits:
       \item \texttt{modulo(self: \_, other: \_) -> \_}
     \end{itemize}
 
+  \item The \code{IntegerRepresentable} trait defines a method that can be
+    used to represent a type as an \code{Integer} type:
+    \begin{itemize}
+      \item \texttt{to\_integer(self: \_) -> Integer}
+    \end{itemize}
 \end{itemize}
 
 %--------------------------------------------------------------------------------------------------
@@ -259,8 +268,8 @@ The \code{BitString} type constructor takes as parameters the \emph{name}
 of the new bit string type and a \emph{size} in bits. The size may be
 unspecified. 
 
-Instances of \code{BitString} types implement the \code{Sized}, \code{Value}
-and \code{Equality} traits. 
+Instances of \code{BitString} types implement the \code{Sized}, \code{Value},
+\code{Equality}, and \code{IntegerRepresentable} traits. 
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Arrays}
@@ -285,84 +294,53 @@ size of element type.
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Structure Types}
 
-The structure type constructor allows creation of types that represent a
-sequence of fields, with possibly different types, that can be parsed and
-serialised. The structure type constructor is parameterised by the name of
-the structure, details of the fields, and any constraints on the field
-values.
+Representable types of kind \code{Struct} can be constructed to represent
+a sequence of fields, with possibly different types, that can be parsed
+and serialised.
 
-In the JSON form of the intermediate representation, invocation of the type
-constructor for a structure type is represented as in the following:
-\footnotesize
-\begin{alltt}
-  \{
-    "construct"   : "Struct"
-    "name"        : "\emph{type name}",
-    "fields"      : [
-      \{
-        "name"       : "\emph{field name}",
-        "type"       : "\emph{field type name}",
-        "is\_present" : \emph{expression},
-        "transform"  : \emph{transform expression}
-      \},
-      ...
-    ],
-    "constraints" : [
-      ...
-    ],
-    "actions" : [
-      ...
-    ]
-  \}
-\end{alltt}
-\normalsize
-The \code{name} field specifies the name of the newly defined type. The
-name is formed of upper- and lower-case ASCII letters, digits, and dollar
-signs (\code{A-Za-z0-9\$}).  It MUST begin with an upper case letter
-(\code{A-Z}). Type names are defined in the global type namespace.
-It is an error to define the same type more than once.
+The \code{Struct} type constructor takes as parameters the \emph{name} of
+the new structure type, a list of \emph{fields}, a possibly empty list of
+\emph{constraints} on those fields, and a possibly empty list of
+\emph{actions} that are to be carried out once the structure has been
+parsed.
 
-The \code{fields} define the contents of the new structure type. Each
-field has a name, a type, an expression that indicates if the field is
-present in a particular instantiation of the structure type, and a
-transform function. Structure types MUST contain at least one field.
+\emph{Fields} are constructed with a \emph{name} for the field, the
+\emph{type} of the field, an expression indicating if the field
+\emph{is present} in a particular instantiation of the structure type,
+and, optionally, an expression for how the field
+should be transformed after the structure has been parsed. Structure types
+MUST contain at least one field.
 
-Each field has a name that is formed of upper and lower case ASCII letters,
+Field names are formed of upper and lower case ASCII letters,
 digits, dollar signs, or underscores (\code{A-Za-z0-9\$\_}). The field name
 MUST begin with a lower case letter (\code{a-z}).
 
-Each field has a type. The field type MUST have been previously defined.
+Field types MUST have been previously defined.
 Fields can be of \code{BitString}, array, structure type, or enumerated type,
-or a type derived from such a type. The names of each field MUST be unique
+or a subtype of such a type. The names of each field MUST be unique
 within a structure definition, but several fields can have the same type.
 
-Each field has an \code{is\_present} expression that indicates
+Each field has an \emph{is present} expression that indicates
 whether that field is present in a particular instantiation of the
 structure type. This is used to model data formats that contain optional
 fields. Expressions are described in Section \ref{sec:expressions}. The
-\code{is\_present} expression MUST evaluate to a \code{Boolean} value.
+\emph{is present} expression MUST evaluate to a \code{Boolean} value.
 
-Each field has a \code{transform} member.
-The \code{transform} member MAY be \code{null}, indicating that no
-transform is performed.
-Alternatively, it is represented as a JSON object as follows:
-\footnotesize
-\begin{alltt}
-  \{
-    "into\_name" : "\emph{transformed name}",
-    "into\_type" : "\emph{transformed type}",
-    "using"      : \emph{function name}
-  \}
-\end{alltt}
-\normalsize
-If the transform member is specified, it indicates that the original
-field is parsed, then the \code{using} function is invoked, then the field
-is replaced by a new field called \code{into\_name} with type \code{into\_type}.
-The \code{using} function MUST take a single argument of the same type as
-the original field, and the return type of the \code{using} function MUST
-match \code{into\_type}.
-The \code{into\_type} MUST have the same size as the original \code{type}
-of the field.
+Each field has a \emph{transform} expression.
+The \code{transform} expression MAY be \code{null}, indicating that no
+transformation is performed. Alternatively, it is constructed with 
+the \emph{name} and \emph{Type} that the field is transformed into,
+alongside the \emph{function name} of the function that should be
+used to perform the transformation.
+If the transform expression is specified, it indicates that the original
+field is parsed, then the transformation function is invoked, then the field
+is replaced by a new field with the name and type specified in the transform
+expression.
+The transform function MUST take a single argument of the same type as
+the original field, and the return type of the function MUST
+match the type specified by the transform expression.
+The type that the field is transformed into MUST have the same size as the original
+type of the field.
 
 A structure type implements the \code{Sized} trait. The size of a structure is the
 sum of the sizes of its fields.
@@ -370,140 +348,78 @@ sum of the sizes of its fields.
 A structure type also implements the \code{Equality} trait. Two structures
 are equal if they contain the same fields, in the same order, and the
 corresponding fields are equal. Two fields are equal if they have the same
-\code{name}, the same \code{type}, the same \code{is\_present} expression
-that evaluates to the same value, and the same \code{transform} expression.
+\emph{name}, the same \emph{type}, the same \emph{is present} expression
+that evaluates to the same value, and the same \emph{transform} expression.
 
 A structure type is parameterised by a set of constraints (i.e., boolean
 expressions that MUST evaluate to \code{True}) on the
 fields. The set of constraints MAY be empty. Expressions are described in
 Section \ref{sec:expressions}.
 
-Finally, on the successful parsing of the structure type, the expressions
-in \code{actions} are evaluated. The set of actions MAY be empty. The
-expressions in the set of actions MUST be \code{Update} tree expressions,
+Finally, on the successful parsing of the structure type, the list of
+\emph{actions} are evaluated. The list of actions MAY be empty. The
+expressions in the list of actions MUST be \code{Update} tree expressions,
 and each expression MUST return \code{Nothing}. Actions are typically
 expected to update the parsing context (see Section \ref{sec:context}).
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Enumerated Types}
 
-The enumerated type constructor allows creation of types that represent
+Representable types of kind \code{Enum} can be constructed to represent
 data that can exist as one of several possible variants when parsed or
-serialised. The type constructor is parameterised by the name of the new
-enumerated type, and the types of the variants.
+serialised.
 
-In the JSON form of the intermediate representation, invocation of the type
-constructor for an enumerated type is represented as in the following:
-\footnotesize
-\begin{alltt}
-  \{
-    "construct"   : "Enum"
-    "name"        : "\emph{type name}",
-    "variants"    : [
-      \{"type" : "\emph{type name}"\},
-      ...
-    ]
-  \}
-\end{alltt}
-\normalsize
-The \code{name} field specifies the name of the newly defined type. The
-name is formed of upper- and lower-case ASCII letters, digits, and dollar
-signs (\code{A-Za-z0-9\$}).  It MUST begin with an upper case letter
-(\code{A-Z}). Type names are defined in the global type namespace.
-It is an error to define the same type more than once.
+The \code{Enum} type constructor takes as parameters the \emph{name} of the
+new \code{Enum} type and the types of the \emph{variants} that the
+\code{Enum} might take.
 
-The \code{variants} field is an array that specifies the possible types
-that variants of the enumerated type can take. These types MUST have been
-previously defined, and the variants array MUST NOT be empty. Variants of
+Variant types MUST have been
+previously defined, and the variants list MUST NOT be empty. Variants of
 an enumerated type have their own types, but are otherwise unnamed.
-Variants can be of BitString, array, structure type, or enumerated type, or
-a type derived from such a type.
+Variants can be of \code{BitString}, array, structure type, or enumerated type, or
+a subtype of such a type.
 
 An enumerated type implements the \code{Sized} trait. The size of an enumerated type
 is equal to the size of the instantiated variant. Variants are not
 necessarily all the same size.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{Derived Types}
+\subsubsection{Subtypes}
 
-The derived type constructor allows creation of types as extensions of
-existing types. A type derived in this way has the same representation
-and properties as the type it is derived from, but has a new name and is
+Subtyping allows for the creation of types as substitutable extensions of
+existing types. A subtype has the same representation
+and properties as its parent supertype, but has a new name and is
 distinct from the original type. It MAY also implement additional traits.
 
-The type constructor is parameterised by the name of the new derived type,
-the base type from which it is derived, and a (possibly empty) list of any
-additional traits the new type implements.
+The type constructor is parameterised by the name of the new subtype,
+the type that it subtypes, and a (possibly empty) list of traits the new
+type implements.
 
-In the JSON form of the intermediate representation, invocation of the
-type constructor for a derived type is represented as in the following:
-\footnotesize
-\begin{alltt}
-  \{
-    "construct"     : "NewType",
-    "name"          : "\emph{type name}",
-    "derived\_from"  : "\emph{type name}",
-    "implements"    : [
-      \{"trait" : "\emph{trait name}"\},
-      ...
-    ]
-  \}
-\end{alltt}
-\normalsize
-The \code{name} field specifies the name of the newly defined type. The
-name is formed of upper- and lower-case ASCII letters, digits, and dollar
-signs (\code{A-Za-z0-9\$}).  It MUST begin with an upper case letter
-(\code{A-Z}). Type names are defined in the global type namespace.
-
-The \code{derived\_from} field indicates the type from which the new type is
-derived.  A new type can be derived from an existing \code{BitString},
+A new type can subtype an existing \code{BitString},
 array, structure type, or enumerated type. It is an error to define a new
-type that has the same name as an existing type. A new type cannot be
-derived from itself.
+type that has the same name as an existing type. A new type cannot subtype
+itself.
 
-The \code{implements} field is an array that specifies any additional
-traits that the new type implements compared to the base type. It is an
-error to specify traits that are implemented by the base type.
-The \code{implements} fields MAY be an empty array if the derived type
-does not implement any additional traits compared to the base type.
+Subtypes do not inherit the traits and methods of their supertype. However,
+when a method is invoked that the subtype does not implement, the subtype is
+recursively converted to the first supertype that \emph{does} implement the 
+method. This allows subtypes to override methods implemented by their
+supertypes.
 
-A common use for derived types is to extend Bit String types with additional
-traits, allowing them to represent integral values that can be compared or
-have arithmetic operations performed on them. For example, to define a 16-bit
-integer type:
-\footnotesize
-\begin{alltt}
-  \{
-    "construct"     : "BitString",
-    "name"          : "Bits16",
-    "width"         : 16
-  \},
-  \{
-    "construct"     : "NewType",
-    "name"          : "Int16",
-    "derived\_from"  : "Bits16",
-    "implements"    : [
-      \{"trait" : "Ordinal"\},
-      \{"trait" : "ArithmeticOps"\}
-    ]
-  \}
-\end{alltt}
-\normalsize
-
-As derived types inherit the traits of their base type, the size of a derived type is
-equal to the size of the type it was derived from.
+Finally, subtypes can substitute for their supertypes as an argument to a
+method, where the parameter type is the supertype.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Functions}
 \label{sec:functions}
 
-The function type constructor allows the definition of new function types,
-giving the signature of a function to be provided by the implementation of
-the protocol. The code comprising the body of the function is not specified. 
+Representable types of kind \code{Function} can be constructed to represent
+the signature of a function to be provided by the implementation of
+the protocol. The code comprising the body of the function is not captured. 
 
-A function type has a name and a return type. It takes a number of
-parameters, each of which has its own name and type. 
-The types of parameters, and the return type, MUST be specified.
+The \code{Function} type constructor is parameterised by the \emph{name} of
+the function, the list of \emph{parameters} that the function takes (each
+with its own name and type), and the function's \emph{return type}.
 The return type \code{Nothing} is used for functions that return no value.
 
 Function names and parameter names are formed of upper and lower case ASCII
@@ -512,69 +428,25 @@ MUST begin with a lower case letter (\code{a-z}).
 Function names are defined in the global type namespace.
 Each parameter within a function definition MUST have a unique name.
 
-In the JSON form of the intermediate representation, invocation of the
-function type constructor is represented as in the following:
-\footnotesize
-\begin{alltt}
-  \{
-    "construct"    : "Function"
-    "name"         : "\emph{function name}",
-    "parameters"   : [
-      \{
-        "name" : "\emph{parameter name}",
-        "type" : "\emph{parameter type}"
-      \},
-      ...
-    ],
-    "return\_type"  : "\emph{return type name}",
-  \}
-\end{alltt}
-\normalsize
-
-A function type implements the \code{Sized} trait. The size of the function is that of the
-\code{return\_type}.
+A function type implements the \code{Sized} trait. The size of the function is that of
+its return type.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Protocols}
 
-The protocol type constructor allows definition of new protocol types, that
-describe the types and protocol data units (PDUs) that form a protocol. The
-type constructor is parameterised by the name of the protocol, a set of
-type definitions, and the set of PDUs used in the protocol.
+Representable types of kind \code{Protocol} can be constructed to represent
+the types and protocol data units (PDUs) that form a protocol.
 
-In the JSON form of the intermediate representation, invocation of the
-protocol type constructor is represented as in the following:
-\footnotesize
-\begin{alltt}
-  \{
-    "construct"   : "Protocol",
-    "name"        : "\emph{protocol type name}",
-    "definitions" : [
-                      ...
-                    ],
-    "pdus"        : [
-      \{"type" : "\emph{PDU type name}"\},
-      ...
-    ]
-  \}
-\end{alltt}
-\normalsize
-A protocol is the top-level object in the JSON form of the intermediate
-representation.
+The \code{Protocol} type constructor is parameterised by the \emph{name} of the
+protocol, a set of \emph{type definitions}, and the list of names of \emph{PDUs} used in
+the protocol.
 
-The \code{name} field specifies the name of the newly defined type. The
-name is formed of upper- and lower-case ASCII letters, digits, and dollar
-signs (\code{A-Za-z0-9\$}).  It MUST begin with an upper case letter
-(\code{A-Z}). Type names are defined in the global type namespace.
+Any representable type, as defined in Section \ref{sec:representable}, can
+be included in the list of type definitions.
 
-The \code{definitions} field that contains an array of objects representing
-the types and functions used by the protocol. Any representable type, as
-defined in Section \ref{sec:representable}, can be included.
-
-The \code{pdus} field contains an array giving the type of the PDUs used
-in the protocol. The PDUs array MAY be empty, although this represents a
-protocol that is useless. PDUs can be any structure type or enumerated
-type. 
+The list of PDU names MAY be empty, although this represents a
+protocol that is useless. PDU names can be type names of any structure type
+or enumerated type. 
 
 %--------------------------------------------------------------------------------------------------
 \subsection{The Parsing Context}
@@ -626,6 +498,10 @@ tree (\code{MethodInvocation}, \code{FunctionInvocation}, \code{FieldAccess},
       \code{ContextAccess}, and \code{IfElse})
 and 
 leaf (\code{This}, and \code{Constant}).
+
+Expressions can be resolved to a type using their \code{get\_result\_type} method:
+
+\code{get\_result\_type(self: Expression, containing\_type: ProtocolType) -> ProtocolType}
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Tree Expressions}
