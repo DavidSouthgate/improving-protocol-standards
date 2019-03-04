@@ -452,42 +452,26 @@ or enumerated type.
 \subsection{The Parsing Context}
 \label{sec:context}
 
-The \code{Context} type constructor allows creation of a type that
+The \code{Context} type
 represents a sequence of fields, possibly of different types, that can be
-accessed in the parsing of other types, where needed. The context type
-constructor is parameterised by the details of the fields it includes.
+accessed in the parsing of other types, where needed.
+
+The \code{Context}
+constructor is parameterised by the details of the \emph{fields} it includes.
 
 The \code{Context} holds internal state for the parser, and does not
 represent a PDU, or any part of a PDU, of the protocol being parsed.
-The \code{Context} is defined along with the other \code{definitions}
+The \code{Context} is defined along with the other \emph{type definitions}
 in a \code{Protocol}, however, since it is specific to a protocol.
-
-In the JSON form of the intermediate representation, invocation of the type
-constructor for a context type is represented as in the following:
-\footnotesize
-\begin{alltt}
-  \{
-    "construct"   : "Context"
-    "fields"      : [
-      \{
-        "name"    : "\emph{field name}",
-        "type"    : "\emph{field type}"
-      \},
-      ...
-    ]
-  \}
-\end{alltt}
-\normalsize
 At most one context can be instantiated.
 
 Each field has a name that is formed of upper and lower case ASCII letters,
 digits, dollar signs, or underscores (\code{A-Za-z0-9\$\_}). The field name
-MUST begin with a lower case letter (\code{a-z}).
+MUST begin with a lower case letter (\code{a-z}). Field names must be unique
+within the \code{Context}.
 
 Each field has a type. That type MUST have been previously defined, and can
-be a \code{BitString}, array, structure type, or enumerated type. The names
-of each field MUST be unique within a structure definition, but several
-fields can have the same type.
+be a \code{BitString}, array, structure type, or enumerated type.
 
 %--------------------------------------------------------------------------------------------------
 \subsection{Expressions}
