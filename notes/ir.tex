@@ -485,162 +485,49 @@ leaf (\code{This}, and \code{Constant}).
 
 Expressions can be resolved to a type using their \code{get\_result\_type} method:
 
-\code{get\_result\_type(self: Expression, containing\_type: ProtocolType) -> ProtocolType}
+\begin{verbatim}
+get_result_type(self: Expression,
+                containing_type: ProtocolType)
+  -> ProtocolType
+\end{verbatim}
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Tree Expressions}
 
-A \code{MethodInvocation} tree expression is represented in the JSON form of the
-intermediate representation as:
-\footnotesize
-\begin{alltt}
-  \{
-    "expression"   : "MethodInvocation",
-    "target"       : \emph{expression},
-    "method"       : "\emph{method name}",
-    "arguments"    : [
-      \{
-        "name"  : "\emph{parameter name}",
-        "value" : \emph{expression}
-      \},
-      ...
-    ]
-  \}
-\end{alltt}
-\normalsize
-The \code{MethodInvocation} expression evaluates to the result of applying \code{method}
-to \code{target}, with the arguments specified in \code{arguments}. The \code{target} is
-either a \code{This} or \code{Context} leaf expression, or a tree expression.
+A \code{MethodInvocation} expression is parameterised by a \emph{target} expression, and a 
+\emph{method name} and list of \emph{arguments} for that method. The expression evaluates
+to the result of calling the named method, with \code{self} set to the \emph{target}
+expression and the other arguments set as specified. Arguments are specified as expressions.
 
-A \code{FunctionInvocation} tree expression is represented in the JSON form of the
-intermediate representation as:
-\footnotesize
-\begin{alltt}
-  \{
-    "expression"   : "FunctionInvocation",
-    "name"         : \emph{function name},
-    "arguments"    : [
-      \{
-        "name"  : "\emph{parameter name}",
-        "value" : \emph{expression}
-      \},
-      ...
-    ]
-  \}
-\end{alltt}
-\normalsize
-The \code{name} MUST refer to a previously defined \code{Function}. The set
-of \code{arguments} MUST contain values for all of the parameters specified
+A \code{FunctionInvocation} expression is parameterised by a \emph{function name} and a list of
+\emph{arguments}, specified as expressions. The expression evaluates to the result of
+calling the named function with the arguments specified. The \emph{name} MUST refer to
+a previously defined \code{Function}. The set
+of arguments MUST contain values for all of the parameters specified
 in the \code{Function} definition, and the \code{value} expression for each
 MUST evaluate to a value matching the type of the parameter as specified in
-the \code{Function} definition. The \code{FunctionInvocation} expression
-itself evaluates to the \code{return\_type} specified in the
-\code{Function} definition.
+the \code{Function} definition. 
 
-A \code{FieldAccess} tree expression is represented in the JSON form of the
-intermediate representation as:
-\footnotesize
-\begin{alltt}
-  \{
-    "expression"  : "FieldAccess",
-    "target"      : \emph{expression},
-    "field"       : \emph{field name},
-  \}
-\end{alltt}
-\normalsize
-When the target is a structure type, returns a reference to the specified
-field of the structure.
-It is an error to invoke \code{FieldAccess} on a target that is not a
-structure type.
+A \code{FieldAccess} expression is parameterised by a \emph{target} expression, and a
+\emph{field name}. The \emph{target} expression MUST resolve to a structure type. A
+\code{FieldAccess} expression resolves to the type of the \emph{field name} within the
+\emph{target} structure.
 
-A \code{ContextAccess} tree expression is represented in the JSON form
-of the intermediate representation as:
-\footnotesize
-\begin{alltt}
-  \{
-    "expression"  : "ContextAccess",
-    "field"       : \emph{field name}
-  \}
-\end{alltt}
-\normalsize
-A \code{ContextAccess} expression returns a reference to the specified
-field in the parsing context.
+A \code{ContextAccess} expression is parameterised by a \emph{field name}. The expression
+resolves to the type of the \emph{field name} within the protocol's context.
 
-A \code{IfElse} tree expression is represented in the JSON form of the
-intermediate representation as:
-\footnotesize
-\begin{alltt}
-  \{
-    "expression"  : "IfElse",
-    "condition"   : \emph{expression},
-    "if\_true"     : \emph{expression},
-    "if\_false"    : \emph{expression}
-  \}
-\end{alltt}
-\normalsize
-The \code{IfElse} includes a \code{condition} that evaluates to the \code{Boolean} type.
-The \code{IfElse} expression evaluates to the \code{if\_true} member, if \code{condition}
-is \code{True}. Otherwise, the expression evaluates to the \code{if\_false} member.
+A \code{IfElse} expression is parameterised by three expressions: a \emph{condition},
+an \emph{if true} expression and an \emph{if false} expression. The expression resolves
+to the \code{Boolean} type. It resolves to the the true expression if the condition
+expression evaluates to True, otherwise, it evaluates to the false expression.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Leaf Expressions}
 
-A \code{This} leaf expression is represented in the JSON form of the
-intermediate representation as:
-\footnotesize
-\begin{alltt}
-  \{
-    "expression"   : "This"
-  \}
-\end{alltt}
-\normalsize
-It evaluates to a reference to the current object (i.e., the object to
-which the expression is attached).
+A \code{This} expression resolves to the \code{containing\_type}.
 
-A \code{Constant} leaf expression is represented in the JSON form of the
-intermediate representation as:
-\footnotesize
-\begin{alltt}
-  \{
-    "expression"   : "Constant",
-    "type"         : "\emph{type name}",
-    "value"        : \emph{value}
-  \}
-\end{alltt}
-\normalsize
-The \code{Constant} expression evaluates to the specified \code{value},
-which has type specified by the \code{type} field.
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{Example}
-
-An expression comparing to the \code{version} field of the current
-structure object to the constant value 2 would be written:
-\footnotesize
-\begin{alltt}
-  \{
-     "expression" : "MethodInvocation",
-     "target"     : \{
-       "expression" : "FieldAccess",
-       "target" : \{
-         "expression" : "This"
-       \},
-       "field"    : "version"
-     \},
-     "method"     : "eq",
-     "arguments"  : [
-       \{
-         "name"  : "other",
-         "value" : \{
-           "expression" : "Constant",
-           "type"       : "Int16",
-           "value"      : "2"
-         \}
-       \}
-     ]
-  \}
-\end{alltt}
-\normalsize
+A \code{Constant} expression is parameterised by a \emph{type name} and a \emph{value}. 
+The expression evaluates to the specified value, whose type is specified.
 
 %==================================================================================================
 \section{Acknowledgements}
