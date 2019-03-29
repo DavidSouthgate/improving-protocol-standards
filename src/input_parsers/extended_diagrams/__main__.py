@@ -26,10 +26,10 @@ def main():
 
     protocol = extended_diagrams.build_protocol(contents)
 
-    if not suppress_result:
-        output_formatter = Json()
-        output_formatter.format_protocol(protocol)
-        print(output_formatter.generate_output())
+    #if not suppress_result:
+        #output_formatter = Json()
+        #output_formatter.format_protocol(protocol)
+        #print(output_formatter.generate_output())
 
 
 def usage():

@@ -82,16 +82,25 @@ text_indent_line_end            = crlf indent{2} -> ' '
 # TODO: Future Development
 text_ref                        = '[' char_visible_no_square_bracket+:a ']' -> Xref("".join(a))
 
-text_hang                       = text_hang_multi:a (text_hang_single | text_hang_multi)*:b -> List(style="hanging", children=[a]+b)
-text_hang_single                = indent text_hang_line_1:a crlf+ -> text_paragraph([j for i in [a["main"]] for j in i], hang_text=a["hang_text"])
-text_hang_multi                 = indent text_hang_line_1:a text_hang_line_2+:b crlf+ -> text_paragraph([j for i in [a["main"]]+b for j in i], hang_text=a["hang_text"])
-text_hang_line_1                = text_hang_text:hang_text char_visible:a char_no_crlf*:b text_hang_line_end:c -> {"hang_text": hang_text, "main": [a+"".join(b)+c]}
-text_hang_line_2                = char_visible:a char_no_crlf*:b text_hang_line_end:c -> [a+"".join(b)+c]
-text_hang_text_word             = <char_visible+>:a ' ':b -> a+b
-text_hang_text                  = <text_hang_text_word+>:a ' ' -> a.rstrip()
+text_hang                       = text_hang_item+:a -> List(style="hanging", children=a)
+text_hang_item                  = text_hang_line_1:a <text_hang_line_2+>:b crlf* -> text_paragraph(a+b)
+text_hang_line_1                = indent char_visible:a <char_no_crlf*>:b crlf -> a+b
+text_hang_line_2                = indent text_hang_line_1:a -> a
 
-text_hang_line_end              = crlf indent{2} -> ' '
-                                | crlf -> ''
+
+
+
+
+#text_hang                       = text_hang_multi:a (text_hang_single | text_hang_multi)*:b -> List(style="hanging", children=[a]+b)
+#text_hang_single                = indent text_hang_line_1:a crlf+ -> text_paragraph([j for i in [a["main"]] for j in i], hang_text=a["hang_text"])
+#text_hang_multi                 = indent text_hang_line_1:a text_hang_line_2+:b crlf+ -> text_paragraph([j for i in [a["main"]]+b for j in i], hang_text=a["hang_text"])
+#text_hang_line_1                = text_hang_text:hang_text char_visible:a char_no_crlf*:b text_hang_line_end:c -> {"hang_text": hang_text, "main": [a+"".join(b)+c]}
+#text_hang_line_2                = char_visible:a char_no_crlf*:b text_hang_line_end:c -> [a+"".join(b)+c]
+#text_hang_text_word             = <char_visible+>:a ' ':b -> a+b
+#text_hang_text                  = <text_hang_text_word+>:a ' ' -> a.rstrip()
+#
+#text_hang_line_end              = crlf indent{2} -> ' '
+#                                | crlf -> ''
 
 ########################################################################
 # Artwork
@@ -114,7 +123,7 @@ page_separator                  = page_footer ff lf page_header_footer:b lf -> r
 page_footer                     = lf:a page_header_footer:b lf:c
 page_header_footer              = chars_visible_space_separated:a spaces chars_visible_space_separated:b spaces chars_visible_space_separated:c -> (a,b,c)
 
-rfc                             = front sections post_sections anything* -> rfc
+rfc                             = front sections post_sections anything*  -> rfc
 
 # TODO: Table of contents parsing removed
 toc                             = toc_line+
